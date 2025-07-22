@@ -3,7 +3,6 @@ import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import VehicleCategories from "@/components/VehicleCategories";
 import PartsServicesCategories from "@/components/PartsServicesCategories";
-import FeaturedVehicles from "@/components/FeaturedVehicles";
 import TrustIndicators from "@/components/TrustIndicators";
 import Footer from "@/components/Footer";
 import ComparisonBar from "@/components/ComparisonBar";
@@ -90,12 +89,6 @@ const Index = () => {
 
       {/* Parts & Services Categories */}
       <PartsServicesCategories />
-
-      {/* Featured Vehicles */}
-      <FeaturedVehicles 
-        onCompare={handleAddToComparison}
-        onSave={(id) => console.log("Saved vehicle:", id)}
-      />
 
       {/* Trust Indicators */}
       <TrustIndicators />

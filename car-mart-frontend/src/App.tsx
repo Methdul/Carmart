@@ -3,45 +3,99 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import AuthPage from "./pages/AuthPage";
-import ListVehiclePage from "./pages/ListVehiclePage";
-import SearchPage from "./pages/SearchPage";
-import VehicleDetailPage from "./pages/VehicleDetailPage";
-import DashboardPage from "./pages/DashboardPage";
-import PartsPage from "./pages/PartsPage";
-import ServicesPage from "./pages/ServicesPage";
-import ListPartsPage from "./pages/ListPartsPage";
-import ComparisonPage from "./pages/ComparisonPage";
-import NotFound from "./pages/NotFound";
+import ErrorBoundary, { DefaultErrorFallback } from "@/components/ErrorBoundary";
+import { Suspense, lazy } from "react";
+import { LoadingSpinner } from "@/components/ErrorBoundary";
 
-const queryClient = new QueryClient();
+// Lazy load components to prevent initial load crashes
+const Index = lazy(() => import("./pages/Index"));
+const AuthPage = lazy(() => import("./pages/AuthPage"));
+const ListVehiclePage = lazy(() => import("./pages/ListVehiclePage"));
+const SearchPage = lazy(() => import("./pages/SearchPage"));
+const VehicleDetailPage = lazy(() => import("./pages/VehicleDetailPage"));
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
+const PartsPage = lazy(() => import("./pages/PartsPage"));
+const ServicesPage = lazy(() => import("./pages/ServicesPage"));
+const ListPartsPage = lazy(() => import("./pages/ListPartsPage"));
+const ComparisonPage = lazy(() => import("./pages/ComparisonPage"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<AuthPage />} />
-          <Route path="/list-vehicle" element={<ListVehiclePage />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/vehicle/:id" element={<VehicleDetailPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/parts" element={<PartsPage />} />
-          <Route path="/parts/:category" element={<PartsPage />} />
-          <Route path="/services" element={<ServicesPage />} />
-          <Route path="/services/:category" element={<ServicesPage />} />
-          <Route path="/list-parts" element={<ListPartsPage />} />
-          <Route path="/compare" element={<ComparisonPage />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+// Create query client with error handling
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 3,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+// Safe Route component with individual error boundaries
+const SafeRoute = ({ element }: { element: React.LazyExoticComponent<any> }) => {
+  const Component = element;
+  return (
+    <ErrorBoundary
+      fallback={
+        <DefaultErrorFallback 
+          title="Page Error"
+          message="This page encountered an error. Please try refreshing or go back to the homepage."
+        />
+      }
+    >
+      <Suspense fallback={<LoadingSpinner size="lg" message="Loading page..." />}>
+        <Component />
+      </Suspense>
+    </ErrorBoundary>
+  );
+};
+
+const App = () => {
+  return (
+    <ErrorBoundary
+      onError={(error, errorInfo) => {
+        // Log to console in development
+        if (process.env.NODE_ENV === 'development') {
+          console.error('App-level error:', error, errorInfo);
+        }
+        
+        // In production, you might want to send to an error reporting service
+        // Example: Sentry.captureException(error);
+      }}
+    >
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <ErrorBoundary fallback={
+            <DefaultErrorFallback 
+              title="Application Error"
+              message="The application encountered an unexpected error. Please refresh the page."
+            />
+          }>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<SafeRoute element={Index} />} />
+                <Route path="/auth" element={<SafeRoute element={AuthPage} />} />
+                <Route path="/list-vehicle" element={<SafeRoute element={ListVehiclePage} />} />
+                <Route path="/search" element={<SafeRoute element={SearchPage} />} />
+                <Route path="/vehicle/:id" element={<SafeRoute element={VehicleDetailPage} />} />
+                <Route path="/dashboard" element={<SafeRoute element={DashboardPage} />} />
+                <Route path="/parts" element={<SafeRoute element={PartsPage} />} />
+                <Route path="/parts/:category" element={<SafeRoute element={PartsPage} />} />
+                <Route path="/services" element={<SafeRoute element={ServicesPage} />} />
+                <Route path="/services/:category" element={<SafeRoute element={ServicesPage} />} />
+                <Route path="/list-parts" element={<SafeRoute element={ListPartsPage} />} />
+                <Route path="/compare" element={<SafeRoute element={ComparisonPage} />} />
+                <Route path="*" element={<SafeRoute element={NotFound} />} />
+              </Routes>
+            </BrowserRouter>
+          </ErrorBoundary>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
+  );
+};
 
 export default App;

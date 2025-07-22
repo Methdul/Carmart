@@ -81,6 +81,18 @@ export default {
 					good: 'hsl(var(--health-good))',
 					fair: 'hsl(var(--health-fair))',
 					poor: 'hsl(var(--health-poor))'
+				},
+				// In your tailwind.config.ts, add to the extend section:
+				keyframes: {
+				// ... your existing keyframes
+				'infinite-scroll': {
+					'0%': { transform: 'translateX(0)' },
+					'100%': { transform: 'translateX(-50%)' }
+				}
+				},
+				animation: {
+				// ... your existing animations
+				'infinite-scroll': 'infinite-scroll 30s linear infinite'
 				}
 			},
 			borderRadius: {

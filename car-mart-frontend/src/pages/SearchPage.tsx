@@ -33,6 +33,12 @@ interface Vehicle {
   sellerRating: number;
   isVerified: boolean;
   isFeatured: boolean;
+  make?: string;
+  model?: string;
+  bodyType?: string;
+  condition?: string;
+  engineCapacity?: string;
+  color?: string;
 }
 
 interface Filters {
@@ -53,6 +59,7 @@ interface Filters {
 const SearchPage = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [comparisonList, setComparisonList] = useState<ComparisonVehicle[]>([]);
@@ -60,9 +67,9 @@ const SearchPage = () => {
   
   const [filters, setFilters] = useState<Filters>({
     search: "",
-    make: "",
+    make: "all",
     bodyType: "",
-    fuelType: "",
+    fuelType: "all",
     transmission: "",
     yearFrom: "",
     yearTo: "",
@@ -73,40 +80,347 @@ const SearchPage = () => {
     healthScore: [0, 100]
   });
 
-  // Fetch vehicles when filters change
+  // Mock vehicle data - Replace with your preferred vehicles
+  const mockVehicles: Vehicle[] = [
+    {
+      id: "1",
+      title: "BMW 3 Series 320i Sport Line",
+      price: 12500000,
+      year: 2020,
+      mileage: 35000,
+      location: "Colombo",
+      fuelType: "Petrol",
+      transmission: "Automatic",
+      image: "/api/placeholder/400/300",
+      healthScore: 92,
+      sellerRating: 4.8,
+      isVerified: true,
+      isFeatured: true,
+      make: "BMW",
+      model: "3 Series",
+      bodyType: "Sedan",
+      condition: "Excellent",
+      engineCapacity: "1998cc",
+      color: "Alpine White"
+    },
+    {
+      id: "2",
+      title: "Toyota RAV4 Hybrid AWD",
+      price: 15800000,
+      year: 2021,
+      mileage: 28000,
+      location: "Kandy",
+      fuelType: "Hybrid",
+      transmission: "CVT",
+      image: "/api/placeholder/400/300",
+      healthScore: 88,
+      sellerRating: 4.9,
+      isVerified: true,
+      isFeatured: true,
+      make: "Toyota",
+      model: "RAV4",
+      bodyType: "SUV",
+      condition: "Excellent",
+      engineCapacity: "2487cc",
+      color: "Silver Metallic"
+    },
+    {
+      id: "3",
+      title: "Honda Civic RS Turbo",
+      price: 8900000,
+      year: 2018,
+      mileage: 45000,
+      location: "Galle",
+      fuelType: "Petrol",
+      transmission: "Manual",
+      image: "/api/placeholder/400/300",
+      healthScore: 85,
+      sellerRating: 4.6,
+      isVerified: true,
+      isFeatured: false,
+      make: "Honda",
+      model: "Civic",
+      bodyType: "Sedan",
+      condition: "Good",
+      engineCapacity: "1498cc",
+      color: "Rallye Red"
+    },
+    {
+      id: "4",
+      title: "Toyota Prius Hybrid G",
+      price: 6800000,
+      year: 2017,
+      mileage: 52000,
+      location: "Colombo",
+      fuelType: "Hybrid",
+      transmission: "CVT",
+      image: "/api/placeholder/400/300",
+      healthScore: 84,
+      sellerRating: 4.6,
+      isVerified: true,
+      isFeatured: false,
+      make: "Toyota",
+      model: "Prius",
+      bodyType: "Sedan",
+      condition: "Good",
+      engineCapacity: "1797cc",
+      color: "Silver"
+    },
+    {
+      id: "5",
+      title: "Suzuki Alto K10",
+      price: 2850000,
+      year: 2016,
+      mileage: 48000,
+      location: "Kandy",
+      fuelType: "Petrol",
+      transmission: "Manual",
+      image: "/api/placeholder/400/300",
+      healthScore: 78,
+      sellerRating: 4.3,
+      isVerified: false,
+      isFeatured: false,
+      make: "Suzuki",
+      model: "Alto",
+      bodyType: "Hatchback",
+      condition: "Fair",
+      engineCapacity: "998cc",
+      color: "White"
+    },
+    {
+      id: "6",
+      title: "Mercedes-Benz C-Class C200",
+      price: 18500000,
+      year: 2019,
+      mileage: 40000,
+      location: "Colombo",
+      fuelType: "Petrol",
+      transmission: "Automatic",
+      image: "/api/placeholder/400/300",
+      healthScore: 90,
+      sellerRating: 4.7,
+      isVerified: true,
+      isFeatured: true,
+      make: "Mercedes-Benz",
+      model: "C-Class",
+      bodyType: "Sedan",
+      condition: "Excellent",
+      engineCapacity: "1991cc",
+      color: "Obsidian Black"
+    },
+    {
+      id: "7",
+      title: "Honda Vezel Hybrid Z",
+      price: 11800000,
+      year: 2018,
+      mileage: 42000,
+      location: "Negombo",
+      fuelType: "Hybrid",
+      transmission: "CVT",
+      image: "/api/placeholder/400/300",
+      healthScore: 87,
+      sellerRating: 4.7,
+      isVerified: true,
+      isFeatured: true,
+      make: "Honda",
+      model: "Vezel",
+      bodyType: "SUV",
+      condition: "Excellent",
+      engineCapacity: "1496cc",
+      color: "Pearl White"
+    },
+    {
+      id: "8",
+      title: "Nissan Leaf Electric",
+      price: 9500000,
+      year: 2017,
+      mileage: 35000,
+      location: "Kurunegala",
+      fuelType: "Electric",
+      transmission: "Automatic",
+      image: "/api/placeholder/400/300",
+      healthScore: 89,
+      sellerRating: 4.5,
+      isVerified: true,
+      isFeatured: false,
+      make: "Nissan",
+      model: "Leaf",
+      bodyType: "Hatchback",
+      condition: "Good",
+      engineCapacity: "Electric",
+      color: "Blue"
+    },
+    {
+      id: "9",
+      title: "Toyota Hiace Super GL",
+      price: 7800000,
+      year: 2016,
+      mileage: 89000,
+      location: "Matara",
+      fuelType: "Diesel",
+      transmission: "Manual",
+      image: "/api/placeholder/400/300",
+      healthScore: 82,
+      sellerRating: 4.4,
+      isVerified: true,
+      isFeatured: false,
+      make: "Toyota",
+      model: "Hiace",
+      bodyType: "Van",
+      condition: "Good",
+      engineCapacity: "2982cc",
+      color: "White"
+    },
+    {
+      id: "10",
+      title: "Ford Ranger Wildtrak 4x4",
+      price: 16800000,
+      year: 2020,
+      mileage: 35000,
+      location: "Gampaha",
+      fuelType: "Diesel",
+      transmission: "Manual",
+      image: "/api/placeholder/400/300",
+      healthScore: 91,
+      sellerRating: 4.8,
+      isVerified: true,
+      isFeatured: true,
+      make: "Ford",
+      model: "Ranger",
+      bodyType: "Pickup",
+      condition: "Excellent",
+      engineCapacity: "3198cc",
+      color: "Lightning Blue"
+    },
+    {
+      id: "11",
+      title: "Suzuki Wagon R Stingray",
+      price: 3200000,
+      year: 2017,
+      mileage: 45000,
+      location: "Kandy",
+      fuelType: "Petrol",
+      transmission: "CVT",
+      image: "/api/placeholder/400/300",
+      healthScore: 80,
+      sellerRating: 4.3,
+      isVerified: false,
+      isFeatured: false,
+      make: "Suzuki",
+      model: "Wagon R",
+      bodyType: "Hatchback",
+      condition: "Good",
+      engineCapacity: "658cc",
+      color: "Silver"
+    },
+    {
+      id: "12",
+      title: "BMW X3 xDrive20d",
+      price: 24500000,
+      year: 2019,
+      mileage: 35000,
+      location: "Galle",
+      fuelType: "Diesel",
+      transmission: "Automatic",
+      image: "/api/placeholder/400/300",
+      healthScore: 93,
+      sellerRating: 4.9,
+      isVerified: true,
+      isFeatured: true,
+      make: "BMW",
+      model: "X3",
+      bodyType: "SUV",
+      condition: "Excellent",
+      engineCapacity: "1995cc",
+      color: "Space Grey"
+    }
+  ];
+
+  // Load mock data on component mount
   useEffect(() => {
-    const fetchVehicles = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Build filter object for API
-        const apiFilters: any = {};
-        
-        if (filters.search) apiFilters.search = filters.search;
-        if (filters.make) apiFilters.make = filters.make;
-        if (filters.location) apiFilters.location = filters.location;
-        if (filters.fuelType) apiFilters.fuelType = filters.fuelType;
-        if (filters.minPrice > 0) apiFilters.minPrice = filters.minPrice;
-        if (filters.maxPrice < 50000000) apiFilters.maxPrice = filters.maxPrice;
-        
-        const response = await apiService.getVehicles(apiFilters);
-        
-        if (response.success) {
-          setVehicles(response.data);
-        } else {
-          throw new Error(response.message || 'Failed to fetch vehicles');
+    const loadVehicles = async () => {
+      setLoading(true);
+      setError(null);
+      
+      // Simulate API delay for realistic experience
+      setTimeout(() => {
+        try {
+          setVehicles(mockVehicles);
+          setLoading(false);
+        } catch (err) {
+          setError("Failed to load vehicles");
+          setLoading(false);
         }
-      } catch (err) {
-        console.error('Error fetching vehicles:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch vehicles');
-      } finally {
-        setLoading(false);
-      }
+      }, 800);
     };
 
-    fetchVehicles();
-  }, [filters]);
+    loadVehicles();
+  }, []);
+
+  // Filter and sort vehicles when filters or sortBy changes
+  useEffect(() => {
+    let filtered = [...vehicles];
+
+    // Apply filters
+    if (filters.search) {
+      filtered = filtered.filter(vehicle =>
+        vehicle.title.toLowerCase().includes(filters.search.toLowerCase()) ||
+        (vehicle.make && vehicle.make.toLowerCase().includes(filters.search.toLowerCase())) ||
+        (vehicle.model && vehicle.model.toLowerCase().includes(filters.search.toLowerCase()))
+      );
+    }
+
+    if (filters.make && filters.make !== "all") {
+      filtered = filtered.filter(vehicle => 
+        vehicle.make && vehicle.make.toLowerCase() === filters.make.toLowerCase()
+      );
+    }
+
+    if (filters.fuelType && filters.fuelType !== "all") {
+      filtered = filtered.filter(vehicle => 
+        vehicle.fuelType.toLowerCase() === filters.fuelType.toLowerCase()
+      );
+    }
+
+    if (filters.location) {
+      filtered = filtered.filter(vehicle => 
+        vehicle.location.toLowerCase().includes(filters.location.toLowerCase())
+      );
+    }
+
+    // Price filter
+    filtered = filtered.filter(vehicle => 
+      vehicle.price >= filters.minPrice && vehicle.price <= filters.maxPrice
+    );
+
+    // Apply sorting
+    switch (sortBy) {
+      case "price-low":
+        filtered.sort((a, b) => a.price - b.price);
+        break;
+      case "price-high":
+        filtered.sort((a, b) => b.price - a.price);
+        break;
+      case "year-new":
+        filtered.sort((a, b) => b.year - a.year);
+        break;
+      case "mileage-low":
+        filtered.sort((a, b) => a.mileage - b.mileage);
+        break;
+      case "health-score":
+        filtered.sort((a, b) => b.healthScore - a.healthScore);
+        break;
+      default:
+        // relevance - featured first, then by health score
+        filtered.sort((a, b) => {
+          if (a.isFeatured && !b.isFeatured) return -1;
+          if (!a.isFeatured && b.isFeatured) return 1;
+          return b.healthScore - a.healthScore;
+        });
+    }
+
+    setFilteredVehicles(filtered);
+  }, [vehicles, filters, sortBy]);
 
   const handleFilterChange = (key: keyof Filters, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -142,9 +456,9 @@ const SearchPage = () => {
   const clearAllFilters = () => {
     setFilters({
       search: "",
-      make: "",
+      make: "all",
       bodyType: "",
-      fuelType: "",
+      fuelType: "all",
       transmission: "",
       yearFrom: "",
       yearTo: "",
@@ -210,18 +524,19 @@ const SearchPage = () => {
                   {/* Make */}
                   <div>
                     <label className="text-sm font-medium mb-2 block">Make</label>
-                    <Select value={filters.make} onValueChange={(value) => handleFilterChange("make", value)}>
+                    <Select value={filters.make} onValueChange={(value) => handleFilterChange("make", value)} defaultValue="all">
                       <SelectTrigger>
                         <SelectValue placeholder="Any make" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Any Make</SelectItem>
-                        <SelectItem value="toyota">Toyota</SelectItem>
-                        <SelectItem value="honda">Honda</SelectItem>
-                        <SelectItem value="bmw">BMW</SelectItem>
-                        <SelectItem value="mercedes">Mercedes-Benz</SelectItem>
-                        <SelectItem value="nissan">Nissan</SelectItem>
-                        <SelectItem value="ford">Ford</SelectItem>
+                        <SelectItem value="all">Any Make</SelectItem>
+                        <SelectItem value="Toyota">Toyota</SelectItem>
+                        <SelectItem value="Honda">Honda</SelectItem>
+                        <SelectItem value="BMW">BMW</SelectItem>
+                        <SelectItem value="Mercedes-Benz">Mercedes-Benz</SelectItem>
+                        <SelectItem value="Nissan">Nissan</SelectItem>
+                        <SelectItem value="Ford">Ford</SelectItem>
+                        <SelectItem value="Suzuki">Suzuki</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -229,16 +544,16 @@ const SearchPage = () => {
                   {/* Fuel Type */}
                   <div>
                     <label className="text-sm font-medium mb-2 block">Fuel Type</label>
-                    <Select value={filters.fuelType} onValueChange={(value) => handleFilterChange("fuelType", value)}>
+                    <Select value={filters.fuelType} onValueChange={(value) => handleFilterChange("fuelType", value)} defaultValue="all">
                       <SelectTrigger>
                         <SelectValue placeholder="Any fuel type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Any Fuel Type</SelectItem>
-                        <SelectItem value="petrol">Petrol</SelectItem>
-                        <SelectItem value="diesel">Diesel</SelectItem>
-                        <SelectItem value="hybrid">Hybrid</SelectItem>
-                        <SelectItem value="electric">Electric</SelectItem>
+                        <SelectItem value="all">Any Fuel Type</SelectItem>
+                        <SelectItem value="Petrol">Petrol</SelectItem>
+                        <SelectItem value="Diesel">Diesel</SelectItem>
+                        <SelectItem value="Hybrid">Hybrid</SelectItem>
+                        <SelectItem value="Electric">Electric</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -268,7 +583,7 @@ const SearchPage = () => {
               <div>
                 <h1 className="text-2xl font-bold text-primary">Search Results</h1>
                 <p className="text-muted-foreground">
-                  {loading ? 'Loading...' : `${vehicles.length} vehicles found`}
+                  {loading ? 'Loading...' : `${filteredVehicles.length} vehicles found`}
                 </p>
               </div>
               
@@ -331,7 +646,7 @@ const SearchPage = () => {
             )}
 
             {/* No Results */}
-            {!loading && !error && vehicles.length === 0 && (
+            {!loading && !error && filteredVehicles.length === 0 && (
               <div className="text-center py-16">
                 <p className="text-muted-foreground mb-4">No vehicles found matching your criteria</p>
                 <Button onClick={clearAllFilters}>
@@ -341,9 +656,9 @@ const SearchPage = () => {
             )}
 
             {/* Vehicle Grid */}
-            {!loading && !error && vehicles.length > 0 && (
+            {!loading && !error && filteredVehicles.length > 0 && (
               <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" : "space-y-6"}>
-                {vehicles.map((vehicle) => (
+                {filteredVehicles.map((vehicle) => (
                   <VehicleCard
                     key={vehicle.id}
                     vehicle={vehicle}
@@ -357,7 +672,7 @@ const SearchPage = () => {
             )}
 
             {/* Load More */}
-            {!loading && !error && vehicles.length > 0 && (
+            {!loading && !error && filteredVehicles.length > 0 && (
               <div className="text-center mt-12">
                 <Button size="lg">
                   Load More Vehicles
