@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Filter, MapPin, DollarSign, Calendar, Fuel, Settings, BarChart3, Grid3x3, List, ArrowUpDown, Loader2 } from "lucide-react";
+import { Search, Filter, MapPin, DollarSign, Calendar, Fuel, Settings, BarChart3, Grid3x3, List, ArrowUpDown, Loader2, Heart, Car, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
 import VehicleCard from "@/components/VehicleCard";
 import ComparisonBar from "@/components/ComparisonBar";
-import { apiService } from "@/services/api";
+import MobileFilterPanel from "@/components/MobileFilterPanel";
+import HealthScoreBadge from "@/components/HealthScoreBadge";
 
 interface ComparisonVehicle {
   id: string;
@@ -57,6 +58,7 @@ interface Filters {
 }
 
 const SearchPage = () => {
+  const [isMobile, setIsMobile] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([]);
@@ -64,6 +66,22 @@ const SearchPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [comparisonList, setComparisonList] = useState<ComparisonVehicle[]>([]);
   const [sortBy, setSortBy] = useState("relevance");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  // Check if mobile and set default view mode
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768; // md breakpoint
+      setIsMobile(mobile);
+      if (mobile) {
+        setViewMode("list"); // Force list view on mobile
+      }
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   const [filters, setFilters] = useState<Filters>({
     search: "",
@@ -80,7 +98,7 @@ const SearchPage = () => {
     healthScore: [0, 100]
   });
 
-  // Mock vehicle data - Replace with your preferred vehicles
+  // Mock vehicle data
   const mockVehicles: Vehicle[] = [
     {
       id: "1",
@@ -126,223 +144,54 @@ const SearchPage = () => {
     },
     {
       id: "3",
-      title: "Honda Civic RS Turbo",
-      price: 8900000,
-      year: 2018,
-      mileage: 45000,
+      title: "Honda Civic Type R",
+      price: 18500000,
+      year: 2022,
+      mileage: 15000,
       location: "Galle",
       fuelType: "Petrol",
       transmission: "Manual",
+      image: "/api/placeholder/400/300",
+      healthScore: 95,
+      sellerRating: 4.7,
+      isVerified: false,
+      isFeatured: false,
+      make: "Honda",
+      model: "Civic",
+      bodyType: "Hatchback",
+      condition: "Excellent",
+      engineCapacity: "1996cc",
+      color: "Championship White"
+    },
+    {
+      id: "4",
+      title: "Mercedes-Benz C-Class C200",
+      price: 22000000,
+      year: 2019,
+      mileage: 45000,
+      location: "Colombo",
+      fuelType: "Petrol",
+      transmission: "Automatic",
       image: "/api/placeholder/400/300",
       healthScore: 85,
       sellerRating: 4.6,
       isVerified: true,
       isFeatured: false,
-      make: "Honda",
-      model: "Civic",
-      bodyType: "Sedan",
-      condition: "Good",
-      engineCapacity: "1498cc",
-      color: "Rallye Red"
-    },
-    {
-      id: "4",
-      title: "Toyota Prius Hybrid G",
-      price: 6800000,
-      year: 2017,
-      mileage: 52000,
-      location: "Colombo",
-      fuelType: "Hybrid",
-      transmission: "CVT",
-      image: "/api/placeholder/400/300",
-      healthScore: 84,
-      sellerRating: 4.6,
-      isVerified: true,
-      isFeatured: false,
-      make: "Toyota",
-      model: "Prius",
-      bodyType: "Sedan",
-      condition: "Good",
-      engineCapacity: "1797cc",
-      color: "Silver"
-    },
-    {
-      id: "5",
-      title: "Suzuki Alto K10",
-      price: 2850000,
-      year: 2016,
-      mileage: 48000,
-      location: "Kandy",
-      fuelType: "Petrol",
-      transmission: "Manual",
-      image: "/api/placeholder/400/300",
-      healthScore: 78,
-      sellerRating: 4.3,
-      isVerified: false,
-      isFeatured: false,
-      make: "Suzuki",
-      model: "Alto",
-      bodyType: "Hatchback",
-      condition: "Fair",
-      engineCapacity: "998cc",
-      color: "White"
-    },
-    {
-      id: "6",
-      title: "Mercedes-Benz C-Class C200",
-      price: 18500000,
-      year: 2019,
-      mileage: 40000,
-      location: "Colombo",
-      fuelType: "Petrol",
-      transmission: "Automatic",
-      image: "/api/placeholder/400/300",
-      healthScore: 90,
-      sellerRating: 4.7,
-      isVerified: true,
-      isFeatured: true,
       make: "Mercedes-Benz",
       model: "C-Class",
       bodyType: "Sedan",
-      condition: "Excellent",
+      condition: "Good",
       engineCapacity: "1991cc",
       color: "Obsidian Black"
-    },
-    {
-      id: "7",
-      title: "Honda Vezel Hybrid Z",
-      price: 11800000,
-      year: 2018,
-      mileage: 42000,
-      location: "Negombo",
-      fuelType: "Hybrid",
-      transmission: "CVT",
-      image: "/api/placeholder/400/300",
-      healthScore: 87,
-      sellerRating: 4.7,
-      isVerified: true,
-      isFeatured: true,
-      make: "Honda",
-      model: "Vezel",
-      bodyType: "SUV",
-      condition: "Excellent",
-      engineCapacity: "1496cc",
-      color: "Pearl White"
-    },
-    {
-      id: "8",
-      title: "Nissan Leaf Electric",
-      price: 9500000,
-      year: 2017,
-      mileage: 35000,
-      location: "Kurunegala",
-      fuelType: "Electric",
-      transmission: "Automatic",
-      image: "/api/placeholder/400/300",
-      healthScore: 89,
-      sellerRating: 4.5,
-      isVerified: true,
-      isFeatured: false,
-      make: "Nissan",
-      model: "Leaf",
-      bodyType: "Hatchback",
-      condition: "Good",
-      engineCapacity: "Electric",
-      color: "Blue"
-    },
-    {
-      id: "9",
-      title: "Toyota Hiace Super GL",
-      price: 7800000,
-      year: 2016,
-      mileage: 89000,
-      location: "Matara",
-      fuelType: "Diesel",
-      transmission: "Manual",
-      image: "/api/placeholder/400/300",
-      healthScore: 82,
-      sellerRating: 4.4,
-      isVerified: true,
-      isFeatured: false,
-      make: "Toyota",
-      model: "Hiace",
-      bodyType: "Van",
-      condition: "Good",
-      engineCapacity: "2982cc",
-      color: "White"
-    },
-    {
-      id: "10",
-      title: "Ford Ranger Wildtrak 4x4",
-      price: 16800000,
-      year: 2020,
-      mileage: 35000,
-      location: "Gampaha",
-      fuelType: "Diesel",
-      transmission: "Manual",
-      image: "/api/placeholder/400/300",
-      healthScore: 91,
-      sellerRating: 4.8,
-      isVerified: true,
-      isFeatured: true,
-      make: "Ford",
-      model: "Ranger",
-      bodyType: "Pickup",
-      condition: "Excellent",
-      engineCapacity: "3198cc",
-      color: "Lightning Blue"
-    },
-    {
-      id: "11",
-      title: "Suzuki Wagon R Stingray",
-      price: 3200000,
-      year: 2017,
-      mileage: 45000,
-      location: "Kandy",
-      fuelType: "Petrol",
-      transmission: "CVT",
-      image: "/api/placeholder/400/300",
-      healthScore: 80,
-      sellerRating: 4.3,
-      isVerified: false,
-      isFeatured: false,
-      make: "Suzuki",
-      model: "Wagon R",
-      bodyType: "Hatchback",
-      condition: "Good",
-      engineCapacity: "658cc",
-      color: "Silver"
-    },
-    {
-      id: "12",
-      title: "BMW X3 xDrive20d",
-      price: 24500000,
-      year: 2019,
-      mileage: 35000,
-      location: "Galle",
-      fuelType: "Diesel",
-      transmission: "Automatic",
-      image: "/api/placeholder/400/300",
-      healthScore: 93,
-      sellerRating: 4.9,
-      isVerified: true,
-      isFeatured: true,
-      make: "BMW",
-      model: "X3",
-      bodyType: "SUV",
-      condition: "Excellent",
-      engineCapacity: "1995cc",
-      color: "Space Grey"
     }
   ];
 
-  // Load mock data on component mount
+  // Load mock data
   useEffect(() => {
     const loadVehicles = async () => {
       setLoading(true);
       setError(null);
       
-      // Simulate API delay for realistic experience
       setTimeout(() => {
         try {
           setVehicles(mockVehicles);
@@ -357,7 +206,7 @@ const SearchPage = () => {
     loadVehicles();
   }, []);
 
-  // Filter and sort vehicles when filters or sortBy changes
+  // Filter and sort vehicles
   useEffect(() => {
     let filtered = [...vehicles];
 
@@ -388,9 +237,12 @@ const SearchPage = () => {
       );
     }
 
-    // Price filter
     filtered = filtered.filter(vehicle => 
       vehicle.price >= filters.minPrice && vehicle.price <= filters.maxPrice
+    );
+
+    filtered = filtered.filter(vehicle => 
+      vehicle.healthScore >= filters.healthScore[0] && vehicle.healthScore <= filters.healthScore[1]
     );
 
     // Apply sorting
@@ -411,46 +263,19 @@ const SearchPage = () => {
         filtered.sort((a, b) => b.healthScore - a.healthScore);
         break;
       default:
-        // relevance - featured first, then by health score
-        filtered.sort((a, b) => {
-          if (a.isFeatured && !b.isFeatured) return -1;
-          if (!a.isFeatured && b.isFeatured) return 1;
-          return b.healthScore - a.healthScore;
-        });
+        // Keep relevance order
+        break;
     }
 
     setFilteredVehicles(filtered);
   }, [vehicles, filters, sortBy]);
 
-  const handleFilterChange = (key: keyof Filters, value: any) => {
+  const handleFilterChange = (key: string, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleAddToComparison = (vehicleId: string) => {
-    const vehicle = vehicles.find(v => v.id === vehicleId);
-    if (vehicle && comparisonList.length < 4 && !comparisonList.find(v => v.id === vehicleId)) {
-      const comparisonVehicle: ComparisonVehicle = {
-        id: vehicle.id,
-        title: vehicle.title,
-        price: vehicle.price,
-        image: vehicle.image,
-        healthScore: vehicle.healthScore
-      };
-      setComparisonList([...comparisonList, comparisonVehicle]);
-    }
-  };
-
-  const handleRemoveFromComparison = (vehicleId: string) => {
-    setComparisonList(comparisonList.filter(v => v.id !== vehicleId));
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-LK', {
-      style: 'currency',
-      currency: 'LKR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price).replace('LKR', 'Rs.');
+  const handleApplyFilters = (newFilters: any) => {
+    setFilters(prev => ({ ...prev, ...newFilters }));
   };
 
   const clearAllFilters = () => {
@@ -470,14 +295,51 @@ const SearchPage = () => {
     });
   };
 
+  const handleAddToComparison = (vehicle: Vehicle) => {
+    if (comparisonList.length >= 3) {
+      alert("You can compare up to 3 vehicles only");
+      return;
+    }
+    
+    const comparisonVehicle: ComparisonVehicle = {
+      id: vehicle.id,
+      title: vehicle.title,
+      price: vehicle.price,
+      image: vehicle.image,
+      healthScore: vehicle.healthScore
+    };
+    
+    setComparisonList([...comparisonList, comparisonVehicle]);
+  };
+
+  const handleRemoveFromComparison = (id: string) => {
+    setComparisonList(comparisonList.filter(v => v.id !== id));
+  };
+
+  const handleSave = (id: string) => {
+    console.log("Saved vehicle:", id);
+  };
+
+  const handleContact = (id: string) => {
+    console.log("Contact seller for vehicle:", id);
+  };
+
+  const formatPrice = (price: number) => {
+    return `Rs. ${price.toLocaleString()}`;
+  };
+
+  const formatMileage = (mileage: number) => {
+    return `${mileage.toLocaleString()} km`;
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar */}
-          <div className="lg:w-80 flex-shrink-0">
+          {/* Desktop Filters Sidebar */}
+          <div className="hidden lg:block lg:w-80 flex-shrink-0">
             <Card className="sticky top-8">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-6">
@@ -507,36 +369,35 @@ const SearchPage = () => {
                     <label className="text-sm font-medium mb-3 block">Price Range</label>
                     <Slider
                       value={[filters.minPrice, filters.maxPrice]}
-                      onValueChange={(value) => {
-                        handleFilterChange("minPrice", value[0]);
-                        handleFilterChange("maxPrice", value[1]);
+                      onValueChange={([min, max]) => {
+                        handleFilterChange("minPrice", min);
+                        handleFilterChange("maxPrice", max);
                       }}
                       max={50000000}
                       step={100000}
-                      className="mb-3"
+                      className="mb-2"
                     />
                     <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>{formatPrice(filters.minPrice)}</span>
-                      <span>{formatPrice(filters.maxPrice)}</span>
+                      <span>Rs. {filters.minPrice.toLocaleString()}</span>
+                      <span>Rs. {filters.maxPrice.toLocaleString()}</span>
                     </div>
                   </div>
 
                   {/* Make */}
                   <div>
                     <label className="text-sm font-medium mb-2 block">Make</label>
-                    <Select value={filters.make} onValueChange={(value) => handleFilterChange("make", value)} defaultValue="all">
+                    <Select value={filters.make} onValueChange={(value) => handleFilterChange("make", value)}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Any make" />
+                        <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">Any Make</SelectItem>
-                        <SelectItem value="Toyota">Toyota</SelectItem>
-                        <SelectItem value="Honda">Honda</SelectItem>
-                        <SelectItem value="BMW">BMW</SelectItem>
-                        <SelectItem value="Mercedes-Benz">Mercedes-Benz</SelectItem>
-                        <SelectItem value="Nissan">Nissan</SelectItem>
-                        <SelectItem value="Ford">Ford</SelectItem>
-                        <SelectItem value="Suzuki">Suzuki</SelectItem>
+                        <SelectItem value="all">All Makes</SelectItem>
+                        <SelectItem value="toyota">Toyota</SelectItem>
+                        <SelectItem value="honda">Honda</SelectItem>
+                        <SelectItem value="nissan">Nissan</SelectItem>
+                        <SelectItem value="bmw">BMW</SelectItem>
+                        <SelectItem value="mercedes-benz">Mercedes-Benz</SelectItem>
+                        <SelectItem value="audi">Audi</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -544,16 +405,16 @@ const SearchPage = () => {
                   {/* Fuel Type */}
                   <div>
                     <label className="text-sm font-medium mb-2 block">Fuel Type</label>
-                    <Select value={filters.fuelType} onValueChange={(value) => handleFilterChange("fuelType", value)} defaultValue="all">
+                    <Select value={filters.fuelType} onValueChange={(value) => handleFilterChange("fuelType", value)}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Any fuel type" />
+                        <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">Any Fuel Type</SelectItem>
-                        <SelectItem value="Petrol">Petrol</SelectItem>
-                        <SelectItem value="Diesel">Diesel</SelectItem>
-                        <SelectItem value="Hybrid">Hybrid</SelectItem>
-                        <SelectItem value="Electric">Electric</SelectItem>
+                        <SelectItem value="all">All Fuel Types</SelectItem>
+                        <SelectItem value="petrol">Petrol</SelectItem>
+                        <SelectItem value="diesel">Diesel</SelectItem>
+                        <SelectItem value="hybrid">Hybrid</SelectItem>
+                        <SelectItem value="electric">Electric</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -564,11 +425,27 @@ const SearchPage = () => {
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
-                        placeholder="City or district"
+                        placeholder="City or area"
                         className="pl-10"
                         value={filters.location}
                         onChange={(e) => handleFilterChange("location", e.target.value)}
                       />
+                    </div>
+                  </div>
+
+                  {/* Health Score */}
+                  <div>
+                    <label className="text-sm font-medium mb-3 block">AI Health Score</label>
+                    <Slider
+                      value={filters.healthScore}
+                      onValueChange={(value) => handleFilterChange("healthScore", value)}
+                      max={100}
+                      step={5}
+                      className="mb-2"
+                    />
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span>{filters.healthScore[0]}%</span>
+                      <span>{filters.healthScore[1]}%</span>
                     </div>
                   </div>
                 </div>
@@ -576,15 +453,29 @@ const SearchPage = () => {
             </Card>
           </div>
 
-          {/* Results */}
+          {/* Main Content */}
           <div className="flex-1">
-            {/* Results Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-              <div>
-                <h1 className="text-2xl font-bold text-primary">Search Results</h1>
-                <p className="text-muted-foreground">
-                  {loading ? 'Loading...' : `${filteredVehicles.length} vehicles found`}
-                </p>
+            {/* Page Header - Hidden on Mobile */}
+            <div className="mb-8 hidden md:block">
+              <h1 className="text-3xl font-bold text-primary mb-2">Buy Premium Vehicles</h1>
+              <p className="text-muted-foreground">
+                Discover verified premium vehicles with AI health scoring and trusted sellers
+              </p>
+            </div>
+
+            {/* Controls */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 mb-4 sm:mb-6">
+              <div className="flex items-center space-x-4">
+                {loading ? (
+                  <div className="flex items-center space-x-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm text-muted-foreground">Loading...</span>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    {error ? 'Error loading vehicles' : `${filteredVehicles.length} vehicles found`}
+                  </p>
+                )}
               </div>
               
               <div className="flex items-center space-x-2">
@@ -603,18 +494,20 @@ const SearchPage = () => {
                   </SelectContent>
                 </Select>
 
-                <div className="flex border rounded-md">
+                <div className="hidden lg:flex border rounded-md">
                   <Button
                     variant={viewMode === "grid" ? "default" : "ghost"}
                     size="sm"
-                    onClick={() => setViewMode("grid")}
+                    onClick={() => !isMobile && setViewMode("grid")}
+                    disabled={isMobile}
                   >
                     <Grid3x3 className="h-4 w-4" />
                   </Button>
                   <Button
                     variant={viewMode === "list" ? "default" : "ghost"}
                     size="sm"
-                    onClick={() => setViewMode("list")}
+                    onClick={() => !isMobile && setViewMode("list")}
+                    disabled={isMobile}
                   >
                     <List className="h-4 w-4" />
                   </Button>
@@ -622,66 +515,146 @@ const SearchPage = () => {
               </div>
             </div>
 
-            {/* Loading State */}
-            {loading && (
-              <div className="flex justify-center items-center py-16">
-                <div className="text-center">
-                  <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
-                  <p className="text-muted-foreground">Searching vehicles...</p>
-                </div>
+            {/* Results */}
+            {loading ? (
+              <div className="flex justify-center items-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin" />
+                <span className="ml-2">Loading vehicles...</span>
               </div>
-            )}
-
-            {/* Error State */}
-            {error && (
-              <div className="text-center py-16">
-                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 max-w-md mx-auto">
-                  <p className="text-destructive mb-4">Failed to load vehicles</p>
-                  <p className="text-sm text-muted-foreground mb-4">{error}</p>
-                  <Button onClick={() => window.location.reload()}>
-                    Try Again
-                  </Button>
-                </div>
+            ) : error ? (
+              <div className="text-center py-12">
+                <p className="text-destructive mb-4">{error}</p>
+                <Button onClick={() => window.location.reload()}>Try Again</Button>
               </div>
-            )}
-
-            {/* No Results */}
-            {!loading && !error && filteredVehicles.length === 0 && (
-              <div className="text-center py-16">
-                <p className="text-muted-foreground mb-4">No vehicles found matching your criteria</p>
-                <Button onClick={clearAllFilters}>
-                  Clear Filters
-                </Button>
+            ) : filteredVehicles.length === 0 ? (
+              <div className="text-center py-12">
+                <Car className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No vehicles found</h3>
+                <p className="text-muted-foreground mb-4">Try adjusting your filters to see more results</p>
+                <Button onClick={clearAllFilters}>Clear Filters</Button>
               </div>
-            )}
-
-            {/* Vehicle Grid */}
-            {!loading && !error && filteredVehicles.length > 0 && (
-              <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" : "space-y-6"}>
-                {filteredVehicles.map((vehicle) => (
-                  <VehicleCard
-                    key={vehicle.id}
-                    vehicle={vehicle}
-                    onSave={(id) => console.log("Saved vehicle:", id)}
-                    onCompare={handleAddToComparison}
-                    isInComparison={comparisonList.some(v => v.id === vehicle.id)}
-                    className="animate-fade-in"
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Load More */}
-            {!loading && !error && filteredVehicles.length > 0 && (
-              <div className="text-center mt-12">
-                <Button size="lg">
-                  Load More Vehicles
-                </Button>
-              </div>
+            ) : (
+              <>
+                {(viewMode === "grid" && !isMobile) ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {filteredVehicles.map((vehicle) => (
+                      <VehicleCard
+                        key={vehicle.id}
+                        vehicle={vehicle}
+                        onSave={() => handleSave(vehicle.id)}
+                        onCompare={() => handleAddToComparison(vehicle)}
+                        isInComparison={comparisonList.some(v => v.id === vehicle.id)}
+                        className="animate-fade-in"
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {filteredVehicles.map((vehicle) => (
+                      <Card key={vehicle.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                        <div className="flex p-3 gap-3">
+                          {/* Image */}
+                          <div className="w-24 h-20 sm:w-32 sm:h-24 flex-shrink-0 relative">
+                            <img
+                              src={vehicle.image}
+                              alt={vehicle.title}
+                              className="w-full h-full object-cover rounded-lg"
+                            />
+                            {/* Health Score Badge */}
+                            <div className="absolute -bottom-1 -right-1">
+                              <HealthScoreBadge 
+                                score={vehicle.healthScore} 
+                                size="sm"
+                                className="bg-background text-xs scale-75 sm:scale-100"
+                              />
+                            </div>
+                          </div>
+                          
+                          {/* Content */}
+                          <div className="flex-1 min-w-0 flex flex-col">
+                            {/* Title and Save Button */}
+                            <div className="flex justify-between items-start mb-1">
+                              <h3 className="font-semibold text-sm sm:text-base line-clamp-2 pr-1 flex-1">
+                                {vehicle.title}
+                              </h3>
+                              <Button variant="ghost" size="sm" onClick={() => handleSave(vehicle.id)} className="p-1 ml-1">
+                                <Heart className="h-3 w-3 sm:h-4 sm:w-4" />
+                              </Button>
+                            </div>
+                            
+                            {/* Price */}
+                            <div className="mb-2">
+                              <p className="text-lg sm:text-xl font-bold text-primary">
+                                {formatPrice(vehicle.price)}
+                              </p>
+                            </div>
+                            
+                            {/* Vehicle Details - Mobile Optimized */}
+                            <div className="flex flex-wrap gap-1 mb-2">
+                              <Badge variant="secondary" className="text-xs px-1.5 py-0.5 h-5">{vehicle.year}</Badge>
+                              <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">{formatMileage(vehicle.mileage)}</Badge>
+                              <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">{vehicle.fuelType}</Badge>
+                              {vehicle.isVerified && <Badge className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 h-5">✓</Badge>}
+                            </div>
+                            
+                            {/* Bottom Row */}
+                            <div className="flex items-center justify-between mt-auto">
+                              <div className="flex flex-col space-y-0.5">
+                                <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
+                                  <MapPin className="w-3 h-3 mr-1 flex-shrink-0" />
+                                  <span className="truncate">{vehicle.location}</span>
+                                </div>
+                                <div className="flex items-center text-xs text-muted-foreground">
+                                  <Star className="w-3 h-3 mr-1 text-yellow-500 flex-shrink-0" />
+                                  <span>{vehicle.sellerRating}</span>
+                                </div>
+                              </div>
+                              <div className="flex space-x-1 ml-2">
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  onClick={() => handleAddToComparison(vehicle)}
+                                  disabled={comparisonList.some(v => v.id === vehicle.id)}
+                                  className="px-2 py-1 h-7 text-xs"
+                                >
+                                  <BarChart3 className="w-3 h-3" />
+                                </Button>
+                                <Button size="sm" onClick={() => handleContact(vehicle.id)} className="px-3 py-1 h-7 text-xs">
+                                  Call
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
       </div>
+
+      {/* Mobile Filter Button */}
+      <div className="lg:hidden fixed bottom-4 left-4 z-40">
+        <Button
+          onClick={() => setFiltersOpen(true)}
+          className="bg-primary text-white p-3 rounded-full shadow-lg flex items-center space-x-2"
+        >
+          <Filter className="w-5 h-5" />
+          <span className="text-sm font-medium">Filters</span>
+        </Button>
+      </div>
+
+      {/* Mobile Filter Panel */}
+      <MobileFilterPanel
+        isOpen={filtersOpen}
+        onClose={() => setFiltersOpen(false)}
+        onApplyFilters={handleApplyFilters}
+        resultCount={filteredVehicles.length}
+        category="vehicles"
+      />
 
       {/* Comparison Bar */}
       <ComparisonBar
