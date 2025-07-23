@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Search, Filter, MapPin, DollarSign, Calendar, Settings, Grid3x3, List, ArrowUpDown, Loader2, Heart, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,12 +30,13 @@ interface Part {
 
 const PartsPage = () => {
   const { category } = useParams();
+  const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(false);
   const [parts, setParts] = useState<Part[]>([]);
   const [filteredParts, setFilteredParts] = useState<Part[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [sortBy, setSortBy] = useState("relevance");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
@@ -234,6 +235,10 @@ const PartsPage = () => {
 
   const handleContact = (id: string) => {
     console.log("Contact seller for part:", id);
+  };
+
+  const handlePartClick = (id: string) => {
+    navigate(`/part/${id}`);
   };
 
   const categoryTitle = category 
@@ -490,7 +495,11 @@ const PartsPage = () => {
                 {(viewMode === "grid" && !isMobile) ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {filteredParts.map((part) => (
-                      <Card key={part.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                      <Card 
+                        key={part.id} 
+                        className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                        onClick={() => handlePartClick(part.id)}
+                      >
                         <div>
                           <img
                             src={part.image}
@@ -500,7 +509,14 @@ const PartsPage = () => {
                           <CardContent className="p-4">
                             <div className="flex items-start justify-between mb-2">
                               <h3 className="font-semibold text-lg line-clamp-2">{part.title}</h3>
-                              <Button variant="ghost" size="sm" onClick={() => handleSave(part.id)}>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSave(part.id);
+                                }}
+                              >
                                 <Heart className="h-4 w-4" />
                               </Button>
                             </div>
@@ -539,12 +555,6 @@ const PartsPage = () => {
                                 </p>
                               </div>
                             </div>
-                            
-                            <div className="flex space-x-2">
-                              <Button className="flex-1" onClick={() => handleContact(part.id)}>
-                                Contact Seller
-                              </Button>
-                            </div>
                           </CardContent>
                         </div>
                       </Card>
@@ -553,7 +563,11 @@ const PartsPage = () => {
                 ) : (
                   <div className="space-y-4">
                     {filteredParts.map((part) => (
-                      <Card key={part.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                      <Card 
+                        key={part.id} 
+                        className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                        onClick={() => handlePartClick(part.id)}
+                      >
                         <div className="flex p-3 gap-3">
                           {/* Image */}
                           <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
@@ -571,7 +585,15 @@ const PartsPage = () => {
                               <h3 className="font-semibold text-sm sm:text-base line-clamp-2 pr-1 flex-1">
                                 {part.title}
                               </h3>
-                              <Button variant="ghost" size="sm" onClick={() => handleSave(part.id)} className="p-1 ml-1">
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSave(part.id);
+                                }} 
+                                className="p-1 ml-1"
+                              >
                                 <Heart className="h-3 w-3 sm:h-4 sm:w-4" />
                               </Button>
                             </div>
@@ -605,11 +627,6 @@ const PartsPage = () => {
                                     {part.inStock ? 'In Stock' : 'Out of Stock'}
                                   </span>
                                 </div>
-                              </div>
-                              <div className="ml-2">
-                                <Button size="sm" onClick={() => handleContact(part.id)} className="px-3 py-1 h-7 text-xs">
-                                  Call
-                                </Button>
                               </div>
                             </div>
                           </div>

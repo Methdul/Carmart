@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search, Filter, MapPin, DollarSign, Calendar, Fuel, Settings, BarChart3, Grid3x3, List, ArrowUpDown, Loader2, Heart, Car, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,8 +59,9 @@ interface Filters {
 }
 
 const SearchPage = () => {
+  const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(false);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -324,6 +326,10 @@ const SearchPage = () => {
     console.log("Contact seller for vehicle:", id);
   };
 
+  const handleVehicleClick = (id: string) => {
+    navigate(`/vehicle/${id}`);
+  };
+
   const formatPrice = (price: number) => {
     return `Rs. ${price.toLocaleString()}`;
   };
@@ -543,6 +549,7 @@ const SearchPage = () => {
                         vehicle={vehicle}
                         onSave={() => handleSave(vehicle.id)}
                         onCompare={() => handleAddToComparison(vehicle)}
+                        onClick={() => handleVehicleClick(vehicle.id)}
                         isInComparison={comparisonList.some(v => v.id === vehicle.id)}
                         className="animate-fade-in"
                       />
@@ -551,7 +558,11 @@ const SearchPage = () => {
                 ) : (
                   <div className="space-y-4">
                     {filteredVehicles.map((vehicle) => (
-                      <Card key={vehicle.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                      <Card 
+                        key={vehicle.id} 
+                        className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                        onClick={() => handleVehicleClick(vehicle.id)}
+                      >
                         <div className="flex p-3 gap-3">
                           {/* Image */}
                           <div className="w-24 h-20 sm:w-32 sm:h-24 flex-shrink-0 relative">
@@ -577,7 +588,15 @@ const SearchPage = () => {
                               <h3 className="font-semibold text-sm sm:text-base line-clamp-2 pr-1 flex-1">
                                 {vehicle.title}
                               </h3>
-                              <Button variant="ghost" size="sm" onClick={() => handleSave(vehicle.id)} className="p-1 ml-1">
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSave(vehicle.id);
+                                }} 
+                                className="p-1 ml-1"
+                              >
                                 <Heart className="h-3 w-3 sm:h-4 sm:w-4" />
                               </Button>
                             </div>
@@ -613,14 +632,14 @@ const SearchPage = () => {
                                 <Button 
                                   size="sm" 
                                   variant="outline" 
-                                  onClick={() => handleAddToComparison(vehicle)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAddToComparison(vehicle);
+                                  }}
                                   disabled={comparisonList.some(v => v.id === vehicle.id)}
                                   className="px-2 py-1 h-7 text-xs"
                                 >
                                   <BarChart3 className="w-3 h-3" />
-                                </Button>
-                                <Button size="sm" onClick={() => handleContact(vehicle.id)} className="px-3 py-1 h-7 text-xs">
-                                  Call
                                 </Button>
                               </div>
                             </div>

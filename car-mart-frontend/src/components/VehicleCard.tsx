@@ -23,6 +23,7 @@ interface VehicleCardProps {
   };
   onSave?: (id: string) => void;
   onCompare?: (id: string) => void;
+  onClick?: (id: string) => void;
   isInComparison?: boolean;
   isSaved?: boolean;
   className?: string;
@@ -32,6 +33,7 @@ const VehicleCard = ({
   vehicle,
   onSave,
   onCompare,
+  onClick,
   isInComparison = false,
   isSaved = false,
   className
@@ -49,12 +51,28 @@ const VehicleCard = ({
     return `${mileage.toLocaleString()} km`;
   };
 
+  const handleCardClick = () => {
+    onClick?.(vehicle.id);
+  };
+
+  const handleSaveClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSave?.(vehicle.id);
+  };
+
+  const handleCompareClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onCompare?.(vehicle.id);
+  };
+
   return (
     <Card className={cn(
-      "group overflow-hidden transition-all duration-300 hover:shadow-premium hover:-translate-y-1",
+      "group overflow-hidden transition-all duration-300 hover:shadow-premium hover:-translate-y-1 cursor-pointer",
       vehicle.isFeatured && "ring-2 ring-accent/20",
       className
-    )}>
+    )}
+    onClick={handleCardClick}
+    >
       <div className="relative">
         {/* Vehicle Image */}
         <div className="relative aspect-[4/3] overflow-hidden">
@@ -86,7 +104,7 @@ const VehicleCard = ({
               size="icon"
               variant="secondary"
               className="w-8 h-8 rounded-full bg-background/80 hover:bg-background"
-              onClick={() => onSave?.(vehicle.id)}
+              onClick={handleSaveClick}
             >
               <Heart className={cn(
                 "w-4 h-4",
@@ -100,7 +118,7 @@ const VehicleCard = ({
                 "w-8 h-8 rounded-full bg-background/80 hover:bg-background",
                 isInComparison && "bg-accent text-accent-foreground"
               )}
-              onClick={() => onCompare?.(vehicle.id)}
+              onClick={handleCompareClick}
             >
               <BarChart3 className="w-4 h-4" />
             </Button>
@@ -157,19 +175,9 @@ const VehicleCard = ({
           </div>
 
           {/* Location */}
-          <div className="flex items-center space-x-1 text-sm text-muted-foreground mb-4">
+          <div className="flex items-center space-x-1 text-sm text-muted-foreground">
             <MapPin className="w-4 h-4" />
             <span>{vehicle.location}</span>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex space-x-2">
-            <Button variant="outline" size="sm" className="flex-1">
-              View Details
-            </Button>
-            <Button size="sm" className="flex-1 bg-primary hover:bg-primary/90">
-              Contact Seller
-            </Button>
           </div>
         </CardContent>
       </div>

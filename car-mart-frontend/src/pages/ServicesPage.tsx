@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Search, Filter, MapPin, DollarSign, Clock, Settings, Grid3x3, List, ArrowUpDown, Loader2, Heart, Wrench, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,12 +30,13 @@ interface Service {
 
 const ServicesPage = () => {
   const { category } = useParams();
+  const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(false);
   const [services, setServices] = useState<Service[]>([]);
   const [filteredServices, setFilteredServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [sortBy, setSortBy] = useState("relevance");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
@@ -262,6 +263,10 @@ const ServicesPage = () => {
     console.log("Contact provider for service:", id);
   };
 
+  const handleServiceClick = (id: string) => {
+    navigate(`/service/${id}`);
+  };
+
   const categoryTitle = category 
     ? category.charAt(0).toUpperCase() + category.slice(1) + " Services"
     : "All Automotive Services";
@@ -478,7 +483,11 @@ const ServicesPage = () => {
                 {(viewMode === "grid" && !isMobile) ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {filteredServices.map((service) => (
-                      <Card key={service.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                      <Card 
+                        key={service.id} 
+                        className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                        onClick={() => handleServiceClick(service.id)}
+                      >
                         <div>
                           <img
                             src={service.image}
@@ -488,7 +497,14 @@ const ServicesPage = () => {
                           <CardContent className="p-4">
                             <div className="flex items-start justify-between mb-2">
                               <h3 className="font-semibold text-lg line-clamp-2">{service.title}</h3>
-                              <Button variant="ghost" size="sm" onClick={() => handleSave(service.id)}>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSave(service.id);
+                                }}
+                              >
                                 <Heart className="h-4 w-4" />
                               </Button>
                             </div>
@@ -534,12 +550,6 @@ const ServicesPage = () => {
                                 </p>
                               </div>
                             </div>
-                            
-                            <div className="flex space-x-2">
-                              <Button className="flex-1" onClick={() => handleContact(service.id)}>
-                                Contact Provider
-                              </Button>
-                            </div>
                           </CardContent>
                         </div>
                       </Card>
@@ -548,7 +558,11 @@ const ServicesPage = () => {
                 ) : (
                   <div className="space-y-4">
                     {filteredServices.map((service) => (
-                      <Card key={service.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                      <Card 
+                        key={service.id} 
+                        className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                        onClick={() => handleServiceClick(service.id)}
+                      >
                         <div className="flex p-3 gap-3">
                           {/* Image */}
                           <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
@@ -566,7 +580,15 @@ const ServicesPage = () => {
                               <h3 className="font-semibold text-sm sm:text-base line-clamp-2 pr-1 flex-1">
                                 {service.title}
                               </h3>
-                              <Button variant="ghost" size="sm" onClick={() => handleSave(service.id)} className="p-1 ml-1">
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSave(service.id);
+                                }} 
+                                className="p-1 ml-1"
+                              >
                                 <Heart className="h-3 w-3 sm:h-4 sm:w-4" />
                               </Button>
                             </div>
@@ -607,11 +629,6 @@ const ServicesPage = () => {
                                   <Clock className="w-3 h-3 mr-1 flex-shrink-0" />
                                   <span className="truncate">{service.responseTime}</span>
                                 </div>
-                              </div>
-                              <div className="ml-2">
-                                <Button size="sm" onClick={() => handleContact(service.id)} className="px-3 py-1 h-7 text-xs">
-                                  Call
-                                </Button>
                               </div>
                             </div>
                           </div>

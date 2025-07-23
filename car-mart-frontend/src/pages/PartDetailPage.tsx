@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, Share2, Phone, Mail, MapPin, Calendar, Fuel, Settings, Eye, Camera, Shield, Star, ArrowLeft, BarChart3, MessageCircle } from "lucide-react";
+import { Heart, Share2, Phone, Mail, MapPin, Calendar, Settings, Eye, Shield, Star, ArrowLeft, MessageCircle, CheckCircle, Package, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,76 +8,79 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import vehicleSedan from "@/assets/vehicle-sedan.jpg";
 
-const VehicleDetailPage = () => {
+const PartDetailPage = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isSaved, setIsSaved] = useState(false);
   
-  // Mock vehicle data
-  const vehicle = {
+  // Mock part data
+  const part = {
     id: "1",
-    title: "BMW 3 Series 320i Sport Line",
-    price: 12500000,
-    year: 2020,
-    mileage: 35000,
-    location: "Colombo",
-    fuelType: "Petrol",
-    transmission: "Automatic",
-    bodyType: "Sedan",
-    color: "Alpine White",
-    engineCapacity: "1998cc",
-    condition: "Excellent",
-    healthScore: 92,
-    images: [vehicleSedan, vehicleSedan, vehicleSedan, vehicleSedan, vehicleSedan],
-    features: [
-      "Leather Seats", "Sunroof", "Navigation System", "Bluetooth", 
-      "Reverse Camera", "Parking Sensors", "Alloy Wheels", "LED Headlights"
+    title: "Original Toyota Prius Hybrid Battery Pack",
+    price: 85000,
+    brand: "Toyota",
+    partCategory: "Battery",
+    condition: "New",
+    warranty: true,
+    partNumber: "G9280-47030",
+    location: "Colombo 05",
+    inStock: true,
+    images: ["/api/placeholder/400/300", "/api/placeholder/400/300", "/api/placeholder/400/300"],
+    description: `Genuine Toyota hybrid battery pack for Prius models. This high-quality battery has been fully tested and certified to meet Toyota's strict quality standards. Comes with 2-year warranty and professional installation available.`,
+    compatibility: [
+      "Toyota Prius 2010-2015",
+      "Toyota Prius V 2012-2017", 
+      "Toyota Prius C 2012-2019",
+      "Toyota Aqua 2011-2017"
     ],
-    description: `This pristine BMW 3 Series 320i Sport Line is a perfect combination of luxury and performance. 
-    The vehicle has been meticulously maintained with full service history available. Features include premium leather interior, 
-    advanced infotainment system, and exceptional fuel efficiency. This is an ideal choice for those seeking German engineering 
-    excellence with style and reliability.`,
+    specifications: {
+      brand: "Toyota",
+      partNumber: "G9280-47030",
+      condition: "New",
+      warranty: "2 years",
+      weight: "45 kg",
+      voltage: "201.6V",
+      capacity: "6.5Ah",
+      origin: "Japan"
+    },
     seller: {
       id: "seller1",
-      name: "John Perera",
-      rating: 4.8,
-      reviewCount: 127,
+      name: "Auto Parts Pro",
+      rating: 4.9,
+      reviewCount: 156,
       verified: true,
       memberSince: "2019",
-      location: "Colombo",
-      responseTime: "Within 2 hours",
-      avatar: ""
+      location: "Colombo 05",
+      responseTime: "Within 1 hour",
+      avatar: "",
+      totalSales: 890
     },
-    specs: {
-      make: "BMW",
-      model: "3 Series",
-      variant: "320i Sport Line",
-      year: 2020,
-      mileage: "35,000 km",
-      fuelType: "Petrol",
-      transmission: "8-Speed Automatic",
-      drivetrain: "RWD",
-      engine: "2.0L Twin Turbo",
-      power: "184 HP",
-      torque: "300 Nm",
-      fuelConsumption: "6.8L/100km"
+    shipping: {
+      available: true,
+      cost: 1500,
+      time: "2-3 days",
+      locations: ["Colombo", "Kandy", "Galle", "Matara"]
     },
-    history: {
-      accidents: "No reported accidents",
-      owners: "2 previous owners",
-      serviceHistory: "Full service history available",
-      lastService: "March 2024"
-    }
+    reviews: [
+      {
+        id: "1",
+        customer: "Chamara Perera",
+        rating: 5,
+        comment: "Excellent quality battery. Works perfectly and came with proper documentation.",
+        date: "1 week ago"
+      },
+      {
+        id: "2", 
+        customer: "Sanduni Rajapaksa",
+        rating: 5,
+        comment: "Genuine Toyota part as described. Fast delivery and good packaging.",
+        date: "2 weeks ago"
+      }
+    ]
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-LK', {
-      style: 'currency',
-      currency: 'LKR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price).replace('LKR', 'Rs.');
+    return `Rs. ${price.toLocaleString()}`;
   };
 
   const handleContactSeller = () => {
@@ -93,7 +96,7 @@ const VehicleDetailPage = () => {
         {/* Back Button */}
         <Button variant="ghost" className="mb-4 -ml-2">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Search
+          Back to Parts
         </Button>
 
         {/* Mobile-Optimized Image Gallery */}
@@ -101,22 +104,28 @@ const VehicleDetailPage = () => {
           <div className="relative">
             <div className="aspect-[16/10] sm:aspect-[16/9] overflow-hidden">
               <img
-                src={vehicle.images[selectedImage]}
-                alt={vehicle.title}
+                src={part.images[selectedImage]}
+                alt={part.title}
                 className="w-full h-full object-cover"
               />
               
-              {/* Mobile Image Controls */}
+              {/* Part Badges */}
               <div className="absolute top-4 left-4 flex flex-wrap gap-2">
-                {vehicle.seller.verified && (
-                  <Badge className="bg-success/90 text-success-foreground text-xs">
+                <Badge className={`text-xs ${part.condition === 'New' ? 'bg-green-600/90' : 'bg-blue-600/90'} text-white`}>
+                  {part.condition}
+                </Badge>
+                {part.warranty && (
+                  <Badge className="bg-purple-600/90 text-white text-xs">
                     <Shield className="h-3 w-3 mr-1" />
-                    Verified
+                    Warranty
                   </Badge>
                 )}
-                <Badge className="bg-accent/90 text-accent-foreground text-xs">
-                  Featured
-                </Badge>
+                {part.inStock && (
+                  <Badge className="bg-success/90 text-success-foreground text-xs">
+                    <Package className="h-3 w-3 mr-1" />
+                    In Stock
+                  </Badge>
+                )}
               </div>
               
               <div className="absolute top-4 right-4 flex gap-2">
@@ -139,13 +148,13 @@ const VehicleDetailPage = () => {
               
               {/* Image Counter */}
               <div className="absolute bottom-4 right-4 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
-                {selectedImage + 1} / {vehicle.images.length}
+                {selectedImage + 1} / {part.images.length}
               </div>
             </div>
             
-            {/* Mobile-Optimized Thumbnail Strip */}
+            {/* Thumbnail Strip */}
             <div className="flex overflow-x-auto gap-2 p-4 bg-muted/30">
-              {vehicle.images.map((image, index) => (
+              {part.images.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
@@ -155,7 +164,7 @@ const VehicleDetailPage = () => {
                 >
                   <img
                     src={image}
-                    alt={`View ${index + 1}`}
+                    alt={`Part ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
                 </button>
@@ -164,26 +173,26 @@ const VehicleDetailPage = () => {
           </div>
         </Card>
 
-        {/* Vehicle Title & Price - Mobile Optimized */}
+        {/* Part Title & Price */}
         <Card className="mb-4">
           <CardContent className="p-4 sm:p-6">
             <div className="space-y-4">
               <div>
                 <h1 className="text-xl sm:text-2xl font-bold text-primary mb-2 leading-tight">
-                  {vehicle.title}
+                  {part.title}
                 </h1>
                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-3">
                   <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    {vehicle.year}
+                    <Settings className="h-4 w-4 mr-1" />
+                    {part.brand}
                   </div>
                   <div className="flex items-center">
-                    <Eye className="h-4 w-4 mr-1" />
-                    {vehicle.mileage.toLocaleString()} km
+                    <Package className="h-4 w-4 mr-1" />
+                    {part.partNumber}
                   </div>
                   <div className="flex items-center">
                     <MapPin className="h-4 w-4 mr-1" />
-                    {vehicle.location}
+                    {part.location}
                   </div>
                 </div>
               </div>
@@ -191,17 +200,15 @@ const VehicleDetailPage = () => {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <div className="text-2xl sm:text-3xl font-bold text-primary">
-                    {formatPrice(vehicle.price)}
+                    {formatPrice(part.price)}
                   </div>
-                  <div className="text-sm text-muted-foreground">Negotiable</div>
+                  <div className="text-sm text-muted-foreground">
+                    {part.inStock ? "✅ In Stock" : "❌ Out of Stock"}
+                  </div>
                 </div>
                 
-                {/* Mobile Action Buttons */}
+                {/* Action Buttons */}
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
-                    <BarChart3 className="h-4 w-4 mr-2" />
-                    Compare
-                  </Button>
                   <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
                     <MessageCircle className="h-4 w-4 mr-2" />
                     Message
@@ -212,39 +219,37 @@ const VehicleDetailPage = () => {
           </CardContent>
         </Card>
 
-        {/* Quick Stats - Mobile Grid */}
+        {/* Quick Stats */}
         <Card className="mb-4">
           <CardContent className="p-4">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="text-center p-3 bg-muted/50 rounded-lg">
-                <div className="text-lg sm:text-xl font-bold text-primary">{vehicle.year}</div>
-                <div className="text-xs sm:text-sm text-muted-foreground">Year</div>
+                <div className="text-lg sm:text-xl font-bold text-primary">{part.condition}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Condition</div>
               </div>
               <div className="text-center p-3 bg-muted/50 rounded-lg">
-                <div className="text-lg sm:text-xl font-bold text-primary">{vehicle.mileage.toLocaleString()}</div>
-                <div className="text-xs sm:text-sm text-muted-foreground">Kilometers</div>
+                <div className="text-lg sm:text-xl font-bold text-primary">{part.specifications.warranty}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Warranty</div>
               </div>
               <div className="text-center p-3 bg-muted/50 rounded-lg">
-                <div className="text-lg sm:text-xl font-bold text-primary">{vehicle.fuelType}</div>
-                <div className="text-xs sm:text-sm text-muted-foreground">Fuel Type</div>
+                <div className="text-lg sm:text-xl font-bold text-primary">{part.seller.rating}★</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Rating</div>
               </div>
               <div className="text-center p-3 bg-muted/50 rounded-lg">
-                <div className="text-lg sm:text-xl font-bold text-primary">{vehicle.transmission}</div>
-                <div className="text-xs sm:text-sm text-muted-foreground">Transmission</div>
+                <div className="text-lg sm:text-xl font-bold text-primary">{part.shipping.time}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Delivery</div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Main Content Area */}
+        {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Details */}
           <div className="lg:col-span-2 space-y-4">
-            {/* Mobile-Optimized Tabs */}
+            {/* Part Details Tabs */}
             <Card>
               <CardContent className="p-0">
                 <Tabs defaultValue="overview" className="w-full">
-                  {/* Mobile-Scrollable Tabs */}
                   <div className="overflow-x-auto">
                     <TabsList className="grid w-full grid-cols-4 min-w-max sm:min-w-0">
                       <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 sm:px-4">
@@ -253,11 +258,11 @@ const VehicleDetailPage = () => {
                       <TabsTrigger value="specs" className="text-xs sm:text-sm px-2 sm:px-4">
                         Specs
                       </TabsTrigger>
-                      <TabsTrigger value="features" className="text-xs sm:text-sm px-2 sm:px-4">
-                        Features
+                      <TabsTrigger value="compatibility" className="text-xs sm:text-sm px-2 sm:px-4">
+                        Compatibility
                       </TabsTrigger>
-                      <TabsTrigger value="history" className="text-xs sm:text-sm px-2 sm:px-4">
-                        History
+                      <TabsTrigger value="reviews" className="text-xs sm:text-sm px-2 sm:px-4">
+                        Reviews
                       </TabsTrigger>
                     </TabsList>
                   </div>
@@ -266,9 +271,9 @@ const VehicleDetailPage = () => {
                     <TabsContent value="overview" className="mt-0">
                       <div className="space-y-4">
                         <div>
-                          <h3 className="font-semibold text-primary mb-2">Description</h3>
+                          <h3 className="font-semibold text-primary mb-2">Part Description</h3>
                           <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
-                            {vehicle.description}
+                            {part.description}
                           </p>
                         </div>
                       </div>
@@ -278,7 +283,7 @@ const VehicleDetailPage = () => {
                       <div className="space-y-4">
                         <h3 className="font-semibold text-primary">Specifications</h3>
                         <div className="space-y-3">
-                          {Object.entries(vehicle.specs).map(([key, value]) => (
+                          {Object.entries(part.specifications).map(([key, value]) => (
                             <div key={key} className="flex justify-between items-center py-2 border-b border-border/50 last:border-0">
                               <span className="text-muted-foreground capitalize text-sm">
                                 {key.replace(/([A-Z])/g, ' $1')}
@@ -290,30 +295,36 @@ const VehicleDetailPage = () => {
                       </div>
                     </TabsContent>
 
-                    <TabsContent value="features" className="mt-0">
+                    <TabsContent value="compatibility" className="mt-0">
                       <div className="space-y-4">
-                        <h3 className="font-semibold text-primary">Features</h3>
+                        <h3 className="font-semibold text-primary">Compatible Vehicles</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          {vehicle.features.map((feature, index) => (
-                            <div key={index} className="flex items-center space-x-2 p-2 bg-muted/50 rounded-lg">
-                              <div className="w-2 h-2 bg-success rounded-full flex-shrink-0"></div>
-                              <span className="text-sm">{feature}</span>
+                          {part.compatibility.map((vehicle, index) => (
+                            <div key={index} className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
+                              <CheckCircle className="w-4 h-4 text-success flex-shrink-0" />
+                              <span className="text-sm font-medium">{vehicle}</span>
                             </div>
                           ))}
                         </div>
                       </div>
                     </TabsContent>
 
-                    <TabsContent value="history" className="mt-0">
+                    <TabsContent value="reviews" className="mt-0">
                       <div className="space-y-4">
-                        <h3 className="font-semibold text-primary">Vehicle History</h3>
-                        <div className="space-y-3">
-                          {Object.entries(vehicle.history).map(([key, value]) => (
-                            <div key={key} className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-3 border-b border-border/50 last:border-0 gap-1">
-                              <span className="text-muted-foreground capitalize text-sm font-medium">
-                                {key.replace(/([A-Z])/g, ' $1')}
-                              </span>
-                              <span className="text-sm">{value}</span>
+                        <h3 className="font-semibold text-primary">Customer Reviews</h3>
+                        <div className="space-y-4">
+                          {part.reviews.map((review) => (
+                            <div key={review.id} className="border-b border-border/50 pb-4 last:border-0">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <span className="font-medium text-sm">{review.customer}</span>
+                                <div className="flex">
+                                  {[...Array(review.rating)].map((_, i) => (
+                                    <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                  ))}
+                                </div>
+                                <span className="text-xs text-muted-foreground">{review.date}</span>
+                              </div>
+                              <p className="text-sm text-muted-foreground">{review.comment}</p>
                             </div>
                           ))}
                         </div>
@@ -335,15 +346,15 @@ const VehicleDetailPage = () => {
               <CardContent className="space-y-4">
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-12 w-12">
-                    <AvatarImage src={vehicle.seller.avatar} />
+                    <AvatarImage src={part.seller.avatar} />
                     <AvatarFallback className="bg-primary text-primary-foreground">
-                      {vehicle.seller.name.split(' ').map(n => n[0]).join('')}
+                      {part.seller.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2 mb-1">
-                      <span className="font-medium text-sm truncate">{vehicle.seller.name}</span>
-                      {vehicle.seller.verified && (
+                      <span className="font-medium text-sm truncate">{part.seller.name}</span>
+                      {part.seller.verified && (
                         <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
                           <Shield className="h-3 w-3 mr-1" />
                           Verified
@@ -352,8 +363,8 @@ const VehicleDetailPage = () => {
                     </div>
                     <div className="flex items-center space-x-1 text-xs text-muted-foreground">
                       <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                      <span>{vehicle.seller.rating}</span>
-                      <span>({vehicle.seller.reviewCount} reviews)</span>
+                      <span>{part.seller.rating}</span>
+                      <span>({part.seller.reviewCount} reviews)</span>
                     </div>
                   </div>
                 </div>
@@ -361,15 +372,15 @@ const VehicleDetailPage = () => {
                 <div className="space-y-2 text-xs">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Member Since</span>
-                    <span>{vehicle.seller.memberSince}</span>
+                    <span>{part.seller.memberSince}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Total Sales</span>
+                    <span>{part.seller.totalSales.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Response Time</span>
-                    <span>{vehicle.seller.responseTime}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Location</span>
-                    <span>{vehicle.seller.location}</span>
+                    <span>{part.seller.responseTime}</span>
                   </div>
                 </div>
 
@@ -385,7 +396,37 @@ const VehicleDetailPage = () => {
               </CardContent>
             </Card>
 
-            {/* Quick Contact Card */}
+            {/* Shipping Info */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center">
+                  <Truck className="h-4 w-4 mr-2" />
+                  Shipping & Delivery
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Shipping Cost</span>
+                  <span className="font-medium">{formatPrice(part.shipping.cost)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Delivery Time</span>
+                  <span className="font-medium">{part.shipping.time}</span>
+                </div>
+                <div className="text-sm">
+                  <span className="text-muted-foreground">Available in:</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {part.shipping.locations.map((location, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {location}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">Quick Actions</CardTitle>
@@ -397,11 +438,11 @@ const VehicleDetailPage = () => {
                 </Button>
                 <Button variant="outline" size="sm" className="w-full justify-start">
                   <Share2 className="h-4 w-4 mr-2" />
-                  Share Listing
+                  Share Part
                 </Button>
                 <Button variant="outline" size="sm" className="w-full justify-start">
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Price Analysis
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Request Quote
                 </Button>
               </CardContent>
             </Card>
@@ -409,15 +450,16 @@ const VehicleDetailPage = () => {
         </div>
       </div>
 
-      {/* Mobile Sticky Bottom Actions */}
+      {/* Mobile Sticky Bottom */}
       <div className="sticky bottom-0 left-0 right-0 bg-background border-t border-border p-4 lg:hidden">
         <Button 
           size="lg" 
           className="w-full"
           onClick={handleContactSeller}
+          disabled={!part.inStock}
         >
           <Phone className="h-4 w-4 mr-2" />
-          Call Now
+          Buy Now - {formatPrice(part.price)}
         </Button>
       </div>
 
@@ -426,4 +468,4 @@ const VehicleDetailPage = () => {
   );
 };
 
-export default VehicleDetailPage;
+export default PartDetailPage;
