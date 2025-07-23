@@ -15,8 +15,11 @@ const SearchPage = lazy(() => import("./pages/SearchPage"));
 const VehicleDetailPage = lazy(() => import("./pages/VehicleDetailPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const PartsPage = lazy(() => import("./pages/PartsPage"));
+const PartDetailPage = lazy(() => import("./pages/PartDetailPage"));
 const ServicesPage = lazy(() => import("./pages/ServicesPage"));
+const ServiceDetailPage = lazy(() => import("./pages/ServiceDetailPage"));
 const ListPartsPage = lazy(() => import("./pages/ListPartsPage"));
+const ListServicesPage = lazy(() => import("./pages/ListServicesPage")); // ADDED THIS LINE
 const ComparisonPage = lazy(() => import("./pages/ComparisonPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -84,9 +87,12 @@ const App = () => {
                 <Route path="/dashboard" element={<SafeRoute element={DashboardPage} />} />
                 <Route path="/parts" element={<SafeRoute element={PartsPage} />} />
                 <Route path="/parts/:category" element={<SafeRoute element={PartsPage} />} />
+                <Route path="/part/:id" element={<SafeRoute element={PartDetailPage} />} />
                 <Route path="/services" element={<SafeRoute element={ServicesPage} />} />
                 <Route path="/services/:category" element={<SafeRoute element={ServicesPage} />} />
+                <Route path="/service/:id" element={<SafeRoute element={ServiceDetailPage} />} />
                 <Route path="/list-parts" element={<SafeRoute element={ListPartsPage} />} />
+                <Route path="/list-services" element={<SafeRoute element={ListServicesPage} />} /> {/* ADDED THIS LINE */}
                 <Route path="/compare" element={<SafeRoute element={ComparisonPage} />} />
                 <Route path="*" element={<SafeRoute element={NotFound} />} />
               </Routes>

@@ -5,10 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "@/assets/car-mart-logo.png";
 
 const AuthPage = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [registerData, setRegisterData] = useState({
@@ -23,13 +24,15 @@ const AuthPage = () => {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Login data:", loginData);
-    // Handle login logic here
+    // Temporary bypass - navigate to dashboard
+    navigate("/dashboard");
   };
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Register data:", registerData);
-    // Handle registration logic here
+    // Temporary bypass - navigate to dashboard
+    navigate("/dashboard");
   };
 
   return (
@@ -54,6 +57,15 @@ const AuthPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Quick Skip Button for Development */}
+            <Button 
+              onClick={() => navigate("/dashboard")} 
+              variant="outline" 
+              className="w-full mb-4 border-2 border-dashed border-orange-300 text-orange-600 hover:bg-orange-50"
+            >
+              🚀 Skip Auth (Dev Mode)
+            </Button>
+
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="login">Sign In</TabsTrigger>
@@ -126,10 +138,10 @@ const AuthPage = () => {
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <Button variant="outline" type="button">
+                    <Button variant="outline" type="button" onClick={() => navigate("/dashboard")}>
                       Google
                     </Button>
-                    <Button variant="outline" type="button">
+                    <Button variant="outline" type="button" onClick={() => navigate("/dashboard")}>
                       Facebook
                     </Button>
                   </div>
