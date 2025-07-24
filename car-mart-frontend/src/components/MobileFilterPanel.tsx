@@ -49,24 +49,23 @@ const MobileFilterPanel = ({
   resultCount, 
   category 
 }: MobileFilterPanelProps) => {
-  // Comprehensive filter state
+  // Simple filter state that matches original structure
   const [filters, setFilters] = useState({
     // Common filters
     search: "",
-    priceRange: [0, category === "vehicles" ? 50000000 : category === "services" ? 50000 : 100000],
+    minPrice: 0,
+    maxPrice: category === "vehicles" ? 50000000 : category === "services" ? 50000 : 100000,
     location: "",
     
     // Vehicle specific
     make: "",
-    model: "",
-    yearFrom: "",
-    yearTo: "",
     fuelType: "",
     transmission: "",
     bodyType: "",
     condition: "",
-    healthScore: [0, 100],
-    mileageRange: [0, 300000],
+    yearFrom: "",
+    yearTo: "",
+    healthScore: [0, 100] as number[],
     
     // Parts specific
     brand: "",
@@ -74,15 +73,12 @@ const MobileFilterPanel = ({
     partCondition: "",
     warranty: false,
     inStock: false,
-    compatibility: "",
     
     // Services specific
     serviceType: "",
-    providerRating: [0, 5],
-    responseTime: "",
     certified: false,
     serviceWarranty: false,
-    experience: [0, 20]
+    minRating: 0
   });
 
   const handleFilterChange = (key: string, value: any) => {
@@ -92,30 +88,26 @@ const MobileFilterPanel = ({
   const clearAllFilters = () => {
     setFilters({
       search: "",
-      priceRange: [0, category === "vehicles" ? 50000000 : category === "services" ? 50000 : 100000],
+      minPrice: 0,
+      maxPrice: category === "vehicles" ? 50000000 : category === "services" ? 50000 : 100000,
       location: "",
       make: "",
-      model: "",
-      yearFrom: "",
-      yearTo: "",
       fuelType: "",
       transmission: "",
       bodyType: "",
       condition: "",
+      yearFrom: "",
+      yearTo: "",
       healthScore: [0, 100],
-      mileageRange: [0, 300000],
       brand: "",
       partCategory: "",
       partCondition: "",
       warranty: false,
       inStock: false,
-      compatibility: "",
       serviceType: "",
-      providerRating: [0, 5],
-      responseTime: "",
       certified: false,
       serviceWarranty: false,
-      experience: [0, 20]
+      minRating: 0
     });
   };
 
@@ -167,16 +159,30 @@ const MobileFilterPanel = ({
             {/* Price Range */}
             <FilterSection title="Price Range" defaultOpen>
               <div className="space-y-4">
-                <Slider
-                  value={filters.priceRange}
-                  onValueChange={(value) => handleFilterChange("priceRange", value)}
-                  max={category === "vehicles" ? 50000000 : category === "services" ? 50000 : 100000}
-                  step={category === "vehicles" ? 100000 : category === "services" ? 500 : 1000}
-                  className="mb-2"
-                />
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>Rs. {filters.priceRange[0].toLocaleString()}</span>
-                  <span>Rs. {filters.priceRange[1].toLocaleString()}</span>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-sm">Min Price</Label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      value={filters.minPrice || ""}
+                      onChange={(e) => handleFilterChange("minPrice", parseInt(e.target.value) || 0)}
+                      className="h-12"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm">Max Price</Label>
+                    <Input
+                      type="number"
+                      placeholder={category === "vehicles" ? "50,000,000" : category === "services" ? "50,000" : "100,000"}
+                      value={filters.maxPrice || ""}
+                      onChange={(e) => handleFilterChange("maxPrice", parseInt(e.target.value) || (category === "vehicles" ? 50000000 : category === "services" ? 50000 : 100000))}
+                      className="h-12"
+                    />
+                  </div>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Rs. {filters.minPrice?.toLocaleString() || 0} - Rs. {filters.maxPrice?.toLocaleString() || (category === "vehicles" ? "50,000,000" : category === "services" ? "50,000" : "100,000")}
                 </div>
               </div>
             </FilterSection>
@@ -184,7 +190,7 @@ const MobileFilterPanel = ({
             {/* Vehicle Specific Filters */}
             {category === "vehicles" && (
               <>
-                <FilterSection title="Make & Model">
+                <FilterSection title="Make & Type">
                   <div className="space-y-4">
                     <div>
                       <Label className="text-sm font-medium">Make</Label>
@@ -209,70 +215,6 @@ const MobileFilterPanel = ({
                     </div>
 
                     <div>
-                      <Label className="text-sm font-medium">Model</Label>
-                      <Input
-                        placeholder="Enter model"
-                        className="h-12"
-                        value={filters.model}
-                        onChange={(e) => handleFilterChange("model", e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </FilterSection>
-
-                <FilterSection title="Year & Mileage">
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label className="text-sm font-medium">Year From</Label>
-                        <Select value={filters.yearFrom} onValueChange={(value) => handleFilterChange("yearFrom", value)}>
-                          <SelectTrigger className="h-12">
-                            <SelectValue placeholder="Any" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="">Any</SelectItem>
-                            {Array.from({length: 25}, (_, i) => 2024 - i).map(year => (
-                              <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium">Year To</Label>
-                        <Select value={filters.yearTo} onValueChange={(value) => handleFilterChange("yearTo", value)}>
-                          <SelectTrigger className="h-12">
-                            <SelectValue placeholder="Any" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="">Any</SelectItem>
-                            {Array.from({length: 25}, (_, i) => 2024 - i).map(year => (
-                              <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label className="text-sm font-medium mb-3 block">Mileage Range</Label>
-                      <Slider
-                        value={filters.mileageRange}
-                        onValueChange={(value) => handleFilterChange("mileageRange", value)}
-                        max={300000}
-                        step={5000}
-                        className="mb-2"
-                      />
-                      <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>{filters.mileageRange[0].toLocaleString()} km</span>
-                        <span>{filters.mileageRange[1].toLocaleString()} km</span>
-                      </div>
-                    </div>
-                  </div>
-                </FilterSection>
-
-                <FilterSection title="Engine & Transmission">
-                  <div className="space-y-4">
-                    <div>
                       <Label className="text-sm font-medium">Fuel Type</Label>
                       <Select value={filters.fuelType} onValueChange={(value) => handleFilterChange("fuelType", value)}>
                         <SelectTrigger className="h-12">
@@ -284,6 +226,7 @@ const MobileFilterPanel = ({
                           <SelectItem value="diesel">Diesel</SelectItem>
                           <SelectItem value="hybrid">Hybrid</SelectItem>
                           <SelectItem value="electric">Electric</SelectItem>
+                          <SelectItem value="cng">CNG</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -292,12 +235,12 @@ const MobileFilterPanel = ({
                       <Label className="text-sm font-medium">Transmission</Label>
                       <Select value={filters.transmission} onValueChange={(value) => handleFilterChange("transmission", value)}>
                         <SelectTrigger className="h-12">
-                          <SelectValue placeholder="All Transmissions" />
+                          <SelectValue placeholder="Any Transmission" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Transmissions</SelectItem>
-                          <SelectItem value="manual">Manual</SelectItem>
+                          <SelectItem value="">Any Transmission</SelectItem>
                           <SelectItem value="automatic">Automatic</SelectItem>
+                          <SelectItem value="manual">Manual</SelectItem>
                           <SelectItem value="cvt">CVT</SelectItem>
                           <SelectItem value="semi-automatic">Semi-Automatic</SelectItem>
                         </SelectContent>
@@ -308,14 +251,15 @@ const MobileFilterPanel = ({
                       <Label className="text-sm font-medium">Body Type</Label>
                       <Select value={filters.bodyType} onValueChange={(value) => handleFilterChange("bodyType", value)}>
                         <SelectTrigger className="h-12">
-                          <SelectValue placeholder="All Body Types" />
+                          <SelectValue placeholder="Any Body Type" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Body Types</SelectItem>
+                          <SelectItem value="">Any Body Type</SelectItem>
                           <SelectItem value="sedan">Sedan</SelectItem>
                           <SelectItem value="suv">SUV</SelectItem>
                           <SelectItem value="hatchback">Hatchback</SelectItem>
                           <SelectItem value="coupe">Coupe</SelectItem>
+                          <SelectItem value="wagon">Wagon</SelectItem>
                           <SelectItem value="pickup">Pickup Truck</SelectItem>
                           <SelectItem value="van">Van</SelectItem>
                           <SelectItem value="convertible">Convertible</SelectItem>
@@ -325,8 +269,31 @@ const MobileFilterPanel = ({
                   </div>
                 </FilterSection>
 
-                <FilterSection title="Condition & Health">
+                <FilterSection title="Year & Condition">
                   <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-sm font-medium">Year From</Label>
+                        <Input
+                          type="number"
+                          placeholder="2010"
+                          value={filters.yearFrom}
+                          onChange={(e) => handleFilterChange("yearFrom", e.target.value)}
+                          className="h-12"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Year To</Label>
+                        <Input
+                          type="number"
+                          placeholder="2025"
+                          value={filters.yearTo}
+                          onChange={(e) => handleFilterChange("yearTo", e.target.value)}
+                          className="h-12"
+                        />
+                      </div>
+                    </div>
+
                     <div>
                       <Label className="text-sm font-medium">Condition</Label>
                       <Select value={filters.condition} onValueChange={(value) => handleFilterChange("condition", value)}>
@@ -336,6 +303,7 @@ const MobileFilterPanel = ({
                         <SelectContent>
                           <SelectItem value="">Any Condition</SelectItem>
                           <SelectItem value="excellent">Excellent</SelectItem>
+                          <SelectItem value="very-good">Very Good</SelectItem>
                           <SelectItem value="good">Good</SelectItem>
                           <SelectItem value="fair">Fair</SelectItem>
                           <SelectItem value="needs-work">Needs Work</SelectItem>
@@ -377,20 +345,18 @@ const MobileFilterPanel = ({
                           <SelectItem value="">All Brands</SelectItem>
                           <SelectItem value="toyota">Toyota</SelectItem>
                           <SelectItem value="honda">Honda</SelectItem>
-                          <SelectItem value="nissan">Nissan</SelectItem>
                           <SelectItem value="bmw">BMW</SelectItem>
-                          <SelectItem value="mercedes-benz">Mercedes-Benz</SelectItem>
-                          <SelectItem value="audi">Audi</SelectItem>
+                          <SelectItem value="mercedes">Mercedes-Benz</SelectItem>
+                          <SelectItem value="nissan">Nissan</SelectItem>
                           <SelectItem value="bosch">Bosch</SelectItem>
                           <SelectItem value="denso">Denso</SelectItem>
-                          <SelectItem value="ngk">NGK</SelectItem>
-                          <SelectItem value="continental">Continental</SelectItem>
+                          <SelectItem value="brembo">Brembo</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div>
-                      <Label className="text-sm font-medium">Part Category</Label>
+                      <Label className="text-sm font-medium">Category</Label>
                       <Select value={filters.partCategory} onValueChange={(value) => handleFilterChange("partCategory", value)}>
                         <SelectTrigger className="h-12">
                           <SelectValue placeholder="All Categories" />
@@ -398,23 +364,19 @@ const MobileFilterPanel = ({
                         <SelectContent>
                           <SelectItem value="">All Categories</SelectItem>
                           <SelectItem value="engine">Engine Parts</SelectItem>
-                          <SelectItem value="brakes">Brake System</SelectItem>
+                          <SelectItem value="brakes">Brakes</SelectItem>
                           <SelectItem value="suspension">Suspension</SelectItem>
                           <SelectItem value="electrical">Electrical</SelectItem>
-                          <SelectItem value="lighting">Lighting</SelectItem>
                           <SelectItem value="body">Body Parts</SelectItem>
                           <SelectItem value="interior">Interior</SelectItem>
-                          <SelectItem value="tires">Tires & Wheels</SelectItem>
-                          <SelectItem value="battery">Battery</SelectItem>
-                          <SelectItem value="accessories">Accessories</SelectItem>
+                          <SelectItem value="wheels-tires">Wheels & Tires</SelectItem>
+                          <SelectItem value="filters">Filters</SelectItem>
+                          <SelectItem value="lights">Lights</SelectItem>
+                          <SelectItem value="exhaust">Exhaust System</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
-                  </div>
-                </FilterSection>
 
-                <FilterSection title="Condition & Compatibility">
-                  <div className="space-y-4">
                     <div>
                       <Label className="text-sm font-medium">Condition</Label>
                       <Select value={filters.partCondition} onValueChange={(value) => handleFilterChange("partCondition", value)}>
@@ -424,43 +386,37 @@ const MobileFilterPanel = ({
                         <SelectContent>
                           <SelectItem value="">Any Condition</SelectItem>
                           <SelectItem value="new">New</SelectItem>
-                          <SelectItem value="used">Used - Good</SelectItem>
+                          <SelectItem value="used">Used</SelectItem>
                           <SelectItem value="refurbished">Refurbished</SelectItem>
-                          <SelectItem value="oem">OEM</SelectItem>
-                          <SelectItem value="aftermarket">Aftermarket</SelectItem>
+                          <SelectItem value="excellent">Excellent</SelectItem>
+                          <SelectItem value="good">Good</SelectItem>
+                          <SelectItem value="fair">Fair</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
+                  </div>
+                </FilterSection>
 
-                    <div>
-                      <Label className="text-sm font-medium">Vehicle Compatibility</Label>
-                      <Input
-                        placeholder="e.g., Toyota Prius 2015-2020"
-                        className="h-12"
-                        value={filters.compatibility}
-                        onChange={(e) => handleFilterChange("compatibility", e.target.value)}
+                <FilterSection title="Features">
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        id="warranty"
+                        checked={filters.warranty}
+                        onCheckedChange={(checked) => handleFilterChange("warranty", checked)}
+                        className="h-5 w-5"
                       />
+                      <Label htmlFor="warranty" className="text-sm font-medium">Has Warranty</Label>
                     </div>
 
-                    <div className="space-y-3">
-                      <div className="flex items-center space-x-3">
-                        <Checkbox
-                          id="warranty"
-                          checked={filters.warranty}
-                          onCheckedChange={(checked) => handleFilterChange("warranty", checked)}
-                          className="h-5 w-5"
-                        />
-                        <Label htmlFor="warranty" className="text-sm font-medium">With Warranty</Label>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <Checkbox
-                          id="inStock"
-                          checked={filters.inStock}
-                          onCheckedChange={(checked) => handleFilterChange("inStock", checked)}
-                          className="h-5 w-5"
-                        />
-                        <Label htmlFor="inStock" className="text-sm font-medium">In Stock Only</Label>
-                      </div>
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        id="inStock"
+                        checked={filters.inStock}
+                        onCheckedChange={(checked) => handleFilterChange("inStock", checked)}
+                        className="h-5 w-5"
+                      />
+                      <Label htmlFor="inStock" className="text-sm font-medium">In Stock</Label>
                     </div>
                   </div>
                 </FilterSection>
@@ -473,94 +429,68 @@ const MobileFilterPanel = ({
                 <FilterSection title="Service Type">
                   <div className="space-y-4">
                     <div>
-                      <Label className="text-sm font-medium">Service Type</Label>
+                      <Label className="text-sm font-medium">Service Category</Label>
                       <Select value={filters.serviceType} onValueChange={(value) => handleFilterChange("serviceType", value)}>
                         <SelectTrigger className="h-12">
                           <SelectValue placeholder="All Services" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="">All Services</SelectItem>
-                          <SelectItem value="maintenance">General Maintenance</SelectItem>
-                          <SelectItem value="repair">Repair Services</SelectItem>
-                          <SelectItem value="inspection">Vehicle Inspection</SelectItem>
-                          <SelectItem value="bodywork">Body Work & Paint</SelectItem>
-                          <SelectItem value="electrical">Electrical Services</SelectItem>
-                          <SelectItem value="ac">AC Services</SelectItem>
-                          <SelectItem value="towing">Towing Services</SelectItem>
+                          <SelectItem value="maintenance">Maintenance</SelectItem>
+                          <SelectItem value="repair">Repair</SelectItem>
+                          <SelectItem value="bodywork">Body Work</SelectItem>
+                          <SelectItem value="electrical">Electrical</SelectItem>
+                          <SelectItem value="ac-service">AC Service</SelectItem>
+                          <SelectItem value="tire-service">Tire Service</SelectItem>
+                          <SelectItem value="brake-service">Brake Service</SelectItem>
+                          <SelectItem value="engine-service">Engine Service</SelectItem>
                           <SelectItem value="detailing">Car Detailing</SelectItem>
+                          <SelectItem value="inspection">Inspection</SelectItem>
+                          <SelectItem value="towing">Towing</SelectItem>
+                          <SelectItem value="emergency">Emergency</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div>
-                      <Label className="text-sm font-medium">Response Time</Label>
-                      <Select value={filters.responseTime} onValueChange={(value) => handleFilterChange("responseTime", value)}>
+                      <Label className="text-sm font-medium">Minimum Rating</Label>
+                      <Select value={filters.minRating.toString()} onValueChange={(value) => handleFilterChange("minRating", parseFloat(value))}>
                         <SelectTrigger className="h-12">
-                          <SelectValue placeholder="Any Time" />
+                          <SelectValue placeholder="Any Rating" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Any Time</SelectItem>
-                          <SelectItem value="immediate">Within 1 hour</SelectItem>
-                          <SelectItem value="same-day">Same day</SelectItem>
-                          <SelectItem value="next-day">Next day</SelectItem>
-                          <SelectItem value="within-week">Within a week</SelectItem>
+                          <SelectItem value="0">Any Rating</SelectItem>
+                          <SelectItem value="3">3+ Stars</SelectItem>
+                          <SelectItem value="3.5">3.5+ Stars</SelectItem>
+                          <SelectItem value="4">4+ Stars</SelectItem>
+                          <SelectItem value="4.5">4.5+ Stars</SelectItem>
+                          <SelectItem value="4.8">4.8+ Stars</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
                 </FilterSection>
 
-                <FilterSection title="Provider Rating & Experience">
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-sm font-medium mb-3 block">Minimum Provider Rating</Label>
-                      <Slider
-                        value={filters.providerRating}
-                        onValueChange={(value) => handleFilterChange("providerRating", value)}
-                        max={5}
-                        step={0.1}
-                        className="mb-2"
+                <FilterSection title="Features">
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        id="certified"
+                        checked={filters.certified}
+                        onCheckedChange={(checked) => handleFilterChange("certified", checked)}
+                        className="h-5 w-5"
                       />
-                      <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>Any Rating</span>
-                        <span>{filters.providerRating[1]}+ ★</span>
-                      </div>
+                      <Label htmlFor="certified" className="text-sm font-medium">Certified Providers</Label>
                     </div>
 
-                    <div>
-                      <Label className="text-sm font-medium mb-3 block">Years of Experience</Label>
-                      <Slider
-                        value={filters.experience}
-                        onValueChange={(value) => handleFilterChange("experience", value)}
-                        max={20}
-                        step={1}
-                        className="mb-2"
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        id="serviceWarranty"
+                        checked={filters.serviceWarranty}
+                        onCheckedChange={(checked) => handleFilterChange("serviceWarranty", checked)}
+                        className="h-5 w-5"
                       />
-                      <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>{filters.experience[0]}+ years</span>
-                        <span>{filters.experience[1]}+ years</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="flex items-center space-x-3">
-                        <Checkbox
-                          id="certified"
-                          checked={filters.certified}
-                          onCheckedChange={(checked) => handleFilterChange("certified", checked)}
-                          className="h-5 w-5"
-                        />
-                        <Label htmlFor="certified" className="text-sm font-medium">Certified Providers</Label>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <Checkbox
-                          id="serviceWarranty"
-                          checked={filters.serviceWarranty}
-                          onCheckedChange={(checked) => handleFilterChange("serviceWarranty", checked)}
-                          className="h-5 w-5"
-                        />
-                        <Label htmlFor="serviceWarranty" className="text-sm font-medium">Service Warranty</Label>
-                      </div>
+                      <Label htmlFor="serviceWarranty" className="text-sm font-medium">Service Warranty</Label>
                     </div>
                   </div>
                 </FilterSection>

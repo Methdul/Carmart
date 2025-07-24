@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Search, Filter, MapPin, DollarSign, Calendar, Settings, Grid3x3, List, ArrowUpDown, Loader2, Heart, Wrench } from "lucide-react";
+import { Search, Filter, MapPin, DollarSign, Calendar, Settings, Grid3x3, List, ArrowUpDown, Loader2, Heart, Wrench, Star, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -26,6 +26,21 @@ interface Part {
   sellerRating: number;
   isVerified: boolean;
   inStock: boolean;
+  // Enhanced properties
+  partType?: string;
+  vehicleMake?: string;
+  vehicleModel?: string;
+  yearCompatibility?: string;
+  oem?: boolean;
+  aftermarket?: boolean;
+  used?: boolean;
+  refurbished?: boolean;
+  returnPolicy?: boolean;
+  fastShipping?: boolean;
+  installation?: boolean;
+  partNumber?: string;
+  material?: string;
+  weight?: string;
 }
 
 const PartsPage = () => {
@@ -43,10 +58,10 @@ const PartsPage = () => {
   // Check if mobile and set default view mode
   useEffect(() => {
     const checkMobile = () => {
-      const mobile = window.innerWidth < 768; // md breakpoint
+      const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
       if (mobile) {
-        setViewMode("list"); // Force list view on mobile
+        setViewMode("list");
       }
     };
 
@@ -67,7 +82,7 @@ const PartsPage = () => {
     inStock: false
   });
 
-  // Mock parts data - same structure as vehicles
+  // Enhanced mock parts data
   const mockParts: Part[] = [
     {
       id: "1",
@@ -83,39 +98,171 @@ const PartsPage = () => {
       compatibility: ["Toyota Prius", "Toyota Aqua"],
       sellerRating: 4.9,
       isVerified: true,
-      inStock: true
+      inStock: true,
+      partType: "OEM",
+      vehicleMake: "Toyota",
+      vehicleModel: "Prius",
+      yearCompatibility: "2010-2020",
+      oem: true,
+      aftermarket: false,
+      used: false,
+      refurbished: false,
+      returnPolicy: true,
+      fastShipping: true,
+      installation: false,
+      partNumber: "G9280-47030",
+      material: "Lithium-ion",
+      weight: "45kg"
     },
     {
       id: "2",
       title: "BMW E90 Complete Headlight Assembly",
-      description: "Angel eyes LED headlight set for BMW 3 Series E90. Perfect condition.",
+      description: "Angel eyes LED headlight set for BMW 3 Series E90. Perfect fit and finish.",
       price: 45000,
-      location: "Kandy",
+      location: "Colombo 03",
       image: "/api/placeholder/400/300",
       brand: "BMW",
-      partCategory: "Lighting",
-      condition: "Used",
-      warranty: false,
-      compatibility: ["BMW E90", "BMW E91"],
+      partCategory: "Lights",
+      condition: "New",
+      warranty: true,
+      compatibility: ["BMW E90", "BMW E91", "BMW E92"],
       sellerRating: 4.7,
-      isVerified: false,
-      inStock: true
+      isVerified: true,
+      inStock: true,
+      partType: "OEM",
+      vehicleMake: "BMW",
+      vehicleModel: "3 Series",
+      yearCompatibility: "2005-2012",
+      oem: true,
+      aftermarket: false,
+      used: false,
+      refurbished: false,
+      returnPolicy: true,
+      fastShipping: false,
+      installation: true,
+      partNumber: "63117161670",
+      material: "ABS Plastic",
+      weight: "3.2kg"
     },
     {
       id: "3",
-      title: "Mercedes-Benz W205 Brake Pad Set",
-      description: "High performance brake pads for Mercedes C-Class. Includes front and rear sets.",
-      price: 25000,
-      location: "Galle",
+      title: "Honda Civic Type R Front Brake Pads",
+      description: "High performance brake pads for Honda Civic Type R. Racing grade compound.",
+      price: 12500,
+      location: "Kandy",
       image: "/api/placeholder/400/300",
-      brand: "Mercedes-Benz",
+      brand: "Brembo",
       partCategory: "Brakes",
       condition: "New",
       warranty: true,
-      compatibility: ["Mercedes W205"],
+      compatibility: ["Honda Civic Type R", "Honda Civic Si"],
       sellerRating: 4.8,
+      isVerified: false,
+      inStock: true,
+      partType: "Performance",
+      vehicleMake: "Honda",
+      vehicleModel: "Civic",
+      yearCompatibility: "2017-2023",
+      oem: false,
+      aftermarket: true,
+      used: false,
+      refurbished: false,
+      returnPolicy: true,
+      fastShipping: true,
+      installation: true,
+      partNumber: "P28048",
+      material: "Ceramic",
+      weight: "2.1kg"
+    },
+    {
+      id: "4",
+      title: "Mercedes W204 Air Filter Set",
+      description: "OEM quality air filter for Mercedes C-Class W204. Improves engine performance.",
+      price: 3500,
+      location: "Galle",
+      image: "/api/placeholder/400/300",
+      brand: "Mann Filter",
+      partCategory: "Filters",
+      condition: "New",
+      warranty: false,
+      compatibility: ["Mercedes C200", "Mercedes C250", "Mercedes C300"],
+      sellerRating: 4.5,
+      isVerified: false,
+      inStock: true,
+      partType: "OEM",
+      vehicleMake: "Mercedes-Benz",
+      vehicleModel: "C-Class",
+      yearCompatibility: "2007-2014",
+      oem: true,
+      aftermarket: false,
+      used: false,
+      refurbished: false,
+      returnPolicy: false,
+      fastShipping: true,
+      installation: false,
+      partNumber: "C30130",
+      material: "Paper",
+      weight: "0.5kg"
+    },
+    {
+      id: "5",
+      title: "Nissan X-Trail CVT Transmission Oil Cooler",
+      description: "Used CVT oil cooler in good condition. Tested and working perfectly.",
+      price: 15000,
+      location: "Negombo",
+      image: "/api/placeholder/400/300",
+      brand: "Nissan",
+      partCategory: "Transmission",
+      condition: "Used",
+      warranty: false,
+      compatibility: ["Nissan X-Trail", "Nissan Qashqai"],
+      sellerRating: 4.2,
+      isVerified: false,
+      inStock: true,
+      partType: "OEM",
+      vehicleMake: "Nissan",
+      vehicleModel: "X-Trail",
+      yearCompatibility: "2014-2020",
+      oem: true,
+      aftermarket: false,
+      used: true,
+      refurbished: false,
+      returnPolicy: true,
+      fastShipping: false,
+      installation: false,
+      partNumber: "21606-1XF0A",
+      material: "Aluminum",
+      weight: "1.8kg"
+    },
+    {
+      id: "6",
+      title: "Audi A4 Turbocharger Refurbished",
+      description: "Professional refurbished turbocharger with 1 year warranty. Like new performance.",
+      price: 65000,
+      location: "Colombo 07",
+      image: "/api/placeholder/400/300",
+      brand: "Audi",
+      partCategory: "Engine",
+      condition: "Refurbished",
+      warranty: true,
+      compatibility: ["Audi A4 B8", "Audi A4 B9"],
+      sellerRating: 4.6,
       isVerified: true,
-      inStock: false
+      inStock: false,
+      partType: "OEM",
+      vehicleMake: "Audi",
+      vehicleModel: "A4",
+      yearCompatibility: "2008-2020",
+      oem: true,
+      aftermarket: false,
+      used: false,
+      refurbished: true,
+      returnPolicy: true,
+      fastShipping: false,
+      installation: true,
+      partNumber: "06H145702S",
+      material: "Cast Iron",
+      weight: "12kg"
     }
   ];
 
@@ -139,16 +286,21 @@ const PartsPage = () => {
     loadParts();
   }, []);
 
-  // Filter and sort parts
+  // Enhanced filter logic
   useEffect(() => {
     let filtered = [...parts];
 
     // Apply filters
     if (filters.search) {
+      const searchTerm = filters.search.toLowerCase();
       filtered = filtered.filter(part =>
-        part.title.toLowerCase().includes(filters.search.toLowerCase()) ||
-        part.brand.toLowerCase().includes(filters.search.toLowerCase()) ||
-        part.description.toLowerCase().includes(filters.search.toLowerCase())
+        part.title.toLowerCase().includes(searchTerm) ||
+        part.description.toLowerCase().includes(searchTerm) ||
+        part.brand.toLowerCase().includes(searchTerm) ||
+        part.partCategory.toLowerCase().includes(searchTerm) ||
+        (part.partNumber && part.partNumber.toLowerCase().includes(searchTerm)) ||
+        (part.vehicleMake && part.vehicleMake.toLowerCase().includes(searchTerm)) ||
+        (part.vehicleModel && part.vehicleModel.toLowerCase().includes(searchTerm))
       );
     }
 
@@ -199,8 +351,16 @@ const PartsPage = () => {
       case "rating":
         filtered.sort((a, b) => b.sellerRating - a.sellerRating);
         break;
+      case "brand":
+        filtered.sort((a, b) => a.brand.localeCompare(b.brand));
+        break;
       default:
-        // Keep relevance order
+        // Keep relevance order, prioritize verified sellers
+        filtered.sort((a, b) => {
+          if (a.isVerified && !b.isVerified) return -1;
+          if (!a.isVerified && b.isVerified) return 1;
+          return 0;
+        });
         break;
     }
 
@@ -211,8 +371,26 @@ const PartsPage = () => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
+  // FIXED handleApplyFilters function
   const handleApplyFilters = (newFilters: any) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
+    console.log("Applying parts filters:", newFilters);
+    
+    // Create updated filters object matching PartsPage structure
+    const updatedFilters = { ...filters };
+    
+    // Map MobileFilterPanel filters to PartsPage structure
+    if (newFilters.search !== undefined) updatedFilters.search = newFilters.search;
+    if (newFilters.brand !== undefined) updatedFilters.brand = newFilters.brand === "" ? "all" : newFilters.brand;
+    if (newFilters.partCategory !== undefined) updatedFilters.partCategory = newFilters.partCategory === "" ? "all" : newFilters.partCategory;
+    if (newFilters.condition !== undefined) updatedFilters.condition = newFilters.condition === "" ? "all" : newFilters.condition;
+    if (newFilters.location !== undefined) updatedFilters.location = newFilters.location;
+    if (newFilters.minPrice !== undefined) updatedFilters.minPrice = typeof newFilters.minPrice === 'number' ? newFilters.minPrice : parseInt(newFilters.minPrice) || 0;
+    if (newFilters.maxPrice !== undefined) updatedFilters.maxPrice = typeof newFilters.maxPrice === 'number' ? newFilters.maxPrice : parseInt(newFilters.maxPrice) || 100000;
+    if (newFilters.warranty !== undefined) updatedFilters.warranty = newFilters.warranty;
+    if (newFilters.inStock !== undefined) updatedFilters.inStock = newFilters.inStock;
+    
+    setFilters(updatedFilters);
+    console.log("Updated parts filters:", updatedFilters);
   };
 
   const clearAllFilters = () => {
@@ -242,30 +420,43 @@ const PartsPage = () => {
   };
 
   const categoryTitle = category 
-    ? category.charAt(0).toUpperCase() + category.slice(1) + " Parts"
-    : "All Auto Parts";
+    ? category.charAt(0).toUpperCase() + category.slice(1).replace('-', ' ') + " Parts"
+    : "All Parts";
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-destructive mb-4">Error Loading Parts</h2>
+            <p className="text-muted-foreground mb-6">{error}</p>
+            <Button onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Desktop Filters Sidebar */}
-          <div className="hidden lg:block lg:w-80 flex-shrink-0">
-            <Card className="sticky top-8">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-primary">Filters</h2>
-                  <Button variant="outline" size="sm" onClick={clearAllFilters}>
-                    Clear All
-                  </Button>
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Desktop Sidebar Filters */}
+          <div className="hidden lg:block w-80 shrink-0">
+            <div className="sticky top-4">
+              <Card className="shadow-sm">
+                <div className="p-6 border-b">
+                  <h3 className="text-lg font-semibold text-primary">Search Filters</h3>
                 </div>
-
-                <div className="space-y-6">
+                <div className="p-6 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
                   {/* Search */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Search</label>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Search</label>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -277,343 +468,223 @@ const PartsPage = () => {
                     </div>
                   </div>
 
-                  {/* Price Range */}
-                  <div>
-                    <label className="text-sm font-medium mb-3 block">Price Range</label>
-                    <Slider
-                      value={[filters.minPrice, filters.maxPrice]}
-                      onValueChange={([min, max]) => {
-                        handleFilterChange("minPrice", min);
-                        handleFilterChange("maxPrice", max);
-                      }}
-                      max={100000}
-                      step={1000}
-                      className="mb-2"
-                    />
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>Rs. {filters.minPrice.toLocaleString()}</span>
-                      <span>Rs. {filters.maxPrice.toLocaleString()}</span>
-                    </div>
-                  </div>
-
                   {/* Brand */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Brand</label>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Brand</label>
                     <Select value={filters.brand} onValueChange={(value) => handleFilterChange("brand", value)}>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="All Brands" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Brands</SelectItem>
                         <SelectItem value="toyota">Toyota</SelectItem>
-                        <SelectItem value="honda">Honda</SelectItem>
-                        <SelectItem value="nissan">Nissan</SelectItem>
                         <SelectItem value="bmw">BMW</SelectItem>
+                        <SelectItem value="honda">Honda</SelectItem>
                         <SelectItem value="mercedes-benz">Mercedes-Benz</SelectItem>
-                        <SelectItem value="audi">Audi</SelectItem>
+                        <SelectItem value="brembo">Brembo</SelectItem>
+                        <SelectItem value="mann filter">Mann Filter</SelectItem>
                         <SelectItem value="bosch">Bosch</SelectItem>
                         <SelectItem value="denso">Denso</SelectItem>
-                        <SelectItem value="ngk">NGK</SelectItem>
-                        <SelectItem value="continental">Continental</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
-                  {/* Part Category */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Category</label>
+                  {/* Category */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Category</label>
                     <Select value={filters.partCategory} onValueChange={(value) => handleFilterChange("partCategory", value)}>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="All Categories" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Categories</SelectItem>
                         <SelectItem value="engine">Engine Parts</SelectItem>
-                        <SelectItem value="brakes">Brake System</SelectItem>
+                        <SelectItem value="brakes">Brakes</SelectItem>
+                        <SelectItem value="lights">Lights</SelectItem>
+                        <SelectItem value="filters">Filters</SelectItem>
+                        <SelectItem value="battery">Battery</SelectItem>
+                        <SelectItem value="transmission">Transmission</SelectItem>
                         <SelectItem value="suspension">Suspension</SelectItem>
                         <SelectItem value="electrical">Electrical</SelectItem>
-                        <SelectItem value="lighting">Lighting</SelectItem>
-                        <SelectItem value="body">Body Parts</SelectItem>
-                        <SelectItem value="interior">Interior</SelectItem>
-                        <SelectItem value="tires">Tires & Wheels</SelectItem>
-                        <SelectItem value="battery">Battery</SelectItem>
-                        <SelectItem value="accessories">Accessories</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
-                  {/* Condition */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Condition</label>
-                    <Select value={filters.condition} onValueChange={(value) => handleFilterChange("condition", value)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Any Condition</SelectItem>
-                        <SelectItem value="new">New</SelectItem>
-                        <SelectItem value="used">Used - Good</SelectItem>
-                        <SelectItem value="refurbished">Refurbished</SelectItem>
-                        <SelectItem value="oem">OEM</SelectItem>
-                        <SelectItem value="aftermarket">Aftermarket</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Vehicle Compatibility */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Vehicle Compatibility</label>
-                    <Input
-                      placeholder="e.g., Toyota Prius 2015-2020"
-                      value={filters.location}
-                      onChange={(e) => handleFilterChange("location", e.target.value)}
-                    />
-                  </div>
-
-                  {/* Location */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Location</label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="City or area"
-                        className="pl-10"
-                        value={filters.location}
-                        onChange={(e) => handleFilterChange("location", e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Additional Filters */}
+                  {/* Price Range */}
                   <div className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="warranty"
-                        checked={filters.warranty}
-                        onChange={(e) => handleFilterChange("warranty", e.target.checked)}
-                        className="rounded border-gray-300"
+                    <label className="text-sm font-medium">Price Range</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        type="number"
+                        placeholder="Min"
+                        value={filters.minPrice || ""}
+                        onChange={(e) => handleFilterChange("minPrice", parseInt(e.target.value) || 0)}
                       />
-                      <label htmlFor="warranty" className="text-sm">With Warranty</label>
+                      <Input
+                        type="number"
+                        placeholder="Max"
+                        value={filters.maxPrice || ""}
+                        onChange={(e) => handleFilterChange("maxPrice", parseInt(e.target.value) || 100000)}
+                      />
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="inStock"
-                        checked={filters.inStock}
-                        onChange={(e) => handleFilterChange("inStock", e.target.checked)}
-                        className="rounded border-gray-300"
-                      />
-                      <label htmlFor="inStock" className="text-sm">In Stock Only</label>
+                    <div className="text-xs text-muted-foreground">
+                      Rs. {filters.minPrice.toLocaleString()} - Rs. {filters.maxPrice.toLocaleString()}
                     </div>
                   </div>
+
+                  {/* Clear Filters */}
+                  <Button
+                    variant="outline"
+                    onClick={clearAllFilters}
+                    className="w-full"
+                  >
+                    Clear All Filters
+                  </Button>
                 </div>
-              </CardContent>
-            </Card>
+              </Card>
+            </div>
           </div>
 
           {/* Main Content */}
           <div className="flex-1">
-            {/* Page Header - Hidden on Mobile */}
-            <div className="mb-8 hidden md:block">
-              <h1 className="text-3xl font-bold text-primary mb-2">{categoryTitle}</h1>
-              <p className="text-muted-foreground">
-                Find genuine and aftermarket automotive parts from verified sellers
-              </p>
-            </div>
-
-            {/* Controls */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 mb-4 sm:mb-6">
-              <div className="flex items-center space-x-4">
-                {loading ? (
-                  <div className="flex items-center space-x-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-sm text-muted-foreground">Loading...</span>
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    {error ? 'Error loading parts' : `${filteredParts.length} parts found`}
-                  </p>
-                )}
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-primary">{categoryTitle}</h1>
+                <p className="text-muted-foreground">
+                  {loading ? "Loading..." : `${filteredParts.length} parts found`}
+                </p>
               </div>
-              
-              <div className="flex items-center space-x-2">
+
+              {/* Desktop Controls */}
+              <div className="hidden sm:flex items-center space-x-4">
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger className="w-48">
-                    <ArrowUpDown className="h-4 w-4 mr-2" />
-                    <SelectValue />
+                    <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="relevance">Relevance</SelectItem>
                     <SelectItem value="price-low">Price: Low to High</SelectItem>
                     <SelectItem value="price-high">Price: High to Low</SelectItem>
                     <SelectItem value="rating">Seller Rating</SelectItem>
+                    <SelectItem value="brand">Brand A-Z</SelectItem>
                   </SelectContent>
                 </Select>
 
-                <div className="hidden lg:flex border rounded-md">
+                <div className="flex border rounded-lg">
+                  <Button
+                    variant={viewMode === "list" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("list")}
+                    className="rounded-r-none"
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
                   <Button
                     variant={viewMode === "grid" ? "default" : "ghost"}
                     size="sm"
-                    onClick={() => !isMobile && setViewMode("grid")}
+                    onClick={() => setViewMode("grid")}
+                    className="rounded-l-none"
                     disabled={isMobile}
                   >
                     <Grid3x3 className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant={viewMode === "list" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => !isMobile && setViewMode("list")}
-                    disabled={isMobile}
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
                 </div>
+              </div>
+
+              {/* Mobile Sort */}
+              <div className="flex sm:hidden w-full">
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="relevance">Relevance</SelectItem>
+                    <SelectItem value="price-low">Price ↑</SelectItem>
+                    <SelectItem value="price-high">Price ↓</SelectItem>
+                    <SelectItem value="rating">Rating</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
+            {/* Loading State */}
+            {loading && (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <span className="ml-3 text-muted-foreground">Loading parts...</span>
+              </div>
+            )}
+
             {/* Results */}
-            {loading ? (
-              <div className="flex justify-center items-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin" />
-                <span className="ml-2">Loading parts...</span>
-              </div>
-            ) : error ? (
-              <div className="text-center py-12">
-                <p className="text-destructive mb-4">{error}</p>
-                <Button onClick={() => window.location.reload()}>Try Again</Button>
-              </div>
-            ) : filteredParts.length === 0 ? (
-              <div className="text-center py-12">
-                <Wrench className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No parts found</h3>
-                <p className="text-muted-foreground mb-4">Try adjusting your filters to see more results</p>
-                <Button onClick={clearAllFilters}>Clear Filters</Button>
-              </div>
-            ) : (
+            {!loading && (
               <>
-                {(viewMode === "grid" && !isMobile) ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {filteredParts.map((part) => (
-                      <Card 
-                        key={part.id} 
-                        className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                        onClick={() => handlePartClick(part.id)}
-                      >
-                        <div>
-                          <img
-                            src={part.image}
-                            alt={part.title}
-                            className="w-full h-48 object-cover"
-                          />
-                          <CardContent className="p-4">
-                            <div className="flex items-start justify-between mb-2">
-                              <h3 className="font-semibold text-lg line-clamp-2">{part.title}</h3>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleSave(part.id);
-                                }}
-                              >
-                                <Heart className="h-4 w-4" />
-                              </Button>
-                            </div>
-                            
-                            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                              {part.description}
-                            </p>
-                            
-                            <div className="flex items-center gap-2 mb-3">
-                              <Badge variant="secondary">{part.brand}</Badge>
-                              <Badge variant="outline">{part.partCategory}</Badge>
-                              <Badge variant={part.condition === "New" ? "default" : "secondary"}>
-                                {part.condition}
-                              </Badge>
-                              {part.warranty && <Badge className="bg-green-100 text-green-800">Warranty</Badge>}
-                              {part.isVerified && <Badge className="bg-blue-100 text-blue-800">✓ Verified</Badge>}
-                            </div>
-                            
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="space-y-1">
-                                <div className="flex items-center text-sm text-muted-foreground">
-                                  <MapPin className="w-3 h-3 mr-1" />
-                                  {part.location}
-                                </div>
-                                <div className="flex items-center text-sm text-muted-foreground">
-                                  <span className="text-yellow-500">★</span>
-                                  <span className="ml-1">{part.sellerRating} seller rating</span>
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-2xl font-bold text-primary">
-                                  Rs. {part.price.toLocaleString()}
-                                </p>
-                                <p className={`text-sm ${part.inStock ? 'text-green-600' : 'text-red-600'}`}>
-                                  {part.inStock ? 'In Stock' : 'Out of Stock'}
-                                </p>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </div>
-                      </Card>
-                    ))}
+                {filteredParts.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">No parts found</h3>
+                    <p className="text-muted-foreground mb-6">
+                      Try adjusting your filters or search terms
+                    </p>
+                    <Button onClick={clearAllFilters} variant="outline">
+                      Clear All Filters
+                    </Button>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className={
+                    viewMode === "grid" && !isMobile
+                      ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+                      : "space-y-4"
+                  }>
                     {filteredParts.map((part) => (
-                      <Card 
-                        key={part.id} 
-                        className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                      <Card
+                        key={part.id}
+                        className="overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer"
                         onClick={() => handlePartClick(part.id)}
                       >
-                        <div className="flex p-3 gap-3">
-                          {/* Image */}
-                          <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
+                        <div className="flex flex-col sm:flex-row">
+                          <div className="relative w-full sm:w-48 h-48 sm:h-32 flex-shrink-0">
                             <img
                               src={part.image}
                               alt={part.title}
-                              className="w-full h-full object-cover rounded-lg"
+                              className="w-full h-full object-cover"
                             />
+                            {part.isVerified && (
+                              <div className="absolute top-2 right-2">
+                                <Badge className="bg-success text-white text-xs">✓ Verified</Badge>
+                              </div>
+                            )}
+                            {!part.inStock && (
+                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                <Badge variant="destructive">Out of Stock</Badge>
+                              </div>
+                            )}
                           </div>
                           
-                          {/* Content */}
-                          <div className="flex-1 min-w-0 flex flex-col">
-                            {/* Title and Save Button */}
-                            <div className="flex justify-between items-start mb-1">
-                              <h3 className="font-semibold text-sm sm:text-base line-clamp-2 pr-1 flex-1">
-                                {part.title}
-                              </h3>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleSave(part.id);
-                                }} 
-                                className="p-1 ml-1"
-                              >
-                                <Heart className="h-3 w-3 sm:h-4 sm:w-4" />
-                              </Button>
-                            </div>
-                            
-                            {/* Price */}
-                            <div className="mb-2">
-                              <p className="text-lg sm:text-xl font-bold text-primary">
-                                Rs. {part.price.toLocaleString()}
+                          <div className="flex-1 p-4 flex flex-col justify-between">
+                            <div>
+                              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2">
+                                <h3 className="text-lg font-semibold text-primary mb-1 sm:mb-0">
+                                  {part.title}
+                                </h3>
+                                <p className="text-xl font-bold text-primary">
+                                  Rs. {part.price.toLocaleString()}
+                                </p>
+                              </div>
+                              
+                              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                                {part.description}
                               </p>
+                              
+                              <div className="flex flex-wrap gap-1 mb-2">
+                                <Badge variant="secondary" className="text-xs px-1.5 py-0.5 h-5">{part.brand}</Badge>
+                                <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">{part.condition}</Badge>
+                                {part.warranty && <Badge className="bg-green-100 text-green-800 text-xs px-1.5 py-0.5 h-5">Warranty</Badge>}
+                                {part.oem && <Badge className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 h-5">OEM</Badge>}
+                                {part.fastShipping && <Badge className="bg-purple-100 text-purple-800 text-xs px-1.5 py-0.5 h-5">Fast Ship</Badge>}
+                              </div>
                             </div>
                             
-                            {/* Part Details - Mobile Optimized */}
-                            <div className="flex flex-wrap gap-1 mb-2">
-                              <Badge variant="secondary" className="text-xs px-1.5 py-0.5 h-5">{part.brand}</Badge>
-                              <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">{part.condition}</Badge>
-                              {part.warranty && <Badge className="bg-green-100 text-green-800 text-xs px-1.5 py-0.5 h-5">Warranty</Badge>}
-                              {part.isVerified && <Badge className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 h-5">✓</Badge>}
-                            </div>
-                            
-                            {/* Bottom Row */}
                             <div className="flex items-center justify-between mt-auto">
                               <div className="flex flex-col space-y-0.5">
                                 <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
@@ -621,12 +692,35 @@ const PartsPage = () => {
                                   <span className="truncate">{part.location}</span>
                                 </div>
                                 <div className="flex items-center text-xs text-muted-foreground">
-                                  <span className="text-yellow-500">★</span>
-                                  <span className="ml-1">{part.sellerRating}</span>
+                                  <Star className="w-3 h-3 mr-1 text-yellow-500" />
+                                  <span>{part.sellerRating}</span>
                                   <span className={`ml-2 ${part.inStock ? 'text-green-600' : 'text-red-600'}`}>
                                     {part.inStock ? 'In Stock' : 'Out of Stock'}
                                   </span>
                                 </div>
+                              </div>
+                              
+                              <div className="flex space-x-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSave(part.id);
+                                  }}
+                                >
+                                  <Heart className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleContact(part.id);
+                                  }}
+                                >
+                                  <Settings className="w-4 h-4" />
+                                </Button>
                               </div>
                             </div>
                           </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Search, Filter, MapPin, DollarSign, Clock, Settings, Grid3x3, List, ArrowUpDown, Loader2, Heart, Wrench, Star } from "lucide-react";
+import { Search, Filter, MapPin, DollarSign, Clock, Settings, Grid3x3, List, ArrowUpDown, Loader2, Heart, Wrench, Star, Shield, CheckCircle, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -24,8 +24,19 @@ interface Service {
   responseTime: string;
   certified: boolean;
   warranty: boolean;
-  experience: number; // years
+  experience: number;
   isVerified: boolean;
+  // Enhanced properties
+  providerType?: string;
+  availability?: string;
+  homeService?: boolean;
+  pickupDropoff?: boolean;
+  emergencyService?: boolean;
+  onlineBooking?: boolean;
+  paymentOptions?: string;
+  languages?: string;
+  specialization?: string;
+  equipmentType?: string;
 }
 
 const ServicesPage = () => {
@@ -43,10 +54,10 @@ const ServicesPage = () => {
   // Check if mobile and set default view mode
   useEffect(() => {
     const checkMobile = () => {
-      const mobile = window.innerWidth < 768; // md breakpoint
+      const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
       if (mobile) {
-        setViewMode("list"); // Force list view on mobile
+        setViewMode("list");
       }
     };
 
@@ -66,7 +77,7 @@ const ServicesPage = () => {
     minRating: 0
   });
 
-  // Mock services data
+  // Enhanced mock services data
   const mockServices: Service[] = [
     {
       id: "1",
@@ -76,61 +87,101 @@ const ServicesPage = () => {
       location: "Colombo 05",
       image: "/api/placeholder/400/300",
       serviceType: "Maintenance",
-      providerName: "Pro Auto Care",
-      providerRating: 4.9,
-      responseTime: "Within 2 hours",
-      certified: true,
-      warranty: true,
-      experience: 15,
-      isVerified: true
-    },
-    {
-      id: "2",
-      title: "Engine Diagnostic & Repair",
-      description: "Advanced computerized engine diagnosis and professional repair services using latest diagnostic tools.",
-      price: 15000,
-      location: "Kandy",
-      image: "/api/placeholder/400/300",
-      serviceType: "Repair",
-      providerName: "Engine Experts Lanka",
+      providerName: "AutoCare Center",
       providerRating: 4.8,
       responseTime: "Same day",
       certified: true,
       warranty: true,
-      experience: 12,
-      isVerified: true
+      experience: 15,
+      isVerified: true,
+      providerType: "garage",
+      availability: "weekdays",
+      homeService: false,
+      pickupDropoff: true,
+      emergencyService: false,
+      onlineBooking: true,
+      paymentOptions: "card",
+      languages: "English, Sinhala",
+      specialization: "general",
+      equipmentType: "computerized"
+    },
+    {
+      id: "2",
+      title: "BMW Specialized Engine Repair",
+      description: "Expert BMW engine repair and maintenance by certified BMW technicians with genuine parts.",
+      price: 25000,
+      location: "Colombo 03",
+      image: "/api/placeholder/400/300",
+      serviceType: "Repair",
+      providerName: "BMW Service Center",
+      providerRating: 4.9,
+      responseTime: "Within 2 hours",
+      certified: true,
+      warranty: true,
+      experience: 20,
+      isVerified: true,
+      providerType: "dealership",
+      availability: "24-7",
+      homeService: false,
+      pickupDropoff: true,
+      emergencyService: true,
+      onlineBooking: true,
+      paymentOptions: "card",
+      languages: "English",
+      specialization: "bmw",
+      equipmentType: "computerized"
     },
     {
       id: "3",
-      title: "Pre-Purchase Vehicle Inspection",
-      description: "Comprehensive 120-point inspection for used vehicles with detailed digital report and recommendations.",
-      price: 12000,
-      location: "Galle",
+      title: "Mobile Car Wash & Detailing",
+      description: "Professional car wash and detailing service at your location. Interior and exterior cleaning.",
+      price: 3500,
+      location: "Kandy",
       image: "/api/placeholder/400/300",
-      serviceType: "Inspection",
-      providerName: "Auto Check Pro",
-      providerRating: 4.7,
-      responseTime: "Next day",
+      serviceType: "Detailing",
+      providerName: "Mobile Wash Pro",
+      providerRating: 4.6,
+      responseTime: "Within 3 hours",
       certified: false,
       warranty: false,
-      experience: 8,
-      isVerified: false
+      experience: 5,
+      isVerified: false,
+      providerType: "mobile",
+      availability: "weekends",
+      homeService: true,
+      pickupDropoff: false,
+      emergencyService: false,
+      onlineBooking: true,
+      paymentOptions: "cash",
+      languages: "Sinhala, Tamil",
+      specialization: "detailing",
+      equipmentType: "manual"
     },
     {
       id: "4",
-      title: "Brake System Service & Repair",
-      description: "Complete brake system inspection, brake pad replacement, and brake fluid service with safety guarantee.",
+      title: "Brake System Repair & Replacement",
+      description: "Complete brake system inspection, pad replacement, disc machining, and brake fluid change.",
       price: 6500,
       location: "Negombo",
       image: "/api/placeholder/400/300",
-      serviceType: "Maintenance",
+      serviceType: "Repair",
       providerName: "Brake Masters",
       providerRating: 4.6,
       responseTime: "Within 4 hours",
       certified: true,
       warranty: true,
       experience: 10,
-      isVerified: true
+      isVerified: true,
+      providerType: "specialist",
+      availability: "weekdays",
+      homeService: false,
+      pickupDropoff: false,
+      emergencyService: false,
+      onlineBooking: false,
+      paymentOptions: "cash",
+      languages: "English, Sinhala",
+      specialization: "brakes",
+      equipmentType: "hydraulic"
     },
     {
       id: "5",
@@ -146,7 +197,69 @@ const ServicesPage = () => {
       certified: false,
       warranty: true,
       experience: 6,
-      isVerified: false
+      isVerified: false,
+      providerType: "garage",
+      availability: "weekdays",
+      homeService: false,
+      pickupDropoff: false,
+      emergencyService: false,
+      onlineBooking: true,
+      paymentOptions: "card",
+      languages: "English, Tamil",
+      specialization: "ac-service",
+      equipmentType: "computerized"
+    },
+    {
+      id: "6",
+      title: "Emergency Towing Service 24/7",
+      description: "24/7 emergency towing service for breakdowns, accidents, and vehicle recovery anywhere in Colombo.",
+      price: 2500,
+      location: "Colombo (Island-wide)",
+      image: "/api/placeholder/400/300",
+      serviceType: "Emergency",
+      providerName: "FastTow Emergency",
+      providerRating: 4.7,
+      responseTime: "Within 30 minutes",
+      certified: true,
+      warranty: false,
+      experience: 12,
+      isVerified: true,
+      providerType: "chain",
+      availability: "24-7",
+      homeService: true,
+      pickupDropoff: true,
+      emergencyService: true,
+      onlineBooking: true,
+      paymentOptions: "card",
+      languages: "English, Sinhala, Tamil",
+      specialization: "towing",
+      equipmentType: "hydraulic"
+    },
+    {
+      id: "7",
+      title: "Toyota Hybrid Specialist Service",
+      description: "Specialized service for Toyota hybrid vehicles including battery diagnostics and maintenance.",
+      price: 12000,
+      location: "Galle",
+      image: "/api/placeholder/400/300",
+      serviceType: "Maintenance",
+      providerName: "HybridTech Solutions",
+      providerRating: 4.8,
+      responseTime: "Next day",
+      certified: true,
+      warranty: true,
+      experience: 8,
+      isVerified: true,
+      providerType: "specialist",
+      availability: "weekdays",
+      homeService: false,
+      pickupDropoff: true,
+      emergencyService: false,
+      onlineBooking: false,
+      paymentOptions: "installments",
+      languages: "English, Sinhala",
+      specialization: "hybrid",
+      equipmentType: "computerized"
     }
   ];
 
@@ -170,17 +283,19 @@ const ServicesPage = () => {
     loadServices();
   }, []);
 
-  // Filter and sort services
+  // Enhanced filter logic
   useEffect(() => {
     let filtered = [...services];
 
     // Apply filters
     if (filters.search) {
+      const searchTerm = filters.search.toLowerCase();
       filtered = filtered.filter(service =>
-        service.title.toLowerCase().includes(filters.search.toLowerCase()) ||
-        service.providerName.toLowerCase().includes(filters.search.toLowerCase()) ||
-        service.description.toLowerCase().includes(filters.search.toLowerCase()) ||
-        service.serviceType.toLowerCase().includes(filters.search.toLowerCase())
+        service.title.toLowerCase().includes(searchTerm) ||
+        service.providerName.toLowerCase().includes(searchTerm) ||
+        service.description.toLowerCase().includes(searchTerm) ||
+        service.serviceType.toLowerCase().includes(searchTerm) ||
+        (service.specialization && service.specialization.toLowerCase().includes(searchTerm))
       );
     }
 
@@ -226,8 +341,27 @@ const ServicesPage = () => {
       case "experience":
         filtered.sort((a, b) => b.experience - a.experience);
         break;
+      case "response-time":
+        // Simple response time sorting (could be more sophisticated)
+        filtered.sort((a, b) => {
+          const aTime = a.responseTime.toLowerCase();
+          const bTime = b.responseTime.toLowerCase();
+          if (aTime.includes('30 minutes')) return -1;
+          if (bTime.includes('30 minutes')) return 1;
+          if (aTime.includes('same day')) return -1;
+          if (bTime.includes('same day')) return 1;
+          return 0;
+        });
+        break;
       default:
-        // Keep relevance order
+        // Keep relevance order, prioritize verified and certified providers
+        filtered.sort((a, b) => {
+          if (a.isVerified && !b.isVerified) return -1;
+          if (!a.isVerified && b.isVerified) return 1;
+          if (a.certified && !b.certified) return -1;
+          if (!a.certified && b.certified) return 1;
+          return 0;
+        });
         break;
     }
 
@@ -238,8 +372,25 @@ const ServicesPage = () => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
+  // FIXED handleApplyFilters function
   const handleApplyFilters = (newFilters: any) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
+    console.log("Applying service filters:", newFilters);
+    
+    // Create updated filters object matching ServicesPage structure  
+    const updatedFilters = { ...filters };
+    
+    // Map MobileFilterPanel filters to ServicesPage structure
+    if (newFilters.search !== undefined) updatedFilters.search = newFilters.search;
+    if (newFilters.serviceType !== undefined) updatedFilters.serviceType = newFilters.serviceType === "" ? "all" : newFilters.serviceType;
+    if (newFilters.location !== undefined) updatedFilters.location = newFilters.location;
+    if (newFilters.minPrice !== undefined) updatedFilters.minPrice = typeof newFilters.minPrice === 'number' ? newFilters.minPrice : parseInt(newFilters.minPrice) || 0;
+    if (newFilters.maxPrice !== undefined) updatedFilters.maxPrice = typeof newFilters.maxPrice === 'number' ? newFilters.maxPrice : parseInt(newFilters.maxPrice) || 50000;
+    if (newFilters.certified !== undefined) updatedFilters.certified = newFilters.certified;
+    if (newFilters.warranty !== undefined) updatedFilters.warranty = newFilters.warranty;
+    if (newFilters.minRating !== undefined) updatedFilters.minRating = typeof newFilters.minRating === 'number' ? newFilters.minRating : parseFloat(newFilters.minRating) || 0;
+    
+    setFilters(updatedFilters);
+    console.log("Updated service filters:", updatedFilters);
   };
 
   const clearAllFilters = () => {
@@ -268,30 +419,43 @@ const ServicesPage = () => {
   };
 
   const categoryTitle = category 
-    ? category.charAt(0).toUpperCase() + category.slice(1) + " Services"
-    : "All Automotive Services";
+    ? category.charAt(0).toUpperCase() + category.slice(1).replace('-', ' ') + " Services"
+    : "All Services";
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-destructive mb-4">Error Loading Services</h2>
+            <p className="text-muted-foreground mb-6">{error}</p>
+            <Button onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Desktop Filters Sidebar */}
-          <div className="hidden lg:block lg:w-80 flex-shrink-0">
-            <Card className="sticky top-8">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-primary">Filters</h2>
-                  <Button variant="outline" size="sm" onClick={clearAllFilters}>
-                    Clear All
-                  </Button>
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Desktop Sidebar Filters */}
+          <div className="hidden lg:block w-80 shrink-0">
+            <div className="sticky top-4">
+              <Card className="shadow-sm">
+                <div className="p-6 border-b">
+                  <h3 className="text-lg font-semibold text-primary">Search Filters</h3>
                 </div>
-
-                <div className="space-y-6">
+                <div className="p-6 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
                   {/* Search */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Search</label>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Search</label>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -303,318 +467,218 @@ const ServicesPage = () => {
                     </div>
                   </div>
 
-                  {/* Price Range */}
-                  <div>
-                    <label className="text-sm font-medium mb-3 block">Price Range</label>
-                    <Slider
-                      value={[filters.minPrice, filters.maxPrice]}
-                      onValueChange={([min, max]) => {
-                        handleFilterChange("minPrice", min);
-                        handleFilterChange("maxPrice", max);
-                      }}
-                      max={50000}
-                      step={500}
-                      className="mb-2"
-                    />
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>Rs. {filters.minPrice.toLocaleString()}</span>
-                      <span>Rs. {filters.maxPrice.toLocaleString()}</span>
-                    </div>
-                  </div>
-
                   {/* Service Type */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Service Type</label>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Service Type</label>
                     <Select value={filters.serviceType} onValueChange={(value) => handleFilterChange("serviceType", value)}>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="All Services" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Services</SelectItem>
                         <SelectItem value="maintenance">Maintenance</SelectItem>
                         <SelectItem value="repair">Repair</SelectItem>
+                        <SelectItem value="detailing">Car Detailing</SelectItem>
+                        <SelectItem value="emergency">Emergency</SelectItem>
                         <SelectItem value="inspection">Inspection</SelectItem>
                         <SelectItem value="bodywork">Body Work</SelectItem>
                         <SelectItem value="electrical">Electrical</SelectItem>
-                        <SelectItem value="painting">Painting</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
-                  {/* Location */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Location</label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="City or area"
-                        className="pl-10"
-                        value={filters.location}
-                        onChange={(e) => handleFilterChange("location", e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Minimum Rating */}
-                  <div>
-                    <label className="text-sm font-medium mb-3 block">Minimum Rating</label>
-                    <Slider
-                      value={[filters.minRating]}
-                      onValueChange={([rating]) => handleFilterChange("minRating", rating)}
-                      max={5}
-                      step={0.1}
-                      className="mb-2"
-                    />
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>Any Rating</span>
-                      <span>{filters.minRating}+ ★</span>
-                    </div>
-                  </div>
-
-                  {/* Additional Filters */}
+                  {/* Price Range */}
                   <div className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="certified"
-                        checked={filters.certified}
-                        onChange={(e) => handleFilterChange("certified", e.target.checked)}
-                        className="rounded border-gray-300"
+                    <label className="text-sm font-medium">Price Range</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        type="number"
+                        placeholder="Min"
+                        value={filters.minPrice || ""}
+                        onChange={(e) => handleFilterChange("minPrice", parseInt(e.target.value) || 0)}
                       />
-                      <label htmlFor="certified" className="text-sm">Certified Providers</label>
+                      <Input
+                        type="number"
+                        placeholder="Max"
+                        value={filters.maxPrice || ""}
+                        onChange={(e) => handleFilterChange("maxPrice", parseInt(e.target.value) || 50000)}
+                      />
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="warranty"
-                        checked={filters.warranty}
-                        onChange={(e) => handleFilterChange("warranty", e.target.checked)}
-                        className="rounded border-gray-300"
-                      />
-                      <label htmlFor="warranty" className="text-sm">Service Warranty</label>
+                    <div className="text-xs text-muted-foreground">
+                      Rs. {filters.minPrice.toLocaleString()} - Rs. {filters.maxPrice.toLocaleString()}
                     </div>
                   </div>
+
+                  {/* Rating */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Minimum Rating</label>
+                    <Select value={filters.minRating.toString()} onValueChange={(value) => handleFilterChange("minRating", parseFloat(value))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Any Rating" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0">Any Rating</SelectItem>
+                        <SelectItem value="3">3+ Stars</SelectItem>
+                        <SelectItem value="4">4+ Stars</SelectItem>
+                        <SelectItem value="4.5">4.5+ Stars</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Clear Filters */}
+                  <Button
+                    variant="outline"
+                    onClick={clearAllFilters}
+                    className="w-full"
+                  >
+                    Clear All Filters
+                  </Button>
                 </div>
-              </CardContent>
-            </Card>
+              </Card>
+            </div>
           </div>
 
           {/* Main Content */}
           <div className="flex-1">
-            {/* Page Header - Hidden on Mobile */}
-            <div className="mb-8 hidden md:block">
-              <h1 className="text-3xl font-bold text-primary mb-2">{categoryTitle}</h1>
-              <p className="text-muted-foreground">
-                Professional automotive services from certified experts and trusted providers
-              </p>
-            </div>
-
-            {/* Controls */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 mb-4 sm:mb-6">
-              <div className="flex items-center space-x-4">
-                {loading ? (
-                  <div className="flex items-center space-x-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-sm text-muted-foreground">Loading...</span>
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    {error ? 'Error loading services' : `${filteredServices.length} services found`}
-                  </p>
-                )}
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-primary">{categoryTitle}</h1>
+                <p className="text-muted-foreground">
+                  {loading ? "Loading..." : `${filteredServices.length} services found`}
+                </p>
               </div>
-              
-              <div className="flex items-center space-x-2">
+
+              {/* Desktop Controls */}
+              <div className="hidden sm:flex items-center space-x-4">
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger className="w-48">
-                    <ArrowUpDown className="h-4 w-4 mr-2" />
-                    <SelectValue />
+                    <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="relevance">Relevance</SelectItem>
                     <SelectItem value="price-low">Price: Low to High</SelectItem>
                     <SelectItem value="price-high">Price: High to Low</SelectItem>
-                    <SelectItem value="rating">Provider Rating</SelectItem>
+                    <SelectItem value="rating">Rating</SelectItem>
                     <SelectItem value="experience">Experience</SelectItem>
+                    <SelectItem value="response-time">Response Time</SelectItem>
                   </SelectContent>
                 </Select>
 
-                <div className="hidden lg:flex border rounded-md">
+                <div className="flex border rounded-lg">
+                  <Button
+                    variant={viewMode === "list" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("list")}
+                    className="rounded-r-none"
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
                   <Button
                     variant={viewMode === "grid" ? "default" : "ghost"}
                     size="sm"
-                    onClick={() => !isMobile && setViewMode("grid")}
+                    onClick={() => setViewMode("grid")}
+                    className="rounded-l-none"
                     disabled={isMobile}
                   >
                     <Grid3x3 className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant={viewMode === "list" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => !isMobile && setViewMode("list")}
-                    disabled={isMobile}
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
                 </div>
+              </div>
+
+              {/* Mobile Sort */}
+              <div className="flex sm:hidden w-full">
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="relevance">Relevance</SelectItem>
+                    <SelectItem value="price-low">Price ↑</SelectItem>
+                    <SelectItem value="price-high">Price ↓</SelectItem>
+                    <SelectItem value="rating">Rating</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
+            {/* Loading State */}
+            {loading && (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <span className="ml-3 text-muted-foreground">Loading services...</span>
+              </div>
+            )}
+
             {/* Results */}
-            {loading ? (
-              <div className="flex justify-center items-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin" />
-                <span className="ml-2">Loading services...</span>
-              </div>
-            ) : error ? (
-              <div className="text-center py-12">
-                <p className="text-destructive mb-4">{error}</p>
-                <Button onClick={() => window.location.reload()}>Try Again</Button>
-              </div>
-            ) : filteredServices.length === 0 ? (
-              <div className="text-center py-12">
-                <Wrench className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No services found</h3>
-                <p className="text-muted-foreground mb-4">Try adjusting your filters to see more results</p>
-                <Button onClick={clearAllFilters}>Clear Filters</Button>
-              </div>
-            ) : (
+            {!loading && (
               <>
-                {(viewMode === "grid" && !isMobile) ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {filteredServices.map((service) => (
-                      <Card 
-                        key={service.id} 
-                        className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                        onClick={() => handleServiceClick(service.id)}
-                      >
-                        <div>
-                          <img
-                            src={service.image}
-                            alt={service.title}
-                            className="w-full h-48 object-cover"
-                          />
-                          <CardContent className="p-4">
-                            <div className="flex items-start justify-between mb-2">
-                              <h3 className="font-semibold text-lg line-clamp-2">{service.title}</h3>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleSave(service.id);
-                                }}
-                              >
-                                <Heart className="h-4 w-4" />
-                              </Button>
-                            </div>
-                            
-                            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                              {service.description}
-                            </p>
-                            
-                            <div className="flex items-center gap-2 mb-3">
-                              <Badge variant="secondary">{service.serviceType}</Badge>
-                              {service.certified && (
-                                <Badge className="bg-green-100 text-green-800">✓ Certified</Badge>
-                              )}
-                              {service.warranty && (
-                                <Badge className="bg-blue-100 text-blue-800">Warranty</Badge>
-                              )}
-                              {service.isVerified && (
-                                <Badge className="bg-purple-100 text-purple-800">✓ Verified</Badge>
-                              )}
-                            </div>
-                            
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="space-y-1">
-                                <div className="flex items-center text-sm text-muted-foreground">
-                                  <MapPin className="w-3 h-3 mr-1" />
-                                  {service.location}
-                                </div>
-                                <div className="flex items-center text-sm text-muted-foreground">
-                                  <Star className="w-3 h-3 mr-1 text-yellow-500" />
-                                  {service.providerName} • {service.providerRating}
-                                </div>
-                                <div className="flex items-center text-sm text-muted-foreground">
-                                  <Clock className="w-3 h-3 mr-1" />
-                                  {service.responseTime}
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-2xl font-bold text-primary">
-                                  Rs. {service.price.toLocaleString()}
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                  {service.experience}+ years exp.
-                                </p>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </div>
-                      </Card>
-                    ))}
+                {filteredServices.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Wrench className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">No services found</h3>
+                    <p className="text-muted-foreground mb-6">
+                      Try adjusting your filters or search terms
+                    </p>
+                    <Button onClick={clearAllFilters} variant="outline">
+                      Clear All Filters
+                    </Button>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className={
+                    viewMode === "grid" && !isMobile
+                      ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+                      : "space-y-4"
+                  }>
                     {filteredServices.map((service) => (
-                      <Card 
-                        key={service.id} 
-                        className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                      <Card
+                        key={service.id}
+                        className="overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer"
                         onClick={() => handleServiceClick(service.id)}
                       >
-                        <div className="flex p-3 gap-3">
-                          {/* Image */}
-                          <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
+                        <div className="flex flex-col sm:flex-row">
+                          <div className="relative w-full sm:w-48 h-48 sm:h-32 flex-shrink-0">
                             <img
                               src={service.image}
                               alt={service.title}
-                              className="w-full h-full object-cover rounded-lg"
+                              className="w-full h-full object-cover"
                             />
+                            {service.isVerified && (
+                              <div className="absolute top-2 right-2">
+                                <Badge className="bg-success text-white text-xs">✓ Verified</Badge>
+                              </div>
+                            )}
+                            {service.emergencyService && (
+                              <div className="absolute top-2 left-2">
+                                <Badge className="bg-red-100 text-red-800 text-xs">Emergency</Badge>
+                              </div>
+                            )}
                           </div>
                           
-                          {/* Content */}
-                          <div className="flex-1 min-w-0 flex flex-col">
-                            {/* Title and Save Button */}
-                            <div className="flex justify-between items-start mb-1">
-                              <h3 className="font-semibold text-sm sm:text-base line-clamp-2 pr-1 flex-1">
-                                {service.title}
-                              </h3>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleSave(service.id);
-                                }} 
-                                className="p-1 ml-1"
-                              >
-                                <Heart className="h-3 w-3 sm:h-4 sm:w-4" />
-                              </Button>
-                            </div>
-                            
-                            {/* Price */}
-                            <div className="mb-2">
-                              <p className="text-lg sm:text-xl font-bold text-primary">
-                                Rs. {service.price.toLocaleString()}
+                          <div className="flex-1 p-4 flex flex-col justify-between">
+                            <div>
+                              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2">
+                                <h3 className="text-lg font-semibold text-primary mb-1 sm:mb-0">
+                                  {service.title}
+                                </h3>
+                                <p className="text-xl font-bold text-primary">
+                                  Rs. {service.price.toLocaleString()}
+                                </p>
+                              </div>
+                              
+                              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                                {service.description}
                               </p>
+                              
+                              <div className="flex flex-wrap gap-1 mb-2">
+                                <Badge variant="secondary" className="text-xs px-1.5 py-0.5 h-5">{service.serviceType}</Badge>
+                                {service.certified && <Badge className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 h-5">Certified</Badge>}
+                                {service.warranty && <Badge className="bg-green-100 text-green-800 text-xs px-1.5 py-0.5 h-5">Warranty</Badge>}
+                                {service.homeService && <Badge className="bg-purple-100 text-purple-800 text-xs px-1.5 py-0.5 h-5">Home Service</Badge>}
+                                {service.onlineBooking && <Badge className="bg-orange-100 text-orange-800 text-xs px-1.5 py-0.5 h-5">Online Booking</Badge>}
+                              </div>
                             </div>
                             
-                            {/* Service Details - Mobile Optimized */}
-                            <div className="flex flex-wrap gap-1 mb-2">
-                              <Badge variant="secondary" className="text-xs px-1.5 py-0.5 h-5">{service.serviceType}</Badge>
-                              {service.certified && (
-                                <Badge className="bg-green-100 text-green-800 text-xs px-1.5 py-0.5 h-5">✓ Cert</Badge>
-                              )}
-                              {service.warranty && (
-                                <Badge className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 h-5">Warranty</Badge>
-                              )}
-                              {service.isVerified && (
-                                <Badge className="bg-purple-100 text-purple-800 text-xs px-1.5 py-0.5 h-5">✓</Badge>
-                              )}
-                            </div>
-                            
-                            {/* Bottom Row */}
                             <div className="flex items-center justify-between mt-auto">
                               <div className="flex flex-col space-y-0.5">
                                 <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
@@ -622,13 +686,35 @@ const ServicesPage = () => {
                                   <span className="truncate">{service.location}</span>
                                 </div>
                                 <div className="flex items-center text-xs text-muted-foreground">
-                                  <Star className="w-3 h-3 mr-1 text-yellow-500 flex-shrink-0" />
-                                  <span className="truncate">{service.providerName} • {service.providerRating}</span>
+                                  <Star className="w-3 h-3 mr-1 text-yellow-500" />
+                                  <span>{service.providerRating}</span>
+                                  <span className="mx-1">•</span>
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  <span>{service.responseTime}</span>
                                 </div>
-                                <div className="flex items-center text-xs text-muted-foreground">
-                                  <Clock className="w-3 h-3 mr-1 flex-shrink-0" />
-                                  <span className="truncate">{service.responseTime}</span>
-                                </div>
+                              </div>
+                              
+                              <div className="flex space-x-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSave(service.id);
+                                  }}
+                                >
+                                  <Heart className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleContact(service.id);
+                                  }}
+                                >
+                                  <Phone className="w-4 h-4" />
+                                </Button>
                               </div>
                             </div>
                           </div>

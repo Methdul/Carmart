@@ -41,11 +41,25 @@ interface Vehicle {
   condition?: string;
   engineCapacity?: string;
   color?: string;
+  doors?: number;
+  drivetrain?: string;
+  seatingCapacity?: number;
+  // Features
+  airConditioning?: boolean;
+  bluetooth?: boolean;
+  reverseCamera?: boolean;
+  sunroof?: boolean;
+  leatherSeats?: boolean;
+  alloyWheels?: boolean;
+  abs?: boolean;
+  airbags?: boolean;
+  powerSteering?: boolean;
 }
 
 interface Filters {
   search: string;
   make: string;
+  model: string;
   bodyType: string;
   fuelType: string;
   transmission: string;
@@ -56,6 +70,23 @@ interface Filters {
   minPrice: number;
   maxPrice: number;
   healthScore: number[];
+  mileageFrom: string;
+  mileageTo: string;
+  doors: string;
+  drivetrain: string;
+  color: string;
+  engineSize: string;
+  seatingCapacity: string;
+  // Feature filters
+  airConditioning: boolean;
+  bluetooth: boolean;
+  reverseCamera: boolean;
+  sunroof: boolean;
+  leatherSeats: boolean;
+  alloyWheels: boolean;
+  abs: boolean;
+  airbags: boolean;
+  powerSteering: boolean;
 }
 
 const SearchPage = () => {
@@ -73,10 +104,10 @@ const SearchPage = () => {
   // Check if mobile and set default view mode
   useEffect(() => {
     const checkMobile = () => {
-      const mobile = window.innerWidth < 768; // md breakpoint
+      const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
       if (mobile) {
-        setViewMode("list"); // Force list view on mobile
+        setViewMode("list");
       }
     };
 
@@ -88,6 +119,7 @@ const SearchPage = () => {
   const [filters, setFilters] = useState<Filters>({
     search: "",
     make: "all",
+    model: "",
     bodyType: "",
     fuelType: "all",
     transmission: "",
@@ -97,10 +129,26 @@ const SearchPage = () => {
     condition: "",
     minPrice: 0,
     maxPrice: 50000000,
-    healthScore: [0, 100]
+    healthScore: [0, 100],
+    mileageFrom: "",
+    mileageTo: "",
+    doors: "",
+    drivetrain: "",
+    color: "",
+    engineSize: "",
+    seatingCapacity: "",
+    airConditioning: false,
+    bluetooth: false,
+    reverseCamera: false,
+    sunroof: false,
+    leatherSeats: false,
+    alloyWheels: false,
+    abs: false,
+    airbags: false,
+    powerSteering: false
   });
 
-  // Mock vehicle data
+  // Enhanced mock vehicle data with more properties
   const mockVehicles: Vehicle[] = [
     {
       id: "1",
@@ -120,8 +168,19 @@ const SearchPage = () => {
       model: "3 Series",
       bodyType: "Sedan",
       condition: "Excellent",
-      engineCapacity: "1998cc",
-      color: "Alpine White"
+      color: "White",
+      doors: 4,
+      drivetrain: "RWD",
+      seatingCapacity: 5,
+      airConditioning: true,
+      bluetooth: true,
+      reverseCamera: true,
+      sunroof: true,
+      leatherSeats: true,
+      alloyWheels: true,
+      abs: true,
+      airbags: true,
+      powerSteering: true
     },
     {
       id: "2",
@@ -134,57 +193,154 @@ const SearchPage = () => {
       transmission: "CVT",
       image: "/api/placeholder/400/300",
       healthScore: 88,
-      sellerRating: 4.9,
+      sellerRating: 4.7,
       isVerified: true,
-      isFeatured: true,
+      isFeatured: false,
       make: "Toyota",
       model: "RAV4",
       bodyType: "SUV",
-      condition: "Excellent",
-      engineCapacity: "2487cc",
-      color: "Silver Metallic"
+      condition: "Very Good",
+      color: "Silver",
+      doors: 5,
+      drivetrain: "AWD",
+      seatingCapacity: 5,
+      airConditioning: true,
+      bluetooth: true,
+      reverseCamera: true,
+      sunroof: false,
+      leatherSeats: false,
+      alloyWheels: true,
+      abs: true,
+      airbags: true,
+      powerSteering: true
     },
     {
       id: "3",
-      title: "Honda Civic Type R",
-      price: 18500000,
-      year: 2022,
-      mileage: 15000,
+      title: "Honda Civic RS Turbo",
+      price: 8900000,
+      year: 2019,
+      mileage: 58000,
       location: "Galle",
       fuelType: "Petrol",
-      transmission: "Manual",
+      transmission: "CVT",
       image: "/api/placeholder/400/300",
-      healthScore: 95,
-      sellerRating: 4.7,
+      healthScore: 85,
+      sellerRating: 4.6,
       isVerified: false,
       isFeatured: false,
       make: "Honda",
       model: "Civic",
-      bodyType: "Hatchback",
-      condition: "Excellent",
-      engineCapacity: "1996cc",
-      color: "Championship White"
+      bodyType: "Sedan",
+      condition: "Good",
+      color: "Black",
+      doors: 4,
+      drivetrain: "FWD",
+      seatingCapacity: 5,
+      airConditioning: true,
+      bluetooth: true,
+      reverseCamera: false,
+      sunroof: false,
+      leatherSeats: false,
+      alloyWheels: true,
+      abs: true,
+      airbags: true,
+      powerSteering: true
     },
     {
       id: "4",
-      title: "Mercedes-Benz C-Class C200",
-      price: 22000000,
-      year: 2019,
-      mileage: 45000,
+      title: "Mercedes-Benz C200 AMG Line",
+      price: 18500000,
+      year: 2022,
+      mileage: 15000,
       location: "Colombo",
       fuelType: "Petrol",
       transmission: "Automatic",
       image: "/api/placeholder/400/300",
-      healthScore: 85,
-      sellerRating: 4.6,
+      healthScore: 96,
+      sellerRating: 4.9,
       isVerified: true,
-      isFeatured: false,
+      isFeatured: true,
       make: "Mercedes-Benz",
       model: "C-Class",
       bodyType: "Sedan",
+      condition: "Excellent",
+      color: "Blue",
+      doors: 4,
+      drivetrain: "RWD",
+      seatingCapacity: 5,
+      airConditioning: true,
+      bluetooth: true,
+      reverseCamera: true,
+      sunroof: true,
+      leatherSeats: true,
+      alloyWheels: true,
+      abs: true,
+      airbags: true,
+      powerSteering: true
+    },
+    {
+      id: "5",
+      title: "Nissan X-Trail 4WD",
+      price: 9800000,
+      year: 2018,
+      mileage: 72000,
+      location: "Negombo",
+      fuelType: "Petrol",
+      transmission: "Automatic",
+      image: "/api/placeholder/400/300",
+      healthScore: 78,
+      sellerRating: 4.4,
+      isVerified: false,
+      isFeatured: false,
+      make: "Nissan",
+      model: "X-Trail",
+      bodyType: "SUV",
       condition: "Good",
-      engineCapacity: "1991cc",
-      color: "Obsidian Black"
+      color: "Gray",
+      doors: 5,
+      drivetrain: "4WD",
+      seatingCapacity: 7,
+      airConditioning: true,
+      bluetooth: false,
+      reverseCamera: false,
+      sunroof: false,
+      leatherSeats: false,
+      alloyWheels: true,
+      abs: true,
+      airbags: true,
+      powerSteering: true
+    },
+    {
+      id: "6",
+      title: "Audi A4 TFSI Quattro",
+      price: 16200000,
+      year: 2021,
+      mileage: 22000,
+      location: "Kandy",
+      fuelType: "Petrol",
+      transmission: "Automatic",
+      image: "/api/placeholder/400/300",
+      healthScore: 91,
+      sellerRating: 4.7,
+      isVerified: true,
+      isFeatured: true,
+      make: "Audi",
+      model: "A4",
+      bodyType: "Sedan",
+      condition: "Excellent",
+      color: "White",
+      doors: 4,
+      drivetrain: "AWD",
+      seatingCapacity: 5,
+      airConditioning: true,
+      bluetooth: true,
+      reverseCamera: true,
+      sunroof: true,
+      leatherSeats: true,
+      alloyWheels: true,
+      abs: true,
+      airbags: true,
+      powerSteering: true
     }
   ];
 
@@ -208,44 +364,160 @@ const SearchPage = () => {
     loadVehicles();
   }, []);
 
-  // Filter and sort vehicles
+  // Enhanced filter and sort vehicles
   useEffect(() => {
     let filtered = [...vehicles];
 
-    // Apply filters
+    // Search filter
     if (filters.search) {
+      const searchTerm = filters.search.toLowerCase();
       filtered = filtered.filter(vehicle =>
-        vehicle.title.toLowerCase().includes(filters.search.toLowerCase()) ||
-        (vehicle.make && vehicle.make.toLowerCase().includes(filters.search.toLowerCase())) ||
-        (vehicle.model && vehicle.model.toLowerCase().includes(filters.search.toLowerCase()))
+        vehicle.title.toLowerCase().includes(searchTerm) ||
+        (vehicle.make && vehicle.make.toLowerCase().includes(searchTerm)) ||
+        (vehicle.model && vehicle.model.toLowerCase().includes(searchTerm)) ||
+        vehicle.location.toLowerCase().includes(searchTerm)
       );
     }
 
+    // Make filter
     if (filters.make && filters.make !== "all") {
       filtered = filtered.filter(vehicle => 
         vehicle.make && vehicle.make.toLowerCase() === filters.make.toLowerCase()
       );
     }
 
+    // Model filter
+    if (filters.model) {
+      filtered = filtered.filter(vehicle => 
+        vehicle.model && vehicle.model.toLowerCase().includes(filters.model.toLowerCase())
+      );
+    }
+
+    // Body type filter
+    if (filters.bodyType) {
+      filtered = filtered.filter(vehicle => 
+        vehicle.bodyType && vehicle.bodyType.toLowerCase() === filters.bodyType.toLowerCase()
+      );
+    }
+
+    // Fuel type filter
     if (filters.fuelType && filters.fuelType !== "all") {
       filtered = filtered.filter(vehicle => 
         vehicle.fuelType.toLowerCase() === filters.fuelType.toLowerCase()
       );
     }
 
+    // Transmission filter
+    if (filters.transmission) {
+      filtered = filtered.filter(vehicle => 
+        vehicle.transmission.toLowerCase() === filters.transmission.toLowerCase()
+      );
+    }
+
+    // Year range filter
+    if (filters.yearFrom) {
+      filtered = filtered.filter(vehicle => 
+        vehicle.year >= parseInt(filters.yearFrom)
+      );
+    }
+    if (filters.yearTo) {
+      filtered = filtered.filter(vehicle => 
+        vehicle.year <= parseInt(filters.yearTo)
+      );
+    }
+
+    // Mileage range filter
+    if (filters.mileageFrom) {
+      filtered = filtered.filter(vehicle => 
+        vehicle.mileage >= parseInt(filters.mileageFrom)
+      );
+    }
+    if (filters.mileageTo) {
+      filtered = filtered.filter(vehicle => 
+        vehicle.mileage <= parseInt(filters.mileageTo)
+      );
+    }
+
+    // Location filter
     if (filters.location) {
       filtered = filtered.filter(vehicle => 
         vehicle.location.toLowerCase().includes(filters.location.toLowerCase())
       );
     }
 
+    // Condition filter
+    if (filters.condition) {
+      filtered = filtered.filter(vehicle => 
+        vehicle.condition && vehicle.condition.toLowerCase() === filters.condition.toLowerCase()
+      );
+    }
+
+    // Price range filter
     filtered = filtered.filter(vehicle => 
       vehicle.price >= filters.minPrice && vehicle.price <= filters.maxPrice
     );
 
+    // Health score filter
     filtered = filtered.filter(vehicle => 
       vehicle.healthScore >= filters.healthScore[0] && vehicle.healthScore <= filters.healthScore[1]
     );
+
+    // Doors filter
+    if (filters.doors) {
+      filtered = filtered.filter(vehicle => 
+        vehicle.doors && vehicle.doors.toString() === filters.doors
+      );
+    }
+
+    // Drivetrain filter
+    if (filters.drivetrain) {
+      filtered = filtered.filter(vehicle => 
+        vehicle.drivetrain && vehicle.drivetrain.toLowerCase() === filters.drivetrain.toLowerCase()
+      );
+    }
+
+    // Color filter
+    if (filters.color) {
+      filtered = filtered.filter(vehicle => 
+        vehicle.color && vehicle.color.toLowerCase() === filters.color.toLowerCase()
+      );
+    }
+
+    // Seating capacity filter
+    if (filters.seatingCapacity) {
+      filtered = filtered.filter(vehicle => 
+        vehicle.seatingCapacity && vehicle.seatingCapacity.toString() === filters.seatingCapacity
+      );
+    }
+
+    // Feature filters
+    if (filters.airConditioning) {
+      filtered = filtered.filter(vehicle => vehicle.airConditioning);
+    }
+    if (filters.bluetooth) {
+      filtered = filtered.filter(vehicle => vehicle.bluetooth);
+    }
+    if (filters.reverseCamera) {
+      filtered = filtered.filter(vehicle => vehicle.reverseCamera);
+    }
+    if (filters.sunroof) {
+      filtered = filtered.filter(vehicle => vehicle.sunroof);
+    }
+    if (filters.leatherSeats) {
+      filtered = filtered.filter(vehicle => vehicle.leatherSeats);
+    }
+    if (filters.alloyWheels) {
+      filtered = filtered.filter(vehicle => vehicle.alloyWheels);
+    }
+    if (filters.abs) {
+      filtered = filtered.filter(vehicle => vehicle.abs);
+    }
+    if (filters.airbags) {
+      filtered = filtered.filter(vehicle => vehicle.airbags);
+    }
+    if (filters.powerSteering) {
+      filtered = filtered.filter(vehicle => vehicle.powerSteering);
+    }
 
     // Apply sorting
     switch (sortBy) {
@@ -264,8 +536,16 @@ const SearchPage = () => {
       case "health-score":
         filtered.sort((a, b) => b.healthScore - a.healthScore);
         break;
+      case "rating":
+        filtered.sort((a, b) => b.sellerRating - a.sellerRating);
+        break;
       default:
-        // Keep relevance order
+        // Keep relevance order, but prioritize featured vehicles
+        filtered.sort((a, b) => {
+          if (a.isFeatured && !b.isFeatured) return -1;
+          if (!a.isFeatured && b.isFeatured) return 1;
+          return 0;
+        });
         break;
     }
 
@@ -276,14 +556,73 @@ const SearchPage = () => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
+  // Enhanced handleApplyFilters to handle all filter types
+  // REPLACE ONLY the handleApplyFilters function in SearchPage.tsx with this MINIMAL version:
+
   const handleApplyFilters = (newFilters: any) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
+    console.log("Applying filters:", newFilters);
+    
+    // Create updated filters object, preserving existing structure
+    const updatedFilters = { ...filters };
+    
+    // Only handle properties that exist in SearchPage filters interface
+    if (newFilters.search !== undefined) {
+      updatedFilters.search = newFilters.search;
+    }
+    
+    if (newFilters.location !== undefined) {
+      updatedFilters.location = newFilters.location;
+    }
+    
+    if (newFilters.make !== undefined) {
+      updatedFilters.make = newFilters.make === "" ? "all" : newFilters.make;
+    }
+    
+    if (newFilters.fuelType !== undefined) {
+      updatedFilters.fuelType = newFilters.fuelType === "" ? "all" : newFilters.fuelType;
+    }
+    
+    if (newFilters.transmission !== undefined) {
+      updatedFilters.transmission = newFilters.transmission;
+    }
+    
+    if (newFilters.bodyType !== undefined) {
+      updatedFilters.bodyType = newFilters.bodyType;
+    }
+    
+    if (newFilters.condition !== undefined) {
+      updatedFilters.condition = newFilters.condition;
+    }
+    
+    if (newFilters.yearFrom !== undefined) {
+      updatedFilters.yearFrom = newFilters.yearFrom;
+    }
+    
+    if (newFilters.yearTo !== undefined) {
+      updatedFilters.yearTo = newFilters.yearTo;
+    }
+    
+    if (newFilters.minPrice !== undefined) {
+      updatedFilters.minPrice = newFilters.minPrice;
+    }
+    
+    if (newFilters.maxPrice !== undefined) {
+      updatedFilters.maxPrice = newFilters.maxPrice;
+    }
+    
+    if (newFilters.healthScore !== undefined && Array.isArray(newFilters.healthScore)) {
+      updatedFilters.healthScore = newFilters.healthScore;
+    }
+    
+    setFilters(updatedFilters);
+    console.log("Updated filters:", updatedFilters);
   };
 
   const clearAllFilters = () => {
-    setFilters({
+    const clearedFilters: Filters = {
       search: "",
       make: "all",
+      model: "",
       bodyType: "",
       fuelType: "all",
       transmission: "",
@@ -293,8 +632,25 @@ const SearchPage = () => {
       condition: "",
       minPrice: 0,
       maxPrice: 50000000,
-      healthScore: [0, 100]
-    });
+      healthScore: [0, 100],
+      mileageFrom: "",
+      mileageTo: "",
+      doors: "",
+      drivetrain: "",
+      color: "",
+      engineSize: "",
+      seatingCapacity: "",
+      airConditioning: false,
+      bluetooth: false,
+      reverseCamera: false,
+      sunroof: false,
+      leatherSeats: false,
+      alloyWheels: false,
+      abs: false,
+      airbags: false,
+      powerSteering: false
+    };
+    setFilters(clearedFilters);
   };
 
   const handleAddToComparison = (vehicle: Vehicle) => {
@@ -334,31 +690,40 @@ const SearchPage = () => {
     return `Rs. ${price.toLocaleString()}`;
   };
 
-  const formatMileage = (mileage: number) => {
-    return `${mileage.toLocaleString()} km`;
-  };
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-destructive mb-4">Error Loading Vehicles</h2>
+            <p className="text-muted-foreground mb-6">{error}</p>
+            <Button onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Desktop Filters Sidebar */}
-          <div className="hidden lg:block lg:w-80 flex-shrink-0">
-            <Card className="sticky top-8">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-primary">Filters</h2>
-                  <Button variant="outline" size="sm" onClick={clearAllFilters}>
-                    Clear All
-                  </Button>
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Desktop Sidebar Filters */}
+          <div className="hidden lg:block w-80 shrink-0">
+            <div className="sticky top-4">
+              <Card className="shadow-sm">
+                <div className="p-6 border-b">
+                  <h3 className="text-lg font-semibold text-primary">Search Filters</h3>
                 </div>
-
-                <div className="space-y-6">
+                <div className="p-6 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
                   {/* Search */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Search</label>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Search</label>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -370,78 +735,69 @@ const SearchPage = () => {
                     </div>
                   </div>
 
-                  {/* Price Range */}
-                  <div>
-                    <label className="text-sm font-medium mb-3 block">Price Range</label>
-                    <Slider
-                      value={[filters.minPrice, filters.maxPrice]}
-                      onValueChange={([min, max]) => {
-                        handleFilterChange("minPrice", min);
-                        handleFilterChange("maxPrice", max);
-                      }}
-                      max={50000000}
-                      step={100000}
-                      className="mb-2"
-                    />
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>Rs. {filters.minPrice.toLocaleString()}</span>
-                      <span>Rs. {filters.maxPrice.toLocaleString()}</span>
-                    </div>
-                  </div>
-
                   {/* Make */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Make</label>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Make</label>
                     <Select value={filters.make} onValueChange={(value) => handleFilterChange("make", value)}>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="All Makes" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Makes</SelectItem>
+                        <SelectItem value="bmw">BMW</SelectItem>
                         <SelectItem value="toyota">Toyota</SelectItem>
                         <SelectItem value="honda">Honda</SelectItem>
-                        <SelectItem value="nissan">Nissan</SelectItem>
-                        <SelectItem value="bmw">BMW</SelectItem>
                         <SelectItem value="mercedes-benz">Mercedes-Benz</SelectItem>
                         <SelectItem value="audi">Audi</SelectItem>
+                        <SelectItem value="nissan">Nissan</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
-                  {/* Fuel Type */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Fuel Type</label>
-                    <Select value={filters.fuelType} onValueChange={(value) => handleFilterChange("fuelType", value)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Fuel Types</SelectItem>
-                        <SelectItem value="petrol">Petrol</SelectItem>
-                        <SelectItem value="diesel">Diesel</SelectItem>
-                        <SelectItem value="hybrid">Hybrid</SelectItem>
-                        <SelectItem value="electric">Electric</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Location */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Location</label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  {/* Price Range */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium">Price Range</label>
+                    <div className="grid grid-cols-2 gap-2">
                       <Input
-                        placeholder="City or area"
-                        className="pl-10"
-                        value={filters.location}
-                        onChange={(e) => handleFilterChange("location", e.target.value)}
+                        type="number"
+                        placeholder="Min"
+                        value={filters.minPrice || ""}
+                        onChange={(e) => handleFilterChange("minPrice", parseInt(e.target.value) || 0)}
+                      />
+                      <Input
+                        type="number"
+                        placeholder="Max"
+                        value={filters.maxPrice || ""}
+                        onChange={(e) => handleFilterChange("maxPrice", parseInt(e.target.value) || 50000000)}
+                      />
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Rs. {filters.minPrice.toLocaleString()} - Rs. {filters.maxPrice.toLocaleString()}
+                    </div>
+                  </div>
+
+                  {/* Year Range */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium">Year</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        type="number"
+                        placeholder="From"
+                        value={filters.yearFrom}
+                        onChange={(e) => handleFilterChange("yearFrom", e.target.value)}
+                      />
+                      <Input
+                        type="number"
+                        placeholder="To"
+                        value={filters.yearTo}
+                        onChange={(e) => handleFilterChange("yearTo", e.target.value)}
                       />
                     </div>
                   </div>
 
                   {/* Health Score */}
-                  <div>
-                    <label className="text-sm font-medium mb-3 block">AI Health Score</label>
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium">AI Health Score</label>
                     <Slider
                       value={filters.healthScore}
                       onValueChange={(value) => handleFilterChange("healthScore", value)}
@@ -454,41 +810,36 @@ const SearchPage = () => {
                       <span>{filters.healthScore[1]}%</span>
                     </div>
                   </div>
+
+                  {/* Clear Filters */}
+                  <Button
+                    variant="outline"
+                    onClick={clearAllFilters}
+                    className="w-full"
+                  >
+                    Clear All Filters
+                  </Button>
                 </div>
-              </CardContent>
-            </Card>
+              </Card>
+            </div>
           </div>
 
           {/* Main Content */}
           <div className="flex-1">
-            {/* Page Header - Hidden on Mobile */}
-            <div className="mb-8 hidden md:block">
-              <h1 className="text-3xl font-bold text-primary mb-2">Buy Premium Vehicles</h1>
-              <p className="text-muted-foreground">
-                Discover verified premium vehicles with AI health scoring and trusted sellers
-              </p>
-            </div>
-
-            {/* Controls */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 mb-4 sm:mb-6">
-              <div className="flex items-center space-x-4">
-                {loading ? (
-                  <div className="flex items-center space-x-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-sm text-muted-foreground">Loading...</span>
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    {error ? 'Error loading vehicles' : `${filteredVehicles.length} vehicles found`}
-                  </p>
-                )}
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-primary">Search Vehicles</h1>
+                <p className="text-muted-foreground">
+                  {loading ? "Loading..." : `${filteredVehicles.length} vehicles found`}
+                </p>
               </div>
-              
-              <div className="flex items-center space-x-2">
+
+              {/* Desktop Controls */}
+              <div className="hidden sm:flex items-center space-x-4">
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger className="w-48">
-                    <ArrowUpDown className="h-4 w-4 mr-2" />
-                    <SelectValue />
+                    <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="relevance">Relevance</SelectItem>
@@ -496,156 +847,170 @@ const SearchPage = () => {
                     <SelectItem value="price-high">Price: High to Low</SelectItem>
                     <SelectItem value="year-new">Year: Newest First</SelectItem>
                     <SelectItem value="mileage-low">Mileage: Low to High</SelectItem>
-                    <SelectItem value="health-score">AI Health Score</SelectItem>
+                    <SelectItem value="health-score">Health Score</SelectItem>
+                    <SelectItem value="rating">Seller Rating</SelectItem>
                   </SelectContent>
                 </Select>
 
-                <div className="hidden lg:flex border rounded-md">
+                <div className="flex border rounded-lg">
+                  <Button
+                    variant={viewMode === "list" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("list")}
+                    className="rounded-r-none"
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
                   <Button
                     variant={viewMode === "grid" ? "default" : "ghost"}
                     size="sm"
-                    onClick={() => !isMobile && setViewMode("grid")}
+                    onClick={() => setViewMode("grid")}
+                    className="rounded-l-none"
                     disabled={isMobile}
                   >
                     <Grid3x3 className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant={viewMode === "list" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => !isMobile && setViewMode("list")}
-                    disabled={isMobile}
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
                 </div>
+              </div>
+
+              {/* Mobile Sort */}
+              <div className="flex sm:hidden w-full">
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="relevance">Relevance</SelectItem>
+                    <SelectItem value="price-low">Price ↑</SelectItem>
+                    <SelectItem value="price-high">Price ↓</SelectItem>
+                    <SelectItem value="year-new">Year ↓</SelectItem>
+                    <SelectItem value="health-score">Health Score</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
+            {/* Loading State */}
+            {loading && (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <span className="ml-3 text-muted-foreground">Loading vehicles...</span>
+              </div>
+            )}
+
             {/* Results */}
-            {loading ? (
-              <div className="flex justify-center items-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin" />
-                <span className="ml-2">Loading vehicles...</span>
-              </div>
-            ) : error ? (
-              <div className="text-center py-12">
-                <p className="text-destructive mb-4">{error}</p>
-                <Button onClick={() => window.location.reload()}>Try Again</Button>
-              </div>
-            ) : filteredVehicles.length === 0 ? (
-              <div className="text-center py-12">
-                <Car className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No vehicles found</h3>
-                <p className="text-muted-foreground mb-4">Try adjusting your filters to see more results</p>
-                <Button onClick={clearAllFilters}>Clear Filters</Button>
-              </div>
-            ) : (
+            {!loading && (
               <>
-                {(viewMode === "grid" && !isMobile) ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {filteredVehicles.map((vehicle) => (
-                      <VehicleCard
-                        key={vehicle.id}
-                        vehicle={vehicle}
-                        onSave={() => handleSave(vehicle.id)}
-                        onCompare={() => handleAddToComparison(vehicle)}
-                        onClick={() => handleVehicleClick(vehicle.id)}
-                        isInComparison={comparisonList.some(v => v.id === vehicle.id)}
-                        className="animate-fade-in"
-                      />
-                    ))}
+                {filteredVehicles.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Car className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">No vehicles found</h3>
+                    <p className="text-muted-foreground mb-6">
+                      Try adjusting your filters or search terms
+                    </p>
+                    <Button onClick={clearAllFilters} variant="outline">
+                      Clear All Filters
+                    </Button>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className={
+                    viewMode === "grid" && !isMobile
+                      ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+                      : "space-y-4"
+                  }>
                     {filteredVehicles.map((vehicle) => (
-                      <Card 
-                        key={vehicle.id} 
-                        className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-                        onClick={() => handleVehicleClick(vehicle.id)}
-                      >
-                        <div className="flex p-3 gap-3">
-                          {/* Image */}
-                          <div className="w-24 h-20 sm:w-32 sm:h-24 flex-shrink-0 relative">
-                            <img
-                              src={vehicle.image}
-                              alt={vehicle.title}
-                              className="w-full h-full object-cover rounded-lg"
-                            />
-                            {/* Health Score Badge */}
-                            <div className="absolute -bottom-1 -right-1">
-                              <HealthScoreBadge 
-                                score={vehicle.healthScore} 
-                                size="sm"
-                                className="bg-background text-xs scale-75 sm:scale-100"
+                      viewMode === "grid" && !isMobile ? (
+                        <VehicleCard
+                          key={vehicle.id}
+                          vehicle={vehicle}
+                          onSave={() => handleSave(vehicle.id)}
+                          onCompare={() => handleAddToComparison(vehicle)}
+                          isSaved={false}
+                        />
+                      ) : (
+                        <Card
+                          key={vehicle.id}
+                          className="overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer"
+                          onClick={() => handleVehicleClick(vehicle.id)}
+                        >
+                          <div className="flex flex-col sm:flex-row">
+                            <div className="relative w-full sm:w-48 h-48 sm:h-32 flex-shrink-0">
+                              <img
+                                src={vehicle.image}
+                                alt={vehicle.title}
+                                className="w-full h-full object-cover"
                               />
-                            </div>
-                          </div>
-                          
-                          {/* Content */}
-                          <div className="flex-1 min-w-0 flex flex-col">
-                            {/* Title and Save Button */}
-                            <div className="flex justify-between items-start mb-1">
-                              <h3 className="font-semibold text-sm sm:text-base line-clamp-2 pr-1 flex-1">
-                                {vehicle.title}
-                              </h3>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleSave(vehicle.id);
-                                }} 
-                                className="p-1 ml-1"
-                              >
-                                <Heart className="h-3 w-3 sm:h-4 sm:w-4" />
-                              </Button>
-                            </div>
-                            
-                            {/* Price */}
-                            <div className="mb-2">
-                              <p className="text-lg sm:text-xl font-bold text-primary">
-                                {formatPrice(vehicle.price)}
-                              </p>
-                            </div>
-                            
-                            {/* Vehicle Details - Mobile Optimized */}
-                            <div className="flex flex-wrap gap-1 mb-2">
-                              <Badge variant="secondary" className="text-xs px-1.5 py-0.5 h-5">{vehicle.year}</Badge>
-                              <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">{formatMileage(vehicle.mileage)}</Badge>
-                              <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">{vehicle.fuelType}</Badge>
-                              {vehicle.isVerified && <Badge className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 h-5">✓</Badge>}
-                            </div>
-                            
-                            {/* Bottom Row */}
-                            <div className="flex items-center justify-between mt-auto">
-                              <div className="flex flex-col space-y-0.5">
-                                <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
-                                  <MapPin className="w-3 h-3 mr-1 flex-shrink-0" />
-                                  <span className="truncate">{vehicle.location}</span>
+                              <div className="absolute top-2 left-2">
+                                <HealthScoreBadge score={vehicle.healthScore} />
+                              </div>
+                              {vehicle.isFeatured && (
+                                <div className="absolute top-2 right-2">
+                                  <Badge className="bg-highlight text-white">Featured</Badge>
                                 </div>
-                                <div className="flex items-center text-xs text-muted-foreground">
-                                  <Star className="w-3 h-3 mr-1 text-yellow-500 flex-shrink-0" />
-                                  <span>{vehicle.sellerRating}</span>
+                              )}
+                            </div>
+                            
+                            <div className="flex-1 p-4 flex flex-col justify-between">
+                              <div>
+                                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2">
+                                  <h3 className="text-lg font-semibold text-primary mb-1 sm:mb-0">
+                                    {vehicle.title}
+                                  </h3>
+                                  <p className="text-xl font-bold text-primary">
+                                    {formatPrice(vehicle.price)}
+                                  </p>
+                                </div>
+                                
+                                <div className="flex flex-wrap gap-2 mb-3">
+                                  <Badge variant="secondary" className="text-xs">{vehicle.year}</Badge>
+                                  <Badge variant="outline" className="text-xs">{vehicle.fuelType}</Badge>
+                                  <Badge variant="outline" className="text-xs">{vehicle.transmission}</Badge>
+                                  {vehicle.isVerified && <Badge className="bg-success text-xs">✓ Verified</Badge>}
                                 </div>
                               </div>
-                              <div className="flex space-x-1 ml-2">
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleAddToComparison(vehicle);
-                                  }}
-                                  disabled={comparisonList.some(v => v.id === vehicle.id)}
-                                  className="px-2 py-1 h-7 text-xs"
-                                >
-                                  <BarChart3 className="w-3 h-3" />
-                                </Button>
+                              
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex flex-col space-y-1 mb-3 sm:mb-0">
+                                  <div className="flex items-center text-sm text-muted-foreground">
+                                    <MapPin className="w-4 h-4 mr-1" />
+                                    <span>{vehicle.location}</span>
+                                    <span className="mx-2">•</span>
+                                    <span>{vehicle.mileage.toLocaleString()} km</span>
+                                  </div>
+                                  <div className="flex items-center text-sm text-muted-foreground">
+                                    <Star className="w-4 h-4 mr-1 text-yellow-500" />
+                                    <span>{vehicle.sellerRating}</span>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex space-x-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleSave(vehicle.id);
+                                    }}
+                                  >
+                                    <Heart className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleAddToComparison(vehicle);
+                                    }}
+                                    disabled={comparisonList.some(v => v.id === vehicle.id)}
+                                  >
+                                    <BarChart3 className="w-4 h-4" />
+                                  </Button>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </Card>
+                        </Card>
+                      )
                     ))}
                   </div>
                 )}
@@ -679,7 +1044,7 @@ const SearchPage = () => {
       <ComparisonBar
         selectedVehicles={comparisonList}
         onRemove={handleRemoveFromComparison}
-        onCompare={() => alert("Opening comparison view...")}
+        onCompare={() => navigate("/compare")}
         onClear={() => setComparisonList([])}
       />
     </div>
