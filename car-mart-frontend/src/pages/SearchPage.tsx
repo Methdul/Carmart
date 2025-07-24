@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Filter, MapPin, DollarSign, Calendar, Fuel, Settings, BarChart3, Grid3x3, List, ArrowUpDown, Loader2, Heart, Car, Star } from "lucide-react";
+import { Search, Filter, MapPin, DollarSign, Calendar, Fuel, Settings, BarChart3, Grid3x3, List, ArrowUpDown, Loader2, Heart, Car, Star, ChevronDown, ChevronUp, Cog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import Header from "@/components/Header";
 import VehicleCard from "@/components/VehicleCard";
 import ComparisonBar from "@/components/ComparisonBar";
@@ -44,6 +46,60 @@ interface Vehicle {
   doors?: number;
   drivetrain?: string;
   seatingCapacity?: number;
+  // Enhanced properties for comprehensive filtering
+  engineType?: string;
+  turboCharged?: boolean;
+  interiorColor?: string;
+  previousOwners?: number;
+  priceNegotiable?: boolean;
+  financingAvailable?: boolean;
+  leasingAvailable?: boolean;
+  tradeInAccepted?: boolean;
+  inspectionCertificate?: boolean;
+  serviceHistory?: boolean;
+  accidentHistory?: string;
+  registrationYear?: string;
+  registrationProvince?: string;
+  importStatus?: string;
+  dutyPaid?: boolean;
+  insuranceType?: string;
+  registrationStatus?: string;
+  documentsComplete?: boolean;
+  climateControl?: boolean;
+  heatedSeats?: boolean;
+  moonroof?: boolean;
+  powerWindows?: boolean;
+  centralLocking?: boolean;
+  androidAuto?: boolean;
+  appleCarPlay?: boolean;
+  navigationSystem?: boolean;
+  touchScreen?: boolean;
+  premiumSound?: boolean;
+  wirelessCharging?: boolean;
+  parkingSensors?: boolean;
+  blindSpotMonitoring?: boolean;
+  airbagCount?: number;
+  stabilityControl?: boolean;
+  tractionControl?: boolean;
+  fabricSeats?: boolean;
+  runningBoards?: boolean;
+  spoiler?: boolean;
+  tintedWindows?: boolean;
+  cruiseControl?: boolean;
+  paddleShifters?: boolean;
+  sportMode?: boolean;
+  ecoMode?: boolean;
+  sellerType?: string;
+  quickResponse?: boolean;
+  homeInspection?: boolean;
+  testDriveAvailable?: boolean;
+  virtualTour?: boolean;
+  sameDayViewing?: boolean;
+  deliveryAvailable?: boolean;
+  warranty?: boolean;
+  extendedWarranty?: boolean;
+  roadside?: boolean;
+  pickupService?: boolean;
   // Features
   airConditioning?: boolean;
   bluetooth?: boolean;
@@ -69,7 +125,6 @@ interface Filters {
   condition: string;
   minPrice: number;
   maxPrice: number;
-  healthScore: number[];
   mileageFrom: string;
   mileageTo: string;
   doors: string;
@@ -77,6 +132,62 @@ interface Filters {
   color: string;
   engineSize: string;
   seatingCapacity: string;
+  // Enhanced filter properties
+  engineType: string;
+  turboCharged: boolean;
+  interiorColor: string;
+  previousOwners: string;
+  priceNegotiable: boolean;
+  financingAvailable: boolean;
+  leasingAvailable: boolean;
+  tradeInAccepted: boolean;
+  emiRange: string;
+  inspectionCertificate: boolean;
+  serviceHistory: boolean;
+  accidentHistory: string;
+  registrationYear: string;
+  registrationProvince: string;
+  importStatus: string;
+  dutyPaid: boolean;
+  insuranceType: string;
+  registrationStatus: string;
+  documentsComplete: boolean;
+  climateControl: boolean;
+  heatedSeats: boolean;
+  moonroof: boolean;
+  powerWindows: boolean;
+  centralLocking: boolean;
+  androidAuto: boolean;
+  appleCarPlay: boolean;
+  navigationSystem: boolean;
+  touchScreen: boolean;
+  premiumSound: boolean;
+  wirelessCharging: boolean;
+  parkingSensors: boolean;
+  blindSpotMonitoring: boolean;
+  airbagCount: string;
+  stabilityControl: boolean;
+  tractionControl: boolean;
+  fabricSeats: boolean;
+  runningBoards: boolean;
+  spoiler: boolean;
+  tintedWindows: boolean;
+  cruiseControl: boolean;
+  paddleShifters: boolean;
+  sportMode: boolean;
+  ecoMode: boolean;
+  sellerType: string;
+  verifiedSeller: boolean;
+  quickResponse: boolean;
+  homeInspection: boolean;
+  testDriveAvailable: boolean;
+  virtualTour: boolean;
+  sameDayViewing: boolean;
+  deliveryAvailable: boolean;
+  warranty: boolean;
+  extendedWarranty: boolean;
+  roadside: boolean;
+  pickupService: boolean;
   // Feature filters
   airConditioning: boolean;
   bluetooth: boolean;
@@ -88,6 +199,38 @@ interface Filters {
   airbags: boolean;
   powerSteering: boolean;
 }
+
+// Desktop Filter Section Component
+interface DesktopFilterSectionProps {
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+  icon?: React.ReactNode;
+}
+
+const DesktopFilterSection = ({ title, children, defaultOpen = false, icon }: DesktopFilterSectionProps) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className="border-b border-gray-100 last:border-b-0">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center justify-between w-full py-3 text-left"
+      >
+        <div className="flex items-center space-x-2">
+          {icon && <span className="text-primary">{icon}</span>}
+          <span className="font-medium text-primary text-sm">{title}</span>
+        </div>
+        {isOpen ? (
+          <ChevronUp className="h-4 w-4 text-muted-foreground" />
+        ) : (
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        )}
+      </button>
+      {isOpen && <div className="pb-4">{children}</div>}
+    </div>
+  );
+};
 
 const SearchPage = () => {
   const navigate = useNavigate();
@@ -129,7 +272,6 @@ const SearchPage = () => {
     condition: "",
     minPrice: 0,
     maxPrice: 50000000,
-    healthScore: [0, 100],
     mileageFrom: "",
     mileageTo: "",
     doors: "",
@@ -137,6 +279,62 @@ const SearchPage = () => {
     color: "",
     engineSize: "",
     seatingCapacity: "",
+    // Enhanced filter initial state
+    engineType: "",
+    turboCharged: false,
+    interiorColor: "",
+    previousOwners: "",
+    priceNegotiable: false,
+    financingAvailable: false,
+    leasingAvailable: false,
+    tradeInAccepted: false,
+    emiRange: "",
+    inspectionCertificate: false,
+    serviceHistory: false,
+    accidentHistory: "",
+    registrationYear: "",
+    registrationProvince: "",
+    importStatus: "",
+    dutyPaid: false,
+    insuranceType: "",
+    registrationStatus: "",
+    documentsComplete: false,
+    climateControl: false,
+    heatedSeats: false,
+    moonroof: false,
+    powerWindows: false,
+    centralLocking: false,
+    androidAuto: false,
+    appleCarPlay: false,
+    navigationSystem: false,
+    touchScreen: false,
+    premiumSound: false,
+    wirelessCharging: false,
+    parkingSensors: false,
+    blindSpotMonitoring: false,
+    airbagCount: "",
+    stabilityControl: false,
+    tractionControl: false,
+    fabricSeats: false,
+    runningBoards: false,
+    spoiler: false,
+    tintedWindows: false,
+    cruiseControl: false,
+    paddleShifters: false,
+    sportMode: false,
+    ecoMode: false,
+    sellerType: "",
+    verifiedSeller: false,
+    quickResponse: false,
+    homeInspection: false,
+    testDriveAvailable: false,
+    virtualTour: false,
+    sameDayViewing: false,
+    deliveryAvailable: false,
+    warranty: false,
+    extendedWarranty: false,
+    roadside: false,
+    pickupService: false,
     airConditioning: false,
     bluetooth: false,
     reverseCamera: false,
@@ -148,7 +346,7 @@ const SearchPage = () => {
     powerSteering: false
   });
 
-  // Enhanced mock vehicle data with more properties
+  // Enhanced mock vehicle data with more properties (keeping your exact vehicles)
   const mockVehicles: Vehicle[] = [
     {
       id: "1",
@@ -172,6 +370,56 @@ const SearchPage = () => {
       doors: 4,
       drivetrain: "RWD",
       seatingCapacity: 5,
+      // Enhanced properties
+      engineCapacity: "2000",
+      engineType: "4 Cylinder Turbo",
+      turboCharged: true,
+      interiorColor: "Black",
+      previousOwners: 1,
+      priceNegotiable: true,
+      financingAvailable: true,
+      leasingAvailable: true,
+      tradeInAccepted: true,
+      inspectionCertificate: true,
+      serviceHistory: true,
+      accidentHistory: "none",
+      registrationYear: "2020",
+      registrationProvince: "Western",
+      importStatus: "reconditioned",
+      dutyPaid: true,
+      insuranceType: "comprehensive",
+      registrationStatus: "registered",
+      documentsComplete: true,
+      climateControl: true,
+      heatedSeats: true,
+      powerWindows: true,
+      centralLocking: true,
+      androidAuto: true,
+      appleCarPlay: true,
+      navigationSystem: true,
+      touchScreen: true,
+      premiumSound: true,
+      wirelessCharging: true,
+      parkingSensors: true,
+      blindSpotMonitoring: true,
+      airbagCount: 6,
+      stabilityControl: true,
+      tractionControl: true,
+      cruiseControl: true,
+      paddleShifters: true,
+      sportMode: true,
+      ecoMode: true,
+      sellerType: "dealer",
+      quickResponse: true,
+      homeInspection: true,
+      testDriveAvailable: true,
+      virtualTour: true,
+      sameDayViewing: true,
+      deliveryAvailable: true,
+      warranty: true,
+      extendedWarranty: true,
+      roadside: true,
+      pickupService: true,
       airConditioning: true,
       bluetooth: true,
       reverseCamera: true,
@@ -204,6 +452,57 @@ const SearchPage = () => {
       doors: 5,
       drivetrain: "AWD",
       seatingCapacity: 5,
+      // Enhanced properties
+      engineCapacity: "2500",
+      engineType: "4 Cylinder Hybrid",
+      turboCharged: false,
+      interiorColor: "Gray",
+      previousOwners: 1,
+      priceNegotiable: true,
+      financingAvailable: true,
+      leasingAvailable: false,
+      tradeInAccepted: true,
+      inspectionCertificate: true,
+      serviceHistory: true,
+      accidentHistory: "none",
+      registrationYear: "2021",
+      registrationProvince: "Central",
+      importStatus: "imported",
+      dutyPaid: true,
+      insuranceType: "comprehensive",
+      registrationStatus: "registered",
+      documentsComplete: true,
+      climateControl: true,
+      heatedSeats: false,
+      powerWindows: true,
+      centralLocking: true,
+      androidAuto: true,
+      appleCarPlay: true,
+      navigationSystem: true,
+      touchScreen: true,
+      premiumSound: false,
+      wirelessCharging: false,
+      parkingSensors: true,
+      blindSpotMonitoring: true,
+      airbagCount: 8,
+      stabilityControl: true,
+      tractionControl: true,
+      fabricSeats: true,
+      cruiseControl: true,
+      paddleShifters: false,
+      sportMode: false,
+      ecoMode: true,
+      sellerType: "showroom",
+      quickResponse: true,
+      homeInspection: false,
+      testDriveAvailable: true,
+      virtualTour: false,
+      sameDayViewing: false,
+      deliveryAvailable: true,
+      warranty: true,
+      extendedWarranty: false,
+      roadside: false,
+      pickupService: false,
       airConditioning: true,
       bluetooth: true,
       reverseCamera: true,
@@ -236,6 +535,57 @@ const SearchPage = () => {
       doors: 4,
       drivetrain: "FWD",
       seatingCapacity: 5,
+      // Enhanced properties
+      engineCapacity: "1500",
+      engineType: "4 Cylinder Turbo",
+      turboCharged: true,
+      interiorColor: "Black",
+      previousOwners: 2,
+      priceNegotiable: true,
+      financingAvailable: false,
+      leasingAvailable: false,
+      tradeInAccepted: false,
+      inspectionCertificate: false,
+      serviceHistory: true,
+      accidentHistory: "minor",
+      registrationYear: "2019",
+      registrationProvince: "Southern",
+      importStatus: "reconditioned",
+      dutyPaid: true,
+      insuranceType: "third-party",
+      registrationStatus: "registered",
+      documentsComplete: true,
+      climateControl: false,
+      heatedSeats: false,
+      powerWindows: true,
+      centralLocking: true,
+      androidAuto: false,
+      appleCarPlay: false,
+      navigationSystem: false,
+      touchScreen: true,
+      premiumSound: false,
+      wirelessCharging: false,
+      parkingSensors: false,
+      blindSpotMonitoring: false,
+      airbagCount: 4,
+      stabilityControl: true,
+      tractionControl: true,
+      fabricSeats: true,
+      cruiseControl: false,
+      paddleShifters: true,
+      sportMode: true,
+      ecoMode: true,
+      sellerType: "private",
+      quickResponse: false,
+      homeInspection: false,
+      testDriveAvailable: true,
+      virtualTour: false,
+      sameDayViewing: false,
+      deliveryAvailable: false,
+      warranty: false,
+      extendedWarranty: false,
+      roadside: false,
+      pickupService: false,
       airConditioning: true,
       bluetooth: true,
       reverseCamera: false,
@@ -268,6 +618,59 @@ const SearchPage = () => {
       doors: 4,
       drivetrain: "RWD",
       seatingCapacity: 5,
+      // Enhanced properties
+      engineCapacity: "2000",
+      engineType: "4 Cylinder Turbo",
+      turboCharged: true,
+      interiorColor: "Red",
+      previousOwners: 1,
+      priceNegotiable: false,
+      financingAvailable: true,
+      leasingAvailable: true,
+      tradeInAccepted: true,
+      inspectionCertificate: true,
+      serviceHistory: true,
+      accidentHistory: "none",
+      registrationYear: "2022",
+      registrationProvince: "Western",
+      importStatus: "imported",
+      dutyPaid: true,
+      insuranceType: "comprehensive",
+      registrationStatus: "registered",
+      documentsComplete: true,
+      climateControl: true,
+      heatedSeats: true,
+      moonroof: false,
+      powerWindows: true,
+      centralLocking: true,
+      androidAuto: true,
+      appleCarPlay: true,
+      navigationSystem: true,
+      touchScreen: true,
+      premiumSound: true,
+      wirelessCharging: true,
+      parkingSensors: true,
+      blindSpotMonitoring: true,
+      airbagCount: 10,
+      stabilityControl: true,
+      tractionControl: true,
+      spoiler: true,
+      tintedWindows: true,
+      cruiseControl: true,
+      paddleShifters: true,
+      sportMode: true,
+      ecoMode: true,
+      sellerType: "dealer",
+      quickResponse: true,
+      homeInspection: true,
+      testDriveAvailable: true,
+      virtualTour: true,
+      sameDayViewing: true,
+      deliveryAvailable: true,
+      warranty: true,
+      extendedWarranty: true,
+      roadside: true,
+      pickupService: true,
       airConditioning: true,
       bluetooth: true,
       reverseCamera: true,
@@ -300,6 +703,58 @@ const SearchPage = () => {
       doors: 5,
       drivetrain: "4WD",
       seatingCapacity: 7,
+      // Enhanced properties
+      engineCapacity: "2500",
+      engineType: "4 Cylinder",
+      turboCharged: false,
+      interiorColor: "Beige",
+      previousOwners: 2,
+      priceNegotiable: true,
+      financingAvailable: true,
+      leasingAvailable: false,
+      tradeInAccepted: true,
+      inspectionCertificate: true,
+      serviceHistory: true,
+      accidentHistory: "none",
+      registrationYear: "2018",
+      registrationProvince: "Western",
+      importStatus: "reconditioned",
+      dutyPaid: true,
+      insuranceType: "comprehensive",
+      registrationStatus: "registered",
+      documentsComplete: true,
+      climateControl: true,
+      heatedSeats: false,
+      powerWindows: true,
+      centralLocking: true,
+      androidAuto: false,
+      appleCarPlay: false,
+      navigationSystem: true,
+      touchScreen: true,
+      premiumSound: true,
+      wirelessCharging: false,
+      parkingSensors: true,
+      blindSpotMonitoring: false,
+      airbagCount: 6,
+      stabilityControl: true,
+      tractionControl: true,
+      fabricSeats: true,
+      runningBoards: true,
+      cruiseControl: true,
+      paddleShifters: false,
+      sportMode: false,
+      ecoMode: true,
+      sellerType: "agent",
+      quickResponse: true,
+      homeInspection: true,
+      testDriveAvailable: true,
+      virtualTour: false,
+      sameDayViewing: true,
+      deliveryAvailable: true,
+      warranty: false,
+      extendedWarranty: true,
+      roadside: false,
+      pickupService: true,
       airConditioning: true,
       bluetooth: false,
       reverseCamera: false,
@@ -332,6 +787,56 @@ const SearchPage = () => {
       doors: 4,
       drivetrain: "AWD",
       seatingCapacity: 5,
+      // Enhanced properties
+      engineCapacity: "2000",
+      engineType: "4 Cylinder Turbo",
+      turboCharged: true,
+      interiorColor: "Black",
+      previousOwners: 1,
+      priceNegotiable: true,
+      financingAvailable: true,
+      leasingAvailable: true,
+      tradeInAccepted: true,
+      inspectionCertificate: true,
+      serviceHistory: true,
+      accidentHistory: "none",
+      registrationYear: "2021",
+      registrationProvince: "Central",
+      importStatus: "imported",
+      dutyPaid: true,
+      insuranceType: "comprehensive",
+      registrationStatus: "registered",
+      documentsComplete: true,
+      climateControl: true,
+      heatedSeats: true,
+      powerWindows: true,
+      centralLocking: true,
+      androidAuto: true,
+      appleCarPlay: true,
+      navigationSystem: true,
+      touchScreen: true,
+      premiumSound: true,
+      wirelessCharging: true,
+      parkingSensors: true,
+      blindSpotMonitoring: true,
+      airbagCount: 8,
+      stabilityControl: true,
+      tractionControl: true,
+      cruiseControl: true,
+      paddleShifters: true,
+      sportMode: true,
+      ecoMode: true,
+      sellerType: "dealer",
+      quickResponse: true,
+      homeInspection: true,
+      testDriveAvailable: true,
+      virtualTour: true,
+      sameDayViewing: true,
+      deliveryAvailable: true,
+      warranty: true,
+      extendedWarranty: true,
+      roadside: true,
+      pickupService: true,
       airConditioning: true,
       bluetooth: true,
       reverseCamera: true,
@@ -379,6 +884,13 @@ const SearchPage = () => {
       );
     }
 
+    // Location filter
+    if (filters.location) {
+      filtered = filtered.filter(vehicle => 
+        vehicle.location.toLowerCase().includes(filters.location.toLowerCase())
+      );
+    }
+
     // Make filter
     if (filters.make && filters.make !== "all") {
       filtered = filtered.filter(vehicle => 
@@ -414,6 +926,34 @@ const SearchPage = () => {
       );
     }
 
+    // Engine size filter
+    if (filters.engineSize) {
+      filtered = filtered.filter(vehicle => {
+        const engineCC = parseInt(vehicle.engineCapacity || "0");
+        switch (filters.engineSize) {
+          case "under-1000cc":
+            return engineCC < 1000;
+          case "1000-1500cc":
+            return engineCC >= 1000 && engineCC <= 1500;
+          case "1500-2000cc":
+            return engineCC >= 1500 && engineCC <= 2000;
+          case "2000-2500cc":
+            return engineCC >= 2000 && engineCC <= 2500;
+          case "over-2500cc":
+            return engineCC > 2500;
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Drivetrain filter
+    if (filters.drivetrain) {
+      filtered = filtered.filter(vehicle => 
+        vehicle.drivetrain && vehicle.drivetrain.toLowerCase() === filters.drivetrain.toLowerCase()
+      );
+    }
+
     // Year range filter
     if (filters.yearFrom) {
       filtered = filtered.filter(vehicle => 
@@ -438,13 +978,6 @@ const SearchPage = () => {
       );
     }
 
-    // Location filter
-    if (filters.location) {
-      filtered = filtered.filter(vehicle => 
-        vehicle.location.toLowerCase().includes(filters.location.toLowerCase())
-      );
-    }
-
     // Condition filter
     if (filters.condition) {
       filtered = filtered.filter(vehicle => 
@@ -457,10 +990,12 @@ const SearchPage = () => {
       vehicle.price >= filters.minPrice && vehicle.price <= filters.maxPrice
     );
 
-    // Health score filter
-    filtered = filtered.filter(vehicle => 
-      vehicle.healthScore >= filters.healthScore[0] && vehicle.healthScore <= filters.healthScore[1]
-    );
+    // Color filter
+    if (filters.color) {
+      filtered = filtered.filter(vehicle => 
+        vehicle.color && vehicle.color.toLowerCase() === filters.color.toLowerCase()
+      );
+    }
 
     // Doors filter
     if (filters.doors) {
@@ -469,25 +1004,22 @@ const SearchPage = () => {
       );
     }
 
-    // Drivetrain filter
-    if (filters.drivetrain) {
-      filtered = filtered.filter(vehicle => 
-        vehicle.drivetrain && vehicle.drivetrain.toLowerCase() === filters.drivetrain.toLowerCase()
-      );
-    }
-
-    // Color filter
-    if (filters.color) {
-      filtered = filtered.filter(vehicle => 
-        vehicle.color && vehicle.color.toLowerCase() === filters.color.toLowerCase()
-      );
-    }
-
     // Seating capacity filter
     if (filters.seatingCapacity) {
       filtered = filtered.filter(vehicle => 
         vehicle.seatingCapacity && vehicle.seatingCapacity.toString() === filters.seatingCapacity
       );
+    }
+
+    // Financial filters
+    if (filters.priceNegotiable) {
+      filtered = filtered.filter(vehicle => vehicle.priceNegotiable);
+    }
+    if (filters.financingAvailable) {
+      filtered = filtered.filter(vehicle => vehicle.financingAvailable);
+    }
+    if (filters.leasingAvailable) {
+      filtered = filtered.filter(vehicle => vehicle.leasingAvailable);
     }
 
     // Feature filters
@@ -517,6 +1049,29 @@ const SearchPage = () => {
     }
     if (filters.powerSteering) {
       filtered = filtered.filter(vehicle => vehicle.powerSteering);
+    }
+
+    // Additional enhanced filters
+    if (filters.turboCharged) {
+      filtered = filtered.filter(vehicle => vehicle.turboCharged);
+    }
+    if (filters.androidAuto) {
+      filtered = filtered.filter(vehicle => vehicle.androidAuto);
+    }
+    if (filters.appleCarPlay) {
+      filtered = filtered.filter(vehicle => vehicle.appleCarPlay);
+    }
+    if (filters.parkingSensors) {
+      filtered = filtered.filter(vehicle => vehicle.parkingSensors);
+    }
+    if (filters.cruiseControl) {
+      filtered = filtered.filter(vehicle => vehicle.cruiseControl);
+    }
+    if (filters.verifiedSeller) {
+      filtered = filtered.filter(vehicle => vehicle.isVerified);
+    }
+    if (filters.warranty) {
+      filtered = filtered.filter(vehicle => vehicle.warranty);
     }
 
     // Apply sorting
@@ -557,65 +1112,129 @@ const SearchPage = () => {
   };
 
   // Enhanced handleApplyFilters to handle all filter types
-  // REPLACE ONLY the handleApplyFilters function in SearchPage.tsx with this MINIMAL version:
-
   const handleApplyFilters = (newFilters: any) => {
     console.log("Applying filters:", newFilters);
     
-    // Create updated filters object, preserving existing structure
-    const updatedFilters = { ...filters };
-    
-    // Only handle properties that exist in SearchPage filters interface
-    if (newFilters.search !== undefined) {
-      updatedFilters.search = newFilters.search;
+    try {
+      // Create updated filters object, preserving existing structure
+      const updatedFilters = { ...filters };
+      
+      // Basic filters
+      if (newFilters.search !== undefined) {
+        updatedFilters.search = newFilters.search;
+      }
+      
+      if (newFilters.location !== undefined) {
+        updatedFilters.location = newFilters.location;
+      }
+      
+      // Vehicle identification
+      if (newFilters.make !== undefined) {
+        updatedFilters.make = newFilters.make === "" ? "all" : newFilters.make;
+      }
+      
+      if (newFilters.model !== undefined) {
+        updatedFilters.model = newFilters.model;
+      }
+      
+      if (newFilters.bodyType !== undefined) {
+        updatedFilters.bodyType = newFilters.bodyType;
+      }
+      
+      // Engine and drivetrain
+      if (newFilters.fuelType !== undefined) {
+        updatedFilters.fuelType = newFilters.fuelType === "" ? "all" : newFilters.fuelType;
+      }
+      
+      if (newFilters.transmission !== undefined) {
+        updatedFilters.transmission = newFilters.transmission;
+      }
+      
+      if (newFilters.drivetrain !== undefined) {
+        updatedFilters.drivetrain = newFilters.drivetrain;
+      }
+      
+      if (newFilters.engineSize !== undefined) {
+        updatedFilters.engineSize = newFilters.engineSize;
+      }
+      
+      // Vehicle details
+      if (newFilters.condition !== undefined) {
+        updatedFilters.condition = newFilters.condition;
+      }
+      
+      if (newFilters.color !== undefined) {
+        updatedFilters.color = newFilters.color;
+      }
+      
+      if (newFilters.doors !== undefined) {
+        updatedFilters.doors = newFilters.doors;
+      }
+      
+      if (newFilters.seatingCapacity !== undefined) {
+        updatedFilters.seatingCapacity = newFilters.seatingCapacity;
+      }
+      
+      // Year range
+      if (newFilters.yearFrom !== undefined) {
+        updatedFilters.yearFrom = newFilters.yearFrom;
+      }
+      
+      if (newFilters.yearTo !== undefined) {
+        updatedFilters.yearTo = newFilters.yearTo;
+      }
+      
+      // Mileage range
+      if (newFilters.mileageFrom !== undefined) {
+        updatedFilters.mileageFrom = newFilters.mileageFrom;
+      }
+      
+      if (newFilters.mileageTo !== undefined) {
+        updatedFilters.mileageTo = newFilters.mileageTo;
+      }
+      
+      // Price range
+      if (newFilters.minPrice !== undefined) {
+        updatedFilters.minPrice = newFilters.minPrice;
+      }
+      
+      if (newFilters.maxPrice !== undefined) {
+        updatedFilters.maxPrice = newFilters.maxPrice;
+      }
+
+      // Financial filters
+      if (newFilters.priceNegotiable !== undefined) {
+        updatedFilters.priceNegotiable = Boolean(newFilters.priceNegotiable);
+      }
+      if (newFilters.financingAvailable !== undefined) {
+        updatedFilters.financingAvailable = Boolean(newFilters.financingAvailable);
+      }
+      if (newFilters.leasingAvailable !== undefined) {
+        updatedFilters.leasingAvailable = Boolean(newFilters.leasingAvailable);
+      }
+      
+      // Feature filters - handle boolean values properly
+      const featureFilters = [
+        'airConditioning', 'bluetooth', 'reverseCamera', 'sunroof', 
+        'leatherSeats', 'alloyWheels', 'abs', 'airbags', 'powerSteering',
+        'turboCharged', 'androidAuto', 'appleCarPlay', 'parkingSensors',
+        'cruiseControl', 'verifiedSeller', 'warranty'
+      ];
+      
+      featureFilters.forEach(feature => {
+        if (newFilters[feature] !== undefined) {
+          updatedFilters[feature] = Boolean(newFilters[feature]);
+        }
+      });
+      
+      // Apply the updated filters
+      setFilters(updatedFilters);
+      console.log("Updated filters successfully:", updatedFilters);
+      
+    } catch (error) {
+      console.error("Error applying filters:", error);
+      // Don't crash the app, just log the error
     }
-    
-    if (newFilters.location !== undefined) {
-      updatedFilters.location = newFilters.location;
-    }
-    
-    if (newFilters.make !== undefined) {
-      updatedFilters.make = newFilters.make === "" ? "all" : newFilters.make;
-    }
-    
-    if (newFilters.fuelType !== undefined) {
-      updatedFilters.fuelType = newFilters.fuelType === "" ? "all" : newFilters.fuelType;
-    }
-    
-    if (newFilters.transmission !== undefined) {
-      updatedFilters.transmission = newFilters.transmission;
-    }
-    
-    if (newFilters.bodyType !== undefined) {
-      updatedFilters.bodyType = newFilters.bodyType;
-    }
-    
-    if (newFilters.condition !== undefined) {
-      updatedFilters.condition = newFilters.condition;
-    }
-    
-    if (newFilters.yearFrom !== undefined) {
-      updatedFilters.yearFrom = newFilters.yearFrom;
-    }
-    
-    if (newFilters.yearTo !== undefined) {
-      updatedFilters.yearTo = newFilters.yearTo;
-    }
-    
-    if (newFilters.minPrice !== undefined) {
-      updatedFilters.minPrice = newFilters.minPrice;
-    }
-    
-    if (newFilters.maxPrice !== undefined) {
-      updatedFilters.maxPrice = newFilters.maxPrice;
-    }
-    
-    if (newFilters.healthScore !== undefined && Array.isArray(newFilters.healthScore)) {
-      updatedFilters.healthScore = newFilters.healthScore;
-    }
-    
-    setFilters(updatedFilters);
-    console.log("Updated filters:", updatedFilters);
   };
 
   const clearAllFilters = () => {
@@ -632,7 +1251,6 @@ const SearchPage = () => {
       condition: "",
       minPrice: 0,
       maxPrice: 50000000,
-      healthScore: [0, 100],
       mileageFrom: "",
       mileageTo: "",
       doors: "",
@@ -640,6 +1258,61 @@ const SearchPage = () => {
       color: "",
       engineSize: "",
       seatingCapacity: "",
+      engineType: "",
+      turboCharged: false,
+      interiorColor: "",
+      previousOwners: "",
+      priceNegotiable: false,
+      financingAvailable: false,
+      leasingAvailable: false,
+      tradeInAccepted: false,
+      emiRange: "",
+      inspectionCertificate: false,
+      serviceHistory: false,
+      accidentHistory: "",
+      registrationYear: "",
+      registrationProvince: "",
+      importStatus: "",
+      dutyPaid: false,
+      insuranceType: "",
+      registrationStatus: "",
+      documentsComplete: false,
+      climateControl: false,
+      heatedSeats: false,
+      moonroof: false,
+      powerWindows: false,
+      centralLocking: false,
+      androidAuto: false,
+      appleCarPlay: false,
+      navigationSystem: false,
+      touchScreen: false,
+      premiumSound: false,
+      wirelessCharging: false,
+      parkingSensors: false,
+      blindSpotMonitoring: false,
+      airbagCount: "",
+      stabilityControl: false,
+      tractionControl: false,
+      fabricSeats: false,
+      runningBoards: false,
+      spoiler: false,
+      tintedWindows: false,
+      cruiseControl: false,
+      paddleShifters: false,
+      sportMode: false,
+      ecoMode: false,
+      sellerType: "",
+      verifiedSeller: false,
+      quickResponse: false,
+      homeInspection: false,
+      testDriveAvailable: false,
+      virtualTour: false,
+      sameDayViewing: false,
+      deliveryAvailable: false,
+      warranty: false,
+      extendedWarranty: false,
+      roadside: false,
+      pickupService: false,
       airConditioning: false,
       bluetooth: false,
       reverseCamera: false,
@@ -713,103 +1386,431 @@ const SearchPage = () => {
       
       <div className="container mx-auto px-4 py-6">
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* Desktop Sidebar Filters */}
+          {/* Desktop Sidebar Filters - Enhanced with comprehensive filters */}
           <div className="hidden lg:block w-80 shrink-0">
             <div className="sticky top-4">
               <Card className="shadow-sm">
                 <div className="p-6 border-b">
                   <h3 className="text-lg font-semibold text-primary">Search Filters</h3>
                 </div>
-                <div className="p-6 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+                <div className="p-6 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+                  
                   {/* Search */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Search</label>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Make, model, or keyword"
-                        className="pl-10"
-                        value={filters.search}
-                        onChange={(e) => handleFilterChange("search", e.target.value)}
-                      />
+                  <DesktopFilterSection title="Search" defaultOpen icon={<Search className="w-4 h-4" />}>
+                    <div className="space-y-2">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Make, model, or keyword"
+                          className="pl-10"
+                          value={filters.search}
+                          onChange={(e) => handleFilterChange("search", e.target.value)}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  </DesktopFilterSection>
 
-                  {/* Make */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Make</label>
-                    <Select value={filters.make} onValueChange={(value) => handleFilterChange("make", value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="All Makes" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Makes</SelectItem>
-                        <SelectItem value="bmw">BMW</SelectItem>
-                        <SelectItem value="toyota">Toyota</SelectItem>
-                        <SelectItem value="honda">Honda</SelectItem>
-                        <SelectItem value="mercedes-benz">Mercedes-Benz</SelectItem>
-                        <SelectItem value="audi">Audi</SelectItem>
-                        <SelectItem value="nissan">Nissan</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {/* Make & Model */}
+                  <DesktopFilterSection title="Make & Model" icon={<Car className="w-4 h-4" />}>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-sm font-medium">Make</label>
+                        <Select value={filters.make} onValueChange={(value) => handleFilterChange("make", value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="All Makes" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Makes</SelectItem>
+                            <SelectItem value="bmw">BMW</SelectItem>
+                            <SelectItem value="toyota">Toyota</SelectItem>
+                            <SelectItem value="honda">Honda</SelectItem>
+                            <SelectItem value="mercedes-benz">Mercedes-Benz</SelectItem>
+                            <SelectItem value="audi">Audi</SelectItem>
+                            <SelectItem value="nissan">Nissan</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Model</label>
+                        <Input
+                          placeholder="Enter model"
+                          value={filters.model}
+                          onChange={(e) => handleFilterChange("model", e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Body Type</label>
+                        <Select value={filters.bodyType} onValueChange={(value) => handleFilterChange("bodyType", value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Any Body Type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Any Body Type</SelectItem>
+                            <SelectItem value="sedan">Sedan</SelectItem>
+                            <SelectItem value="suv">SUV</SelectItem>
+                            <SelectItem value="hatchback">Hatchback</SelectItem>
+                            <SelectItem value="coupe">Coupe</SelectItem>
+                            <SelectItem value="wagon">Wagon</SelectItem>
+                            <SelectItem value="pickup">Pickup Truck</SelectItem>
+                            <SelectItem value="van">Van</SelectItem>
+                            <SelectItem value="convertible">Convertible</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </DesktopFilterSection>
 
                   {/* Price Range */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium">Price Range</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Input
-                        type="number"
-                        placeholder="Min"
-                        value={filters.minPrice || ""}
-                        onChange={(e) => handleFilterChange("minPrice", parseInt(e.target.value) || 0)}
-                      />
-                      <Input
-                        type="number"
-                        placeholder="Max"
-                        value={filters.maxPrice || ""}
-                        onChange={(e) => handleFilterChange("maxPrice", parseInt(e.target.value) || 50000000)}
-                      />
+                  <DesktopFilterSection title="Price Range" icon={<DollarSign className="w-4 h-4" />}>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          type="number"
+                          placeholder="Min"
+                          value={filters.minPrice || ""}
+                          onChange={(e) => handleFilterChange("minPrice", parseInt(e.target.value) || 0)}
+                        />
+                        <Input
+                          type="number"
+                          placeholder="Max"
+                          value={filters.maxPrice || ""}
+                          onChange={(e) => handleFilterChange("maxPrice", parseInt(e.target.value) || 50000000)}
+                        />
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Rs. {filters.minPrice.toLocaleString()} - Rs. {filters.maxPrice.toLocaleString()}
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="priceNegotiable"
+                            checked={filters.priceNegotiable}
+                            onCheckedChange={(checked) => handleFilterChange("priceNegotiable", checked)}
+                          />
+                          <Label htmlFor="priceNegotiable" className="text-sm">Price Negotiable</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="financingAvailable"
+                            checked={filters.financingAvailable}
+                            onCheckedChange={(checked) => handleFilterChange("financingAvailable", checked)}
+                          />
+                          <Label htmlFor="financingAvailable" className="text-sm">Financing Available</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="leasingAvailable"
+                            checked={filters.leasingAvailable}
+                            onCheckedChange={(checked) => handleFilterChange("leasingAvailable", checked)}
+                          />
+                          <Label htmlFor="leasingAvailable" className="text-sm">Leasing Available</Label>
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      Rs. {filters.minPrice.toLocaleString()} - Rs. {filters.maxPrice.toLocaleString()}
-                    </div>
-                  </div>
+                  </DesktopFilterSection>
 
-                  {/* Year Range */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium">Year</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Input
-                        type="number"
-                        placeholder="From"
-                        value={filters.yearFrom}
-                        onChange={(e) => handleFilterChange("yearFrom", e.target.value)}
-                      />
-                      <Input
-                        type="number"
-                        placeholder="To"
-                        value={filters.yearTo}
-                        onChange={(e) => handleFilterChange("yearTo", e.target.value)}
-                      />
+                  {/* Engine & Performance */}
+                  <DesktopFilterSection title="Engine & Performance" icon={<Cog className="w-4 h-4" />}>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-sm font-medium">Fuel Type</label>
+                        <Select value={filters.fuelType} onValueChange={(value) => handleFilterChange("fuelType", value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="All Fuel Types" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Fuel Types</SelectItem>
+                            <SelectItem value="petrol">Petrol</SelectItem>
+                            <SelectItem value="diesel">Diesel</SelectItem>
+                            <SelectItem value="hybrid">Hybrid</SelectItem>
+                            <SelectItem value="electric">Electric</SelectItem>
+                            <SelectItem value="cng">CNG</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Transmission</label>
+                        <Select value={filters.transmission} onValueChange={(value) => handleFilterChange("transmission", value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Any Transmission" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Any Transmission</SelectItem>
+                            <SelectItem value="automatic">Automatic</SelectItem>
+                            <SelectItem value="manual">Manual</SelectItem>
+                            <SelectItem value="cvt">CVT</SelectItem>
+                            <SelectItem value="semi-automatic">Semi-Automatic</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Engine Size</label>
+                        <Select value={filters.engineSize} onValueChange={(value) => handleFilterChange("engineSize", value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Any Engine Size" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Any Engine Size</SelectItem>
+                            <SelectItem value="under-1000cc">Under 1000cc</SelectItem>
+                            <SelectItem value="1000-1500cc">1000-1500cc</SelectItem>
+                            <SelectItem value="1500-2000cc">1500-2000cc</SelectItem>
+                            <SelectItem value="2000-2500cc">2000-2500cc</SelectItem>
+                            <SelectItem value="over-2500cc">Over 2500cc</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Drivetrain</label>
+                        <Select value={filters.drivetrain} onValueChange={(value) => handleFilterChange("drivetrain", value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Any Drivetrain" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Any Drivetrain</SelectItem>
+                            <SelectItem value="fwd">Front Wheel Drive (FWD)</SelectItem>
+                            <SelectItem value="rwd">Rear Wheel Drive (RWD)</SelectItem>
+                            <SelectItem value="awd">All Wheel Drive (AWD)</SelectItem>
+                            <SelectItem value="4wd">4 Wheel Drive (4WD)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="turboCharged"
+                          checked={filters.turboCharged}
+                          onCheckedChange={(checked) => handleFilterChange("turboCharged", checked)}
+                        />
+                        <Label htmlFor="turboCharged" className="text-sm">Turbo Charged</Label>
+                      </div>
                     </div>
-                  </div>
+                  </DesktopFilterSection>
 
-                  {/* Health Score */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium">AI Health Score</label>
-                    <Slider
-                      value={filters.healthScore}
-                      onValueChange={(value) => handleFilterChange("healthScore", value)}
-                      max={100}
-                      step={5}
-                      className="mb-2"
-                    />
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>{filters.healthScore[0]}%</span>
-                      <span>{filters.healthScore[1]}%</span>
+                  {/* Year & Mileage */}
+                  <DesktopFilterSection title="Year & Mileage" icon={<Calendar className="w-4 h-4" />}>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-sm font-medium">Year</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Input
+                            type="number"
+                            placeholder="From"
+                            value={filters.yearFrom}
+                            onChange={(e) => handleFilterChange("yearFrom", e.target.value)}
+                          />
+                          <Input
+                            type="number"
+                            placeholder="To"
+                            value={filters.yearTo}
+                            onChange={(e) => handleFilterChange("yearTo", e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Mileage (km)</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Input
+                            type="number"
+                            placeholder="From"
+                            value={filters.mileageFrom}
+                            onChange={(e) => handleFilterChange("mileageFrom", e.target.value)}
+                          />
+                          <Input
+                            type="number"
+                            placeholder="To"
+                            value={filters.mileageTo}
+                            onChange={(e) => handleFilterChange("mileageTo", e.target.value)}
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  </DesktopFilterSection>
+
+                  {/* Vehicle Details */}
+                  <DesktopFilterSection title="Vehicle Details">
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-sm font-medium">Condition</label>
+                        <Select value={filters.condition} onValueChange={(value) => handleFilterChange("condition", value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Any Condition" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Any Condition</SelectItem>
+                            <SelectItem value="excellent">Excellent</SelectItem>
+                            <SelectItem value="very good">Very Good</SelectItem>
+                            <SelectItem value="good">Good</SelectItem>
+                            <SelectItem value="fair">Fair</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-sm font-medium">Doors</label>
+                          <Select value={filters.doors} onValueChange={(value) => handleFilterChange("doors", value)}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Any" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">Any</SelectItem>
+                              <SelectItem value="2">2 Doors</SelectItem>
+                              <SelectItem value="4">4 Doors</SelectItem>
+                              <SelectItem value="5">5 Doors</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Seats</label>
+                          <Select value={filters.seatingCapacity} onValueChange={(value) => handleFilterChange("seatingCapacity", value)}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Any" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">Any</SelectItem>
+                              <SelectItem value="2">2 Seats</SelectItem>
+                              <SelectItem value="5">5 Seats</SelectItem>
+                              <SelectItem value="7">7 Seats</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Color</label>
+                        <Select value={filters.color} onValueChange={(value) => handleFilterChange("color", value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Any Color" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Any Color</SelectItem>
+                            <SelectItem value="white">White</SelectItem>
+                            <SelectItem value="black">Black</SelectItem>
+                            <SelectItem value="silver">Silver</SelectItem>
+                            <SelectItem value="gray">Gray</SelectItem>
+                            <SelectItem value="blue">Blue</SelectItem>
+                            <SelectItem value="red">Red</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </DesktopFilterSection>
+
+                  {/* Location */}
+                  <DesktopFilterSection title="Location" icon={<MapPin className="w-4 h-4" />}>
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="City or area"
+                        value={filters.location}
+                        onChange={(e) => handleFilterChange("location", e.target.value)}
+                      />
+                    </div>
+                  </DesktopFilterSection>
+
+                  {/* Features */}
+                  <DesktopFilterSection title="Key Features">
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="airConditioning"
+                          checked={filters.airConditioning}
+                          onCheckedChange={(checked) => handleFilterChange("airConditioning", checked)}
+                        />
+                        <Label htmlFor="airConditioning" className="text-sm">Air Conditioning</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="bluetooth"
+                          checked={filters.bluetooth}
+                          onCheckedChange={(checked) => handleFilterChange("bluetooth", checked)}
+                        />
+                        <Label htmlFor="bluetooth" className="text-sm">Bluetooth</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="reverseCamera"
+                          checked={filters.reverseCamera}
+                          onCheckedChange={(checked) => handleFilterChange("reverseCamera", checked)}
+                        />
+                        <Label htmlFor="reverseCamera" className="text-sm">Reverse Camera</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="sunroof"
+                          checked={filters.sunroof}
+                          onCheckedChange={(checked) => handleFilterChange("sunroof", checked)}
+                        />
+                        <Label htmlFor="sunroof" className="text-sm">Sunroof</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="leatherSeats"
+                          checked={filters.leatherSeats}
+                          onCheckedChange={(checked) => handleFilterChange("leatherSeats", checked)}
+                        />
+                        <Label htmlFor="leatherSeats" className="text-sm">Leather Seats</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="alloyWheels"
+                          checked={filters.alloyWheels}
+                          onCheckedChange={(checked) => handleFilterChange("alloyWheels", checked)}
+                        />
+                        <Label htmlFor="alloyWheels" className="text-sm">Alloy Wheels</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="androidAuto"
+                          checked={filters.androidAuto}
+                          onCheckedChange={(checked) => handleFilterChange("androidAuto", checked)}
+                        />
+                        <Label htmlFor="androidAuto" className="text-sm">Android Auto</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="appleCarPlay"
+                          checked={filters.appleCarPlay}
+                          onCheckedChange={(checked) => handleFilterChange("appleCarPlay", checked)}
+                        />
+                        <Label htmlFor="appleCarPlay" className="text-sm">Apple CarPlay</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="parkingSensors"
+                          checked={filters.parkingSensors}
+                          onCheckedChange={(checked) => handleFilterChange("parkingSensors", checked)}
+                        />
+                        <Label htmlFor="parkingSensors" className="text-sm">Parking Sensors</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="cruiseControl"
+                          checked={filters.cruiseControl}
+                          onCheckedChange={(checked) => handleFilterChange("cruiseControl", checked)}
+                        />
+                        <Label htmlFor="cruiseControl" className="text-sm">Cruise Control</Label>
+                      </div>
+                    </div>
+                  </DesktopFilterSection>
+
+                  {/* Seller & Services */}
+                  <DesktopFilterSection title="Seller & Services">
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="verifiedSeller"
+                          checked={filters.verifiedSeller}
+                          onCheckedChange={(checked) => handleFilterChange("verifiedSeller", checked)}
+                        />
+                        <Label htmlFor="verifiedSeller" className="text-sm">Verified Seller</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="warranty"
+                          checked={filters.warranty}
+                          onCheckedChange={(checked) => handleFilterChange("warranty", checked)}
+                        />
+                        <Label htmlFor="warranty" className="text-sm">Warranty Included</Label>
+                      </div>
+                    </div>
+                  </DesktopFilterSection>
 
                   {/* Clear Filters */}
                   <Button
@@ -824,7 +1825,7 @@ const SearchPage = () => {
             </div>
           </div>
 
-          {/* Main Content */}
+          {/* Main Content - Keeping exactly the same */}
           <div className="flex-1">
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">

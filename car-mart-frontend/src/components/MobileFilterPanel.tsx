@@ -1,5 +1,7 @@
+// STEP 8: Replace the ENTIRE content of src/components/MobileFilterPanel.tsx with this
+
 import { useState } from "react";
-import { X, ChevronDown, ChevronUp, Search, MapPin } from "lucide-react";
+import { X, ChevronDown, ChevronUp, Search, MapPin, Calendar, Gauge, Fuel, Cog, Car, Shield, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,9 +21,10 @@ interface FilterSectionProps {
   title: string;
   children: React.ReactNode;
   defaultOpen?: boolean;
+  icon?: React.ReactNode;
 }
 
-const FilterSection = ({ title, children, defaultOpen = false }: FilterSectionProps) => {
+const FilterSection = ({ title, children, defaultOpen = false, icon }: FilterSectionProps) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
@@ -30,7 +33,10 @@ const FilterSection = ({ title, children, defaultOpen = false }: FilterSectionPr
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center justify-between w-full p-4 text-left touch-manipulation"
       >
-        <span className="font-medium text-primary text-base">{title}</span>
+        <div className="flex items-center space-x-2">
+          {icon && <span className="text-primary">{icon}</span>}
+          <span className="font-medium text-primary text-base">{title}</span>
+        </div>
         {isOpen ? (
           <ChevronUp className="h-4 w-4 text-muted-foreground" />
         ) : (
@@ -49,29 +55,129 @@ const MobileFilterPanel = ({
   resultCount, 
   category 
 }: MobileFilterPanelProps) => {
-  // Simple filter state that matches original structure
+  
+  // Comprehensive filter state for vehicles
   const [filters, setFilters] = useState({
-    // Common filters
+    // Basic Search & Location
     search: "",
-    minPrice: 0,
-    maxPrice: category === "vehicles" ? 50000000 : category === "services" ? 50000 : 100000,
     location: "",
     
-    // Vehicle specific
-    make: "",
-    fuelType: "",
-    transmission: "",
+    // Price & Financial
+    minPrice: 0,
+    maxPrice: category === "vehicles" ? 50000000 : category === "services" ? 50000 : 100000,
+    priceNegotiable: false,
+    leasingAvailable: false,
+    financingAvailable: false,
+    tradeInAccepted: false,
+    emiRange: "",
+    
+    // Vehicle Identification
+    make: "all",
+    model: "",
     bodyType: "",
     condition: "",
+    
+    // Engine & Performance
+    fuelType: "all",
+    transmission: "",
+    engineSize: "",
+    engineType: "",
+    drivetrain: "",
+    turboCharged: false,
+    
+    // Age & Usage
     yearFrom: "",
     yearTo: "",
+    mileageFrom: "",
+    mileageTo: "",
+    previousOwners: "",
+    
+    // Vehicle Specifications
+    doors: "",
+    seatingCapacity: "",
+    color: "",
+    interiorColor: "",
+    
+    // Health & Inspection
     healthScore: [0, 100] as number[],
+    inspectionCertificate: false,
+    serviceHistory: false,
+    accidentHistory: "",
+    
+    // Import & Registration
+    registrationYear: "",
+    registrationProvince: "",
+    importStatus: "",
+    dutyPaid: false,
+    
+    // Insurance & Legal
+    insuranceType: "",
+    registrationStatus: "",
+    documentsComplete: false,
+    
+    // Comfort Features
+    airConditioning: false,
+    climateControl: false,
+    heatedSeats: false,
+    sunroof: false,
+    moonroof: false,
+    powerWindows: false,
+    centralLocking: false,
+    
+    // Technology Features
+    bluetooth: false,
+    androidAuto: false,
+    appleCarPlay: false,
+    navigationSystem: false,
+    touchScreen: false,
+    premiumSound: false,
+    wirelessCharging: false,
+    
+    // Safety Features
+    reverseCamera: false,
+    parkingSensors: false,
+    blindSpotMonitoring: false,
+    abs: false,
+    airbags: false,
+    airbagCount: "",
+    stabilityControl: false,
+    tractionControl: false,
+    
+    // Exterior Features
+    leatherSeats: false,
+    fabricSeats: false,
+    alloyWheels: false,
+    runningBoards: false,
+    spoiler: false,
+    tintedWindows: false,
+    
+    // Performance Features
+    powerSteering: false,
+    cruiseControl: false,
+    paddleShifters: false,
+    sportMode: false,
+    ecoMode: false,
+    
+    // Seller & Listing
+    sellerType: "",
+    verifiedSeller: false,
+    quickResponse: false,
+    homeInspection: false,
+    testDriveAvailable: false,
+    virtualTour: false,
+    sameDayViewing: false,
+    
+    // Additional Services
+    warranty: false,
+    extendedWarranty: false,
+    roadside: false,
+    deliveryAvailable: false,
+    pickupService: false,
     
     // Parts specific
-    brand: "",
-    partCategory: "",
+    brand: "all",
+    partCategory: "all",
     partCondition: "",
-    warranty: false,
     inStock: false,
     
     // Services specific
@@ -82,38 +188,122 @@ const MobileFilterPanel = ({
   });
 
   const handleFilterChange = (key: string, value: any) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    try {
+      setFilters(prev => ({ ...prev, [key]: value }));
+    } catch (error) {
+      console.error("Filter change error:", error);
+    }
   };
 
   const clearAllFilters = () => {
-    setFilters({
-      search: "",
-      minPrice: 0,
-      maxPrice: category === "vehicles" ? 50000000 : category === "services" ? 50000 : 100000,
-      location: "",
-      make: "",
-      fuelType: "",
-      transmission: "",
-      bodyType: "",
-      condition: "",
-      yearFrom: "",
-      yearTo: "",
-      healthScore: [0, 100],
-      brand: "",
-      partCategory: "",
-      partCondition: "",
-      warranty: false,
-      inStock: false,
-      serviceType: "",
-      certified: false,
-      serviceWarranty: false,
-      minRating: 0
-    });
+    try {
+      setFilters({
+        search: "",
+        location: "",
+        minPrice: 0,
+        maxPrice: category === "vehicles" ? 50000000 : category === "services" ? 50000 : 100000,
+        priceNegotiable: false,
+        leasingAvailable: false,
+        financingAvailable: false,
+        tradeInAccepted: false,
+        emiRange: "",
+        make: "all",
+        model: "",
+        bodyType: "",
+        condition: "",
+        fuelType: "all",
+        transmission: "",
+        engineSize: "",
+        engineType: "",
+        drivetrain: "",
+        turboCharged: false,
+        yearFrom: "",
+        yearTo: "",
+        mileageFrom: "",
+        mileageTo: "",
+        previousOwners: "",
+        doors: "",
+        seatingCapacity: "",
+        color: "",
+        interiorColor: "",
+        healthScore: [0, 100],
+        inspectionCertificate: false,
+        serviceHistory: false,
+        accidentHistory: "",
+        registrationYear: "",
+        registrationProvince: "",
+        importStatus: "",
+        dutyPaid: false,
+        insuranceType: "",
+        registrationStatus: "",
+        documentsComplete: false,
+        airConditioning: false,
+        climateControl: false,
+        heatedSeats: false,
+        sunroof: false,
+        moonroof: false,
+        powerWindows: false,
+        centralLocking: false,
+        bluetooth: false,
+        androidAuto: false,
+        appleCarPlay: false,
+        navigationSystem: false,
+        touchScreen: false,
+        premiumSound: false,
+        wirelessCharging: false,
+        reverseCamera: false,
+        parkingSensors: false,
+        blindSpotMonitoring: false,
+        abs: false,
+        airbags: false,
+        airbagCount: "",
+        stabilityControl: false,
+        tractionControl: false,
+        leatherSeats: false,
+        fabricSeats: false,
+        alloyWheels: false,
+        runningBoards: false,
+        spoiler: false,
+        tintedWindows: false,
+        powerSteering: false,
+        cruiseControl: false,
+        paddleShifters: false,
+        sportMode: false,
+        ecoMode: false,
+        sellerType: "",
+        verifiedSeller: false,
+        quickResponse: false,
+        homeInspection: false,
+        testDriveAvailable: false,
+        virtualTour: false,
+        sameDayViewing: false,
+        warranty: false,
+        extendedWarranty: false,
+        roadside: false,
+        deliveryAvailable: false,
+        pickupService: false,
+        brand: "all",
+        partCategory: "all",
+        partCondition: "",
+        inStock: false,
+        serviceType: "",
+        certified: false,
+        serviceWarranty: false,
+        minRating: 0
+      });
+    } catch (error) {
+      console.error("Clear filters error:", error);
+    }
   };
 
   const applyFilters = () => {
-    onApplyFilters(filters);
-    onClose();
+    try {
+      console.log("Applying comprehensive filters:", filters);
+      onApplyFilters(filters);
+      onClose();
+    } catch (error) {
+      console.error("Apply filters error:", error);
+    }
   };
 
   if (!isOpen) return null;
@@ -128,7 +318,10 @@ const MobileFilterPanel = ({
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center z-10">
-            <h3 className="text-lg font-semibold text-primary">Filters</h3>
+            <h3 className="text-lg font-semibold text-primary">
+              {category === "vehicles" ? "Vehicle Filters" : 
+               category === "parts" ? "Parts Filters" : "Service Filters"}
+            </h3>
             <button onClick={onClose} className="p-2 touch-manipulation">
               <X className="w-5 h-5" />
             </button>
@@ -138,17 +331,16 @@ const MobileFilterPanel = ({
           <div className="flex-1 overflow-y-auto">
             
             {/* Search */}
-            <FilterSection title="Search" defaultOpen>
+            <FilterSection title="Search" defaultOpen icon={<Search className="w-4 h-4" />}>
               <div className="space-y-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder={
                       category === "vehicles" ? "Make, model, or keyword" :
-                      category === "parts" ? "Part name, brand, or number" :
-                      "Service type, provider, or keyword"
+                      category === "parts" ? "Part name or description" : "Service type or provider"
                     }
-                    className="pl-10 h-12 text-base"
+                    className="pl-10 h-12"
                     value={filters.search}
                     onChange={(e) => handleFilterChange("search", e.target.value)}
                   />
@@ -157,40 +349,105 @@ const MobileFilterPanel = ({
             </FilterSection>
 
             {/* Price Range */}
-            <FilterSection title="Price Range" defaultOpen>
+            <FilterSection title="Price Range" icon={<DollarSign className="w-4 h-4" />}>
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-sm">Min Price</Label>
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      value={filters.minPrice || ""}
-                      onChange={(e) => handleFilterChange("minPrice", parseInt(e.target.value) || 0)}
+                <div>
+                  <Label className="text-sm font-medium">Price Range</Label>
+                  <div className="mt-2">
+                    <Slider
+                      value={[filters.minPrice, filters.maxPrice]}
+                      onValueChange={(value) => {
+                        handleFilterChange("minPrice", value[0]);
+                        handleFilterChange("maxPrice", value[1]);
+                      }}
+                      max={category === "vehicles" ? 50000000 : category === "services" ? 50000 : 100000}
+                      step={category === "vehicles" ? 100000 : category === "services" ? 500 : 1000}
                       className="h-12"
                     />
                   </div>
-                  <div>
-                    <Label className="text-sm">Max Price</Label>
-                    <Input
-                      type="number"
-                      placeholder={category === "vehicles" ? "50,000,000" : category === "services" ? "50,000" : "100,000"}
-                      value={filters.maxPrice || ""}
-                      onChange={(e) => handleFilterChange("maxPrice", parseInt(e.target.value) || (category === "vehicles" ? 50000000 : category === "services" ? 50000 : 100000))}
-                      className="h-12"
-                    />
+                  <div className="text-sm text-muted-foreground mt-1">
+                    Rs. {filters.minPrice.toLocaleString()} - Rs. {filters.maxPrice.toLocaleString()}
                   </div>
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  Rs. {filters.minPrice?.toLocaleString() || 0} - Rs. {filters.maxPrice?.toLocaleString() || (category === "vehicles" ? "50,000,000" : category === "services" ? "50,000" : "100,000")}
+
+                {category === "vehicles" && (
+                  <>
+                    <div>
+                      <Label className="text-sm font-medium">EMI Range (Monthly)</Label>
+                      <Select value={filters.emiRange} onValueChange={(value) => handleFilterChange("emiRange", value)}>
+                        <SelectTrigger className="h-12">
+                          <SelectValue placeholder="Any EMI" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Any EMI</SelectItem>
+                          <SelectItem value="under-25k">Under Rs. 25,000</SelectItem>
+                          <SelectItem value="25k-50k">Rs. 25,000 - 50,000</SelectItem>
+                          <SelectItem value="50k-75k">Rs. 50,000 - 75,000</SelectItem>
+                          <SelectItem value="75k-100k">Rs. 75,000 - 100,000</SelectItem>
+                          <SelectItem value="over-100k">Over Rs. 100,000</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="priceNegotiable"
+                          checked={filters.priceNegotiable}
+                          onCheckedChange={(checked) => handleFilterChange("priceNegotiable", checked)}
+                        />
+                        <label htmlFor="priceNegotiable" className="text-sm">Price Negotiable</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="financingAvailable"
+                          checked={filters.financingAvailable}
+                          onCheckedChange={(checked) => handleFilterChange("financingAvailable", checked)}
+                        />
+                        <label htmlFor="financingAvailable" className="text-sm">Financing Available</label>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </FilterSection>
+
+            {/* Location */}
+            <FilterSection title="Location" icon={<MapPin className="w-4 h-4" />}>
+              <div className="space-y-4">
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="City or area"
+                    className="pl-10 h-12"
+                    value={filters.location}
+                    onChange={(e) => handleFilterChange("location", e.target.value)}
+                  />
                 </div>
+                
+                <Select value={filters.location} onValueChange={(value) => handleFilterChange("location", value)}>
+                  <SelectTrigger className="h-12">
+                    <SelectValue placeholder="Select Location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Locations</SelectItem>
+                    <SelectItem value="colombo">Colombo</SelectItem>
+                    <SelectItem value="kandy">Kandy</SelectItem>
+                    <SelectItem value="galle">Galle</SelectItem>
+                    <SelectItem value="matara">Matara</SelectItem>
+                    <SelectItem value="kurunegala">Kurunegala</SelectItem>
+                    <SelectItem value="negombo">Negombo</SelectItem>
+                    <SelectItem value="anuradhapura">Anuradhapura</SelectItem>
+                    <SelectItem value="ratnapura">Ratnapura</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </FilterSection>
 
             {/* Vehicle Specific Filters */}
             {category === "vehicles" && (
               <>
-                <FilterSection title="Make & Type">
+                <FilterSection title="Make & Model" icon={<Car className="w-4 h-4" />}>
                   <div className="space-y-4">
                     <div>
                       <Label className="text-sm font-medium">Make</Label>
@@ -199,21 +456,55 @@ const MobileFilterPanel = ({
                           <SelectValue placeholder="All Makes" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Makes</SelectItem>
+                          <SelectItem value="all">All Makes</SelectItem>
                           <SelectItem value="toyota">Toyota</SelectItem>
                           <SelectItem value="honda">Honda</SelectItem>
                           <SelectItem value="nissan">Nissan</SelectItem>
                           <SelectItem value="bmw">BMW</SelectItem>
                           <SelectItem value="mercedes-benz">Mercedes-Benz</SelectItem>
                           <SelectItem value="audi">Audi</SelectItem>
+                          <SelectItem value="suzuki">Suzuki</SelectItem>
                           <SelectItem value="mitsubishi">Mitsubishi</SelectItem>
                           <SelectItem value="mazda">Mazda</SelectItem>
-                          <SelectItem value="suzuki">Suzuki</SelectItem>
                           <SelectItem value="hyundai">Hyundai</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
+                    <div>
+                      <Label className="text-sm font-medium">Model</Label>
+                      <Input
+                        placeholder="Enter specific model"
+                        className="h-12"
+                        value={filters.model}
+                        onChange={(e) => handleFilterChange("model", e.target.value)}
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium">Body Type</Label>
+                      <Select value={filters.bodyType} onValueChange={(value) => handleFilterChange("bodyType", value)}>
+                        <SelectTrigger className="h-12">
+                          <SelectValue placeholder="Any Body Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Any Body Type</SelectItem>
+                          <SelectItem value="sedan">Sedan</SelectItem>
+                          <SelectItem value="suv">SUV</SelectItem>
+                          <SelectItem value="hatchback">Hatchback</SelectItem>
+                          <SelectItem value="coupe">Coupe</SelectItem>
+                          <SelectItem value="wagon">Wagon</SelectItem>
+                          <SelectItem value="pickup">Pickup Truck</SelectItem>
+                          <SelectItem value="van">Van</SelectItem>
+                          <SelectItem value="convertible">Convertible</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </FilterSection>
+
+                <FilterSection title="Engine & Performance" icon={<Cog className="w-4 h-4" />}>
+                  <div className="space-y-4">
                     <div>
                       <Label className="text-sm font-medium">Fuel Type</Label>
                       <Select value={filters.fuelType} onValueChange={(value) => handleFilterChange("fuelType", value)}>
@@ -221,7 +512,7 @@ const MobileFilterPanel = ({
                           <SelectValue placeholder="All Fuel Types" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Fuel Types</SelectItem>
+                          <SelectItem value="all">All Fuel Types</SelectItem>
                           <SelectItem value="petrol">Petrol</SelectItem>
                           <SelectItem value="diesel">Diesel</SelectItem>
                           <SelectItem value="hybrid">Hybrid</SelectItem>
@@ -248,288 +539,197 @@ const MobileFilterPanel = ({
                     </div>
 
                     <div>
-                      <Label className="text-sm font-medium">Body Type</Label>
-                      <Select value={filters.bodyType} onValueChange={(value) => handleFilterChange("bodyType", value)}>
+                      <Label className="text-sm font-medium">Engine Size</Label>
+                      <Select value={filters.engineSize} onValueChange={(value) => handleFilterChange("engineSize", value)}>
                         <SelectTrigger className="h-12">
-                          <SelectValue placeholder="Any Body Type" />
+                          <SelectValue placeholder="Any Engine Size" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Any Body Type</SelectItem>
-                          <SelectItem value="sedan">Sedan</SelectItem>
-                          <SelectItem value="suv">SUV</SelectItem>
-                          <SelectItem value="hatchback">Hatchback</SelectItem>
-                          <SelectItem value="coupe">Coupe</SelectItem>
-                          <SelectItem value="wagon">Wagon</SelectItem>
-                          <SelectItem value="pickup">Pickup Truck</SelectItem>
-                          <SelectItem value="van">Van</SelectItem>
-                          <SelectItem value="convertible">Convertible</SelectItem>
+                          <SelectItem value="">Any Engine Size</SelectItem>
+                          <SelectItem value="under-1000cc">Under 1000cc</SelectItem>
+                          <SelectItem value="1000-1500cc">1000-1500cc</SelectItem>
+                          <SelectItem value="1500-2000cc">1500-2000cc</SelectItem>
+                          <SelectItem value="2000-2500cc">2000-2500cc</SelectItem>
+                          <SelectItem value="over-2500cc">Over 2500cc</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium">Drivetrain</Label>
+                      <Select value={filters.drivetrain} onValueChange={(value) => handleFilterChange("drivetrain", value)}>
+                        <SelectTrigger className="h-12">
+                          <SelectValue placeholder="Any Drivetrain" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Any Drivetrain</SelectItem>
+                          <SelectItem value="fwd">Front Wheel Drive (FWD)</SelectItem>
+                          <SelectItem value="rwd">Rear Wheel Drive (RWD)</SelectItem>
+                          <SelectItem value="awd">All Wheel Drive (AWD)</SelectItem>
+                          <SelectItem value="4wd">4 Wheel Drive (4WD)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
                 </FilterSection>
 
-                <FilterSection title="Year & Condition">
+                <FilterSection title="Year & Mileage" icon={<Calendar className="w-4 h-4" />}>
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <Label className="text-sm font-medium">Year From</Label>
-                        <Input
-                          type="number"
-                          placeholder="2010"
-                          value={filters.yearFrom}
-                          onChange={(e) => handleFilterChange("yearFrom", e.target.value)}
-                          className="h-12"
-                        />
+                        <Select value={filters.yearFrom} onValueChange={(value) => handleFilterChange("yearFrom", value)}>
+                          <SelectTrigger className="h-12">
+                            <SelectValue placeholder="Any" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Any Year</SelectItem>
+                            {Array.from({ length: 25 }, (_, i) => {
+                              const year = 2024 - i;
+                              return (
+                                <SelectItem key={year} value={year.toString()}>
+                                  {year}
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div>
                         <Label className="text-sm font-medium">Year To</Label>
+                        <Select value={filters.yearTo} onValueChange={(value) => handleFilterChange("yearTo", value)}>
+                          <SelectTrigger className="h-12">
+                            <SelectValue placeholder="Any" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Any Year</SelectItem>
+                            {Array.from({ length: 25 }, (_, i) => {
+                              const year = 2024 - i;
+                              return (
+                                <SelectItem key={year} value={year.toString()}>
+                                  {year}
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-sm font-medium">Mileage From (km)</Label>
                         <Input
-                          type="number"
-                          placeholder="2025"
-                          value={filters.yearTo}
-                          onChange={(e) => handleFilterChange("yearTo", e.target.value)}
+                          placeholder="e.g. 10000"
                           className="h-12"
+                          value={filters.mileageFrom}
+                          onChange={(e) => handleFilterChange("mileageFrom", e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Mileage To (km)</Label>
+                        <Input
+                          placeholder="e.g. 100000"
+                          className="h-12"
+                          value={filters.mileageTo}
+                          onChange={(e) => handleFilterChange("mileageTo", e.target.value)}
                         />
                       </div>
                     </div>
+                  </div>
+                </FilterSection>
 
+                <FilterSection title="Health Score" icon={<Shield className="w-4 h-4" />}>
+                  <div className="space-y-4">
                     <div>
-                      <Label className="text-sm font-medium">Condition</Label>
-                      <Select value={filters.condition} onValueChange={(value) => handleFilterChange("condition", value)}>
-                        <SelectTrigger className="h-12">
-                          <SelectValue placeholder="Any Condition" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="">Any Condition</SelectItem>
-                          <SelectItem value="excellent">Excellent</SelectItem>
-                          <SelectItem value="very-good">Very Good</SelectItem>
-                          <SelectItem value="good">Good</SelectItem>
-                          <SelectItem value="fair">Fair</SelectItem>
-                          <SelectItem value="needs-work">Needs Work</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Label className="text-sm font-medium">Health Score Range</Label>
+                      <div className="mt-2">
+                        <Slider
+                          value={filters.healthScore}
+                          onValueChange={(value) => handleFilterChange("healthScore", value)}
+                          max={100}
+                          step={5}
+                          className="h-12"
+                        />
+                      </div>
+                      <div className="text-sm text-muted-foreground mt-1">
+                        {filters.healthScore[0]}% - {filters.healthScore[1]}%
+                      </div>
                     </div>
+                  </div>
+                </FilterSection>
 
-                    <div>
-                      <Label className="text-sm font-medium mb-3 block">AI Health Score</Label>
-                      <Slider
-                        value={filters.healthScore}
-                        onValueChange={(value) => handleFilterChange("healthScore", value)}
-                        max={100}
-                        step={5}
-                        className="mb-2"
-                      />
-                      <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>{filters.healthScore[0]}%</span>
-                        <span>{filters.healthScore[1]}%</span>
+                <FilterSection title="Safety Features">
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="abs"
+                          checked={filters.abs}
+                          onCheckedChange={(checked) => handleFilterChange("abs", checked)}
+                        />
+                        <label htmlFor="abs" className="text-sm">ABS</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="airbags"
+                          checked={filters.airbags}
+                          onCheckedChange={(checked) => handleFilterChange("airbags", checked)}
+                        />
+                        <label htmlFor="airbags" className="text-sm">Airbags</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="reverseCamera"
+                          checked={filters.reverseCamera}
+                          onCheckedChange={(checked) => handleFilterChange("reverseCamera", checked)}
+                        />
+                        <label htmlFor="reverseCamera" className="text-sm">Reverse Camera</label>
+                      </div>
+                    </div>
+                  </div>
+                </FilterSection>
+
+                <FilterSection title="Comfort Features">
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="airConditioning"
+                          checked={filters.airConditioning}
+                          onCheckedChange={(checked) => handleFilterChange("airConditioning", checked)}
+                        />
+                        <label htmlFor="airConditioning" className="text-sm">Air Conditioning</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="bluetooth"
+                          checked={filters.bluetooth}
+                          onCheckedChange={(checked) => handleFilterChange("bluetooth", checked)}
+                        />
+                        <label htmlFor="bluetooth" className="text-sm">Bluetooth</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="sunroof"
+                          checked={filters.sunroof}
+                          onCheckedChange={(checked) => handleFilterChange("sunroof", checked)}
+                        />
+                        <label htmlFor="sunroof" className="text-sm">Sunroof</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="leatherSeats"
+                          checked={filters.leatherSeats}
+                          onCheckedChange={(checked) => handleFilterChange("leatherSeats", checked)}
+                        />
+                        <label htmlFor="leatherSeats" className="text-sm">Leather Seats</label>
                       </div>
                     </div>
                   </div>
                 </FilterSection>
               </>
             )}
-
-            {/* Parts Specific Filters */}
-            {category === "parts" && (
-              <>
-                <FilterSection title="Brand & Category">
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-sm font-medium">Brand</Label>
-                      <Select value={filters.brand} onValueChange={(value) => handleFilterChange("brand", value)}>
-                        <SelectTrigger className="h-12">
-                          <SelectValue placeholder="All Brands" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="">All Brands</SelectItem>
-                          <SelectItem value="toyota">Toyota</SelectItem>
-                          <SelectItem value="honda">Honda</SelectItem>
-                          <SelectItem value="bmw">BMW</SelectItem>
-                          <SelectItem value="mercedes">Mercedes-Benz</SelectItem>
-                          <SelectItem value="nissan">Nissan</SelectItem>
-                          <SelectItem value="bosch">Bosch</SelectItem>
-                          <SelectItem value="denso">Denso</SelectItem>
-                          <SelectItem value="brembo">Brembo</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label className="text-sm font-medium">Category</Label>
-                      <Select value={filters.partCategory} onValueChange={(value) => handleFilterChange("partCategory", value)}>
-                        <SelectTrigger className="h-12">
-                          <SelectValue placeholder="All Categories" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="">All Categories</SelectItem>
-                          <SelectItem value="engine">Engine Parts</SelectItem>
-                          <SelectItem value="brakes">Brakes</SelectItem>
-                          <SelectItem value="suspension">Suspension</SelectItem>
-                          <SelectItem value="electrical">Electrical</SelectItem>
-                          <SelectItem value="body">Body Parts</SelectItem>
-                          <SelectItem value="interior">Interior</SelectItem>
-                          <SelectItem value="wheels-tires">Wheels & Tires</SelectItem>
-                          <SelectItem value="filters">Filters</SelectItem>
-                          <SelectItem value="lights">Lights</SelectItem>
-                          <SelectItem value="exhaust">Exhaust System</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label className="text-sm font-medium">Condition</Label>
-                      <Select value={filters.partCondition} onValueChange={(value) => handleFilterChange("partCondition", value)}>
-                        <SelectTrigger className="h-12">
-                          <SelectValue placeholder="Any Condition" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="">Any Condition</SelectItem>
-                          <SelectItem value="new">New</SelectItem>
-                          <SelectItem value="used">Used</SelectItem>
-                          <SelectItem value="refurbished">Refurbished</SelectItem>
-                          <SelectItem value="excellent">Excellent</SelectItem>
-                          <SelectItem value="good">Good</SelectItem>
-                          <SelectItem value="fair">Fair</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </FilterSection>
-
-                <FilterSection title="Features">
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <Checkbox
-                        id="warranty"
-                        checked={filters.warranty}
-                        onCheckedChange={(checked) => handleFilterChange("warranty", checked)}
-                        className="h-5 w-5"
-                      />
-                      <Label htmlFor="warranty" className="text-sm font-medium">Has Warranty</Label>
-                    </div>
-
-                    <div className="flex items-center space-x-3">
-                      <Checkbox
-                        id="inStock"
-                        checked={filters.inStock}
-                        onCheckedChange={(checked) => handleFilterChange("inStock", checked)}
-                        className="h-5 w-5"
-                      />
-                      <Label htmlFor="inStock" className="text-sm font-medium">In Stock</Label>
-                    </div>
-                  </div>
-                </FilterSection>
-              </>
-            )}
-
-            {/* Services Specific Filters */}
-            {category === "services" && (
-              <>
-                <FilterSection title="Service Type">
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-sm font-medium">Service Category</Label>
-                      <Select value={filters.serviceType} onValueChange={(value) => handleFilterChange("serviceType", value)}>
-                        <SelectTrigger className="h-12">
-                          <SelectValue placeholder="All Services" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="">All Services</SelectItem>
-                          <SelectItem value="maintenance">Maintenance</SelectItem>
-                          <SelectItem value="repair">Repair</SelectItem>
-                          <SelectItem value="bodywork">Body Work</SelectItem>
-                          <SelectItem value="electrical">Electrical</SelectItem>
-                          <SelectItem value="ac-service">AC Service</SelectItem>
-                          <SelectItem value="tire-service">Tire Service</SelectItem>
-                          <SelectItem value="brake-service">Brake Service</SelectItem>
-                          <SelectItem value="engine-service">Engine Service</SelectItem>
-                          <SelectItem value="detailing">Car Detailing</SelectItem>
-                          <SelectItem value="inspection">Inspection</SelectItem>
-                          <SelectItem value="towing">Towing</SelectItem>
-                          <SelectItem value="emergency">Emergency</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label className="text-sm font-medium">Minimum Rating</Label>
-                      <Select value={filters.minRating.toString()} onValueChange={(value) => handleFilterChange("minRating", parseFloat(value))}>
-                        <SelectTrigger className="h-12">
-                          <SelectValue placeholder="Any Rating" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="0">Any Rating</SelectItem>
-                          <SelectItem value="3">3+ Stars</SelectItem>
-                          <SelectItem value="3.5">3.5+ Stars</SelectItem>
-                          <SelectItem value="4">4+ Stars</SelectItem>
-                          <SelectItem value="4.5">4.5+ Stars</SelectItem>
-                          <SelectItem value="4.8">4.8+ Stars</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </FilterSection>
-
-                <FilterSection title="Features">
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <Checkbox
-                        id="certified"
-                        checked={filters.certified}
-                        onCheckedChange={(checked) => handleFilterChange("certified", checked)}
-                        className="h-5 w-5"
-                      />
-                      <Label htmlFor="certified" className="text-sm font-medium">Certified Providers</Label>
-                    </div>
-
-                    <div className="flex items-center space-x-3">
-                      <Checkbox
-                        id="serviceWarranty"
-                        checked={filters.serviceWarranty}
-                        onCheckedChange={(checked) => handleFilterChange("serviceWarranty", checked)}
-                        className="h-5 w-5"
-                      />
-                      <Label htmlFor="serviceWarranty" className="text-sm font-medium">Service Warranty</Label>
-                    </div>
-                  </div>
-                </FilterSection>
-              </>
-            )}
-
-            {/* Common Location Filter */}
-            <FilterSection title="Location">
-              <div className="space-y-4">
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="City or area"
-                    className="pl-10 h-12"
-                    value={filters.location}
-                    onChange={(e) => handleFilterChange("location", e.target.value)}
-                  />
-                </div>
-                
-                <Select value={filters.location} onValueChange={(value) => handleFilterChange("location", value)}>
-                  <SelectTrigger className="h-12">
-                    <SelectValue placeholder="Select Location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">All Locations</SelectItem>
-                    <SelectItem value="colombo">Colombo</SelectItem>
-                    <SelectItem value="kandy">Kandy</SelectItem>
-                    <SelectItem value="galle">Galle</SelectItem>
-                    <SelectItem value="jaffna">Jaffna</SelectItem>
-                    <SelectItem value="kurunegala">Kurunegala</SelectItem>
-                    <SelectItem value="matara">Matara</SelectItem>
-                    <SelectItem value="negombo">Negombo</SelectItem>
-                    <SelectItem value="anuradhapura">Anuradhapura</SelectItem>
-                    <SelectItem value="ratnapura">Ratnapura</SelectItem>
-                    <SelectItem value="batticaloa">Batticaloa</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </FilterSection>
 
           </div>
 
