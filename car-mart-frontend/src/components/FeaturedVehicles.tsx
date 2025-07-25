@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import VehicleCard from "./VehicleCard";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Loader2 } from "lucide-react";
-import { apiService } from "@/services/api";
 
 interface FeaturedVehiclesProps {
   onSave?: (id: string) => void;
@@ -30,27 +29,89 @@ const FeaturedVehicles = ({ onSave, onCompare }: FeaturedVehiclesProps) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // NEW Mock data instead of API calls
+  const mockFeaturedVehicles: Vehicle[] = [
+    {
+      id: "1",
+      title: "Lexus ES 350 F Sport",
+      price: 18500000,
+      year: 2022,
+      mileage: 15000,
+      location: "Colombo",
+      fuelType: "Petrol",
+      transmission: "Automatic",
+      image: "https://images.unsplash.com/photo-1563720223185-11003d516935?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      healthScore: 94,
+      sellerRating: 4.9,
+      isVerified: true,
+      isFeatured: true
+    },
+    {
+      id: "2",
+      title: "Infiniti QX60 Premium",
+      price: 21800000,
+      year: 2023,
+      mileage: 8000,
+      location: "Kandy",
+      fuelType: "Petrol",
+      transmission: "CVT",
+      image: "https://images.unsplash.com/photo-1570611178717-4c68f8ffe4b1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      healthScore: 91,
+      sellerRating: 4.7,
+      isVerified: true,
+      isFeatured: true
+    },
+    {
+      id: "3",
+      title: "Ford Mustang GT Premium",
+      price: 24500000,
+      year: 2022,
+      mileage: 12000,
+      location: "Galle",
+      fuelType: "Petrol",
+      transmission: "Manual",
+      image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      healthScore: 89,
+      sellerRating: 4.8,
+      isVerified: true,
+      isFeatured: true
+    },
+    {
+      id: "4",
+      title: "Volkswagen ID.4 Pro",
+      price: 19800000,
+      year: 2023,
+      mileage: 5000,
+      location: "Negombo",
+      fuelType: "Electric",
+      transmission: "Automatic",
+      image: "https://images.unsplash.com/photo-1560958089-b8a1929cea89?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      healthScore: 96,
+      sellerRating: 4.9,
+      isVerified: true,
+      isFeatured: true
+    }
+  ];
+
   useEffect(() => {
-    const fetchVehicles = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await apiService.getVehicles();
-        
-        if (response.success) {
-          setVehicles(response.data.slice(0, 4));
-        } else {
-          throw new Error(response.message || 'Failed to fetch vehicles');
+    // Simulate loading with mock data
+    const loadVehicles = () => {
+      setLoading(true);
+      setError(null);
+      
+      // Simulate API delay
+      setTimeout(() => {
+        try {
+          setVehicles(mockFeaturedVehicles);
+          setLoading(false);
+        } catch (err) {
+          setError("Failed to load featured vehicles");
+          setLoading(false);
         }
-      } catch (err) {
-        console.error('Error fetching vehicles:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch vehicles');
-      } finally {
-        setLoading(false);
-      }
+      }, 800);
     };
 
-    fetchVehicles();
+    loadVehicles();
   }, []);
 
   const handleSave = (id: string) => {
@@ -166,8 +227,8 @@ const FeaturedVehicles = ({ onSave, onCompare }: FeaturedVehiclesProps) => {
             <VehicleCard
               key={vehicle.id}
               vehicle={vehicle}
-              onSave={handleSave}
-              onCompare={handleCompare}
+              onSave={() => handleSave(vehicle.id)}
+              onCompare={() => handleCompare(vehicle.id)}
               className="animate-fade-in"
             />
           ))}

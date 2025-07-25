@@ -13,12 +13,14 @@ import Header from "@/components/Header";
 import VehicleCard from "@/components/VehicleCard";
 import ComparisonBar from "@/components/ComparisonBar";
 import MobileFilterPanel from "@/components/MobileFilterPanel";
+import HealthScoreBadge from "@/components/HealthScoreBadge";
 
 interface ComparisonVehicle {
   id: string;
   title: string;
   price: number;
   image: string;
+  healthScore: number;
 }
 
 interface Vehicle {
@@ -31,6 +33,7 @@ interface Vehicle {
   fuelType: string;
   transmission: string;
   image: string;
+  healthScore: number;
   sellerRating: number;
   isVerified: boolean;
   isFeatured: boolean;
@@ -343,7 +346,7 @@ const SearchPage = () => {
     powerSteering: false
   });
 
-  // Enhanced mock vehicle data with real demo images
+  // Enhanced mock vehicle data with more properties (keeping your exact vehicles)
   const mockVehicles: Vehicle[] = [
     {
       id: "1",
@@ -354,7 +357,8 @@ const SearchPage = () => {
       location: "Colombo",
       fuelType: "Petrol",
       transmission: "Automatic",
-      image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      image: "/api/placeholder/400/300",
+      healthScore: 92,
       sellerRating: 4.8,
       isVerified: true,
       isFeatured: true,
@@ -435,7 +439,8 @@ const SearchPage = () => {
       location: "Kandy",
       fuelType: "Hybrid",
       transmission: "CVT",
-      image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      image: "/api/placeholder/400/300",
+      healthScore: 88,
       sellerRating: 4.7,
       isVerified: true,
       isFeatured: false,
@@ -517,7 +522,8 @@ const SearchPage = () => {
       location: "Galle",
       fuelType: "Petrol",
       transmission: "CVT",
-      image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      image: "/api/placeholder/400/300",
+      healthScore: 85,
       sellerRating: 4.6,
       isVerified: false,
       isFeatured: false,
@@ -599,7 +605,8 @@ const SearchPage = () => {
       location: "Colombo",
       fuelType: "Petrol",
       transmission: "Automatic",
-      image: "https://images.unsplash.com/photo-1563720223185-11003d516935?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      image: "/api/placeholder/400/300",
+      healthScore: 96,
       sellerRating: 4.9,
       isVerified: true,
       isFeatured: true,
@@ -683,7 +690,8 @@ const SearchPage = () => {
       location: "Negombo",
       fuelType: "Petrol",
       transmission: "Automatic",
-      image: "https://images.unsplash.com/photo-1570611178717-4c68f8ffe4b1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      image: "/api/placeholder/400/300",
+      healthScore: 78,
       sellerRating: 4.4,
       isVerified: false,
       isFeatured: false,
@@ -766,7 +774,8 @@ const SearchPage = () => {
       location: "Kandy",
       fuelType: "Petrol",
       transmission: "Automatic",
-      image: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      image: "/api/placeholder/400/300",
+      healthScore: 91,
       sellerRating: 4.7,
       isVerified: true,
       isFeatured: true,
@@ -1065,7 +1074,7 @@ const SearchPage = () => {
       filtered = filtered.filter(vehicle => vehicle.warranty);
     }
 
-    // Apply sorting (removed health-score option)
+    // Apply sorting
     switch (sortBy) {
       case "price-low":
         filtered.sort((a, b) => a.price - b.price);
@@ -1078,6 +1087,9 @@ const SearchPage = () => {
         break;
       case "mileage-low":
         filtered.sort((a, b) => a.mileage - b.mileage);
+        break;
+      case "health-score":
+        filtered.sort((a, b) => b.healthScore - a.healthScore);
         break;
       case "rating":
         filtered.sort((a, b) => b.sellerRating - a.sellerRating);
@@ -1324,7 +1336,8 @@ const SearchPage = () => {
       id: vehicle.id,
       title: vehicle.title,
       price: vehicle.price,
-      image: vehicle.image
+      image: vehicle.image,
+      healthScore: vehicle.healthScore
     };
     
     setComparisonList([...comparisonList, comparisonVehicle]);
@@ -1835,6 +1848,7 @@ const SearchPage = () => {
                     <SelectItem value="price-high">Price: High to Low</SelectItem>
                     <SelectItem value="year-new">Year: Newest First</SelectItem>
                     <SelectItem value="mileage-low">Mileage: Low to High</SelectItem>
+                    <SelectItem value="health-score">Health Score</SelectItem>
                     <SelectItem value="rating">Seller Rating</SelectItem>
                   </SelectContent>
                 </Select>
@@ -1871,7 +1885,7 @@ const SearchPage = () => {
                     <SelectItem value="price-low">Price ↑</SelectItem>
                     <SelectItem value="price-high">Price ↓</SelectItem>
                     <SelectItem value="year-new">Year ↓</SelectItem>
-                    <SelectItem value="rating">Seller Rating</SelectItem>
+                    <SelectItem value="health-score">Health Score</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1927,6 +1941,9 @@ const SearchPage = () => {
                                 alt={vehicle.title}
                                 className="w-full h-full object-cover"
                               />
+                              <div className="absolute top-2 left-2">
+                                <HealthScoreBadge score={vehicle.healthScore} />
+                              </div>
                               {vehicle.isFeatured && (
                                 <div className="absolute top-2 right-2">
                                   <Badge className="bg-highlight text-white">Featured</Badge>
