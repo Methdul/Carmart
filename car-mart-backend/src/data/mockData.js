@@ -1,5 +1,5 @@
 // src/data/mockData.js
-// NEW Mock data for Car Mart backend - Updated with fresh vehicles and content
+// Updated Mock data for Car Mart backend with proper demo images
 
 const vehicles = [
   {
@@ -19,7 +19,9 @@ const vehicles = [
     make: "Lexus",
     model: "ES 350",
     images: [
-      "https://images.unsplash.com/photo-1563720223185-11003d516935?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1563720223185-11003d516935?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1494976300122-74e6b8b63f9e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
     ],
     features: [
       "F Sport Package", "Leather Seats", "Navigation System", "Premium Audio", "Wireless Charging", "Heated Seats"
@@ -53,7 +55,9 @@ const vehicles = [
     make: "Infiniti",
     model: "QX60",
     images: [
-      "https://images.unsplash.com/photo-1570611178717-4c68f8ffe4b1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1570611178717-4c68f8ffe4b1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1581540222194-0def2dda95b8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
     ],
     features: [
       "7-Seater", "AWD", "Premium Interior", "Around View Monitor", "ProPILOT Assist", "Bose Audio"
@@ -61,7 +65,7 @@ const vehicles = [
     description: "Nearly new Infiniti QX60 with premium features and 7-seater capacity. Perfect family SUV with advanced safety technology and luxurious interior appointments.",
     seller: {
       id: "seller2",
-      name: "Central Auto Gallery",
+      name: "Kandy Auto Palace",
       rating: 4.7,
       reviewCount: 89,
       verified: true,
@@ -80,129 +84,137 @@ const vehicles = [
     fuelType: "Petrol",
     transmission: "Manual",
     bodyType: "Coupe",
-    color: "Race Red",
+    color: "Racing Red",
     engineCapacity: "5000cc",
     condition: "Excellent",
     healthScore: 89,
     make: "Ford",
     model: "Mustang GT",
     images: [
-      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1580414155951-1dc4a73d3e1b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1494976300122-74e6b8b63f9e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
     ],
     features: [
-      "5.0L V8 Engine", "Performance Package", "Manual Transmission", "Recaro Seats", "Track Apps", "Premium Audio"
+      "Premium Package", "Performance Exhaust", "Recaro Seats", "Track Apps", "Magnetic Ride", "Premium Audio"
     ],
-    description: "Iconic American muscle car with 5.0L V8 engine and manual transmission. This Mustang GT features the Performance Package for enhanced track capability.",
+    description: "Stunning Ford Mustang GT with Premium Package. This American muscle car delivers incredible performance with its 5.0L V8 engine and track-tuned suspension.",
     seller: {
       id: "seller3",
       name: "Sports Car Specialists",
       rating: 4.8,
-      reviewCount: 67,
+      reviewCount: 234,
       verified: true,
-      memberSince: "2021",
+      memberSince: "2018",
       location: "Galle",
-      responseTime: "Within 3 hours"
+      responseTime: "Within 30 minutes"
     }
   },
   {
     id: "4",
-    title: "Volkswagen ID.4 Pro",
-    price: 19800000,
-    year: 2023,
-    mileage: 5000,
+    title: "Toyota Prius Hybrid",
+    price: 7200000,
+    year: 2021,
+    mileage: 35000,
     location: "Negombo",
-    fuelType: "Electric",
+    fuelType: "Hybrid",
     transmission: "Automatic",
-    bodyType: "SUV",
-    color: "Moonstone Grey",
-    engineCapacity: "Electric",
-    condition: "Excellent",
-    healthScore: 96,
-    make: "Volkswagen",
-    model: "ID.4",
+    bodyType: "Hatchback",
+    color: "Silver Metallic",
+    engineCapacity: "1800cc",
+    condition: "Very Good",
+    healthScore: 87,
+    make: "Toyota",
+    model: "Prius",
     images: [
-      "https://images.unsplash.com/photo-1560958089-b8a1929cea89?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1549399729-2efbaddc8a7d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1572408796-77c3e6ee49b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
     ],
     features: [
-      "Electric Drive", "AWD", "ID.Light", "App Connect", "Travel Assist", "Fast Charging"
+      "Hybrid System", "Toyota Safety Sense", "Backup Camera", "Touch Screen", "Bluetooth", "Eco Mode"
     ],
-    description: "Latest electric SUV from Volkswagen with impressive range and modern technology. Features rapid charging capability and advanced driver assistance systems.",
+    description: "Efficient Toyota Prius hybrid offering excellent fuel economy and reliability. Perfect for city driving with advanced safety features and spacious interior.",
     seller: {
       id: "seller4",
-      name: "EV Motors Lanka",
-      rating: 4.9,
-      reviewCount: 43,
-      verified: true,
-      memberSince: "2022",
-      location: "Negombo",
-      responseTime: "Within 1 hour"
-    }
-  },
-  {
-    id: "5",
-    title: "Subaru WRX STI",
-    price: 16200000,
-    year: 2021,
-    mileage: 25000,
-    location: "Colombo",
-    fuelType: "Petrol",
-    transmission: "Manual",
-    bodyType: "Sedan",
-    color: "World Rally Blue",
-    engineCapacity: "2500cc",
-    condition: "Good",
-    healthScore: 87,
-    make: "Subaru",
-    model: "WRX STI",
-    images: [
-      "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
-    ],
-    features: [
-      "Turbo Boxer Engine", "AWD", "STI Performance", "Brembo Brakes", "Sport Suspension", "Rally Heritage"
-    ],
-    description: "Legendary performance sedan with turbocharged boxer engine and symmetric AWD. Perfect for enthusiasts who appreciate rally-bred engineering.",
-    seller: {
-      id: "seller5",
-      name: "Performance Auto Hub",
+      name: "Green Auto Solutions",
       rating: 4.6,
-      reviewCount: 78,
+      reviewCount: 145,
       verified: true,
       memberSince: "2020",
-      location: "Colombo",
+      location: "Negombo",
       responseTime: "Within 4 hours"
     }
   },
   {
-    id: "6",
-    title: "Acura MDX Technology",
-    price: 23200000,
-    year: 2022,
-    mileage: 18000,
-    location: "Panadura",
+    id: "5",
+    title: "BMW X5 xDrive40i",
+    price: 32500000,
+    year: 2023,
+    mileage: 5000,
+    location: "Colombo",
     fuelType: "Petrol",
     transmission: "Automatic",
     bodyType: "SUV",
-    color: "Platinum White",
-    engineCapacity: "3500cc",
+    color: "Alpine White",
+    engineCapacity: "3000cc",
     condition: "Excellent",
-    healthScore: 92,
-    make: "Acura",
-    model: "MDX",
+    healthScore: 96,
+    make: "BMW",
+    model: "X5",
     images: [
-      "https://images.unsplash.com/photo-1544808489-43d31e8a6ef6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1617880251995-c239536a647c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1564733511515-0b012a88bd21?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
     ],
     features: [
-      "7-Seater", "SH-AWD", "Technology Package", "AcuraWatch", "Premium Audio", "Panoramic Roof"
+      "xDrive AWD", "M Sport Package", "Panoramic Roof", "Harman Kardon", "Navigation", "Gesture Control"
     ],
-    description: "Premium 7-seater SUV with advanced technology package and SH-AWD system. Combines luxury, performance, and practicality in one sophisticated package.",
+    description: "Like-new BMW X5 with luxury features and powerful turbo engine. This premium SUV offers the perfect blend of performance, comfort, and advanced technology.",
+    seller: {
+      id: "seller5",
+      name: "Luxury Motors Ceylon",
+      rating: 4.9,
+      reviewCount: 312,
+      verified: true,
+      memberSince: "2017",
+      location: "Colombo",
+      responseTime: "Within 30 minutes"
+    }
+  },
+  {
+    id: "6",
+    title: "Honda Civic Type R",
+    price: 19800000,
+    year: 2022,
+    mileage: 8500,
+    location: "Matara",
+    fuelType: "Petrol",
+    transmission: "Manual",
+    bodyType: "Hatchback",
+    color: "Championship White",
+    engineCapacity: "2000cc",
+    condition: "Excellent",
+    healthScore: 92,
+    make: "Honda",
+    model: "Civic Type R",
+    images: [
+      "https://images.unsplash.com/photo-1619767886558-efdc259cde1a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1580414155951-1dc4a73d3e1b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+    ],
+    features: [
+      "Turbo Engine", "Brembo Brakes", "Racing Seats", "Sport+ Mode", "Track Telemetry", "Carbon Fiber"
+    ],
+    description: "Incredible Honda Civic Type R in pristine condition. This track-focused hot hatch delivers thrilling performance with its turbocharged engine and precision handling.",
     seller: {
       id: "seller6",
-      name: "Luxury Car Center",
-      rating: 4.8,
-      reviewCount: 92,
+      name: "Performance Auto Hub",
+      rating: 4.7,
+      reviewCount: 178,
       verified: true,
-      memberSince: "2018",
-      location: "Panadura",
+      memberSince: "2019",
+      location: "Matara",
       responseTime: "Within 2 hours"
     }
   }
@@ -211,140 +223,152 @@ const vehicles = [
 const parts = [
   {
     id: "1",
-    title: "K&N Cold Air Intake System",
-    price: 45000,
+    title: "Brembo Brake Pads - Front Set for BMW E46",
+    brand: "Brembo",
+    partNumber: "P06020",
+    category: "Brake System",
     condition: "New",
+    price: 25000,
     location: "Colombo",
-    brand: "K&N",
-    partNumber: "57-3509",
-    compatibility: ["Honda Civic 2016-2021", "Acura ILX 2016-2019"],
-    warranty: "1 Million Mile Warranty",
-    category: "performance",
-    description: "High-flow air intake system designed to increase horsepower and acceleration while providing excellent filtration. Made from premium materials with washable filter element.",
+    compatibility: ["BMW E46 320i", "BMW E46 325i", "BMW E46 330i"],
+    warranty: "12 months",
     images: [
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      "https://images.unsplash.com/photo-1486496572940-2bb2341fdbdf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1558067164-58beb515d4db?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
     ],
+    description: "Genuine Brembo brake pads for BMW E46 series. High-performance braking with excellent heat dissipation and long-lasting durability.",
     seller: {
-      id: "seller1",
-      name: "Speed Parts LK",
+      id: "parts1",
+      name: "Euro Parts Lanka",
       rating: 4.8,
+      reviewCount: 145,
       verified: true,
-      responseTime: "Within 2 hours"
+      location: "Colombo"
     }
   },
   {
-    id: "2", 
-    title: "Bilstein B12 Suspension Kit",
-    price: 125000,
+    id: "2",
+    title: "K&N Cold Air Intake System - Honda Civic Type R",
+    brand: "K&N",
+    partNumber: "57-3510",
+    category: "Engine Parts",
     condition: "New",
+    price: 45000,
     location: "Kandy",
-    brand: "Bilstein",
-    partNumber: "46-000753",
-    compatibility: ["BMW 3 Series E90", "BMW 3 Series F30"],
-    warranty: "2 year warranty",
-    category: "suspension",
-    description: "Complete suspension upgrade kit featuring Bilstein dampers and Eibach springs. Improves handling while maintaining ride comfort. German engineering at its finest.",
+    compatibility: ["Honda Civic Type R FK8"],
+    warranty: "Lifetime",
     images: [
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1486496572940-2bb2341fdbdf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
     ],
+    description: "High-flow K&N cold air intake system for Honda Civic Type R. Increases horsepower and improves engine sound with washable filter.",
     seller: {
-      id: "seller2",
-      name: "Euro Parts Centre",
+      id: "parts2",
+      name: "Performance Parts Pro",
       rating: 4.9,
+      reviewCount: 203,
       verified: true,
-      responseTime: "Within 1 hour"
+      location: "Kandy"
     }
   },
   {
     id: "3",
-    title: "Brembo GT Brake Kit",
-    price: 285000,
-    condition: "New", 
+    title: "OEM Toyota Prius Hybrid Battery Module",
+    brand: "Toyota",
+    partNumber: "G9280-47030",
+    category: "Electrical",
+    condition: "Refurbished",
+    price: 180000,
     location: "Galle",
-    brand: "Brembo",
-    partNumber: "1N1.9001A",
-    compatibility: ["Ford Mustang GT 2015-2023"],
-    warranty: "2 year warranty",
-    category: "brakes",
-    description: "High-performance brake system featuring 6-piston front calipers and 4-piston rear calipers with slotted rotors. Track-proven stopping power for serious enthusiasts.",
+    compatibility: ["Toyota Prius Gen 3", "Toyota Prius 2010-2015"],
+    warranty: "18 months",
     images: [
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      "https://images.unsplash.com/photo-1558067164-58beb515d4db?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
     ],
+    description: "Genuine Toyota hybrid battery module, professionally refurbished and tested. Perfect replacement for aging Prius hybrid systems.",
     seller: {
-      id: "seller3",
-      name: "Performance Brake Systems",
+      id: "parts3",
+      name: "Hybrid Solutions SL",
       rating: 4.7,
+      reviewCount: 89,
       verified: true,
-      responseTime: "Within 3 hours"
+      location: "Galle"
     }
   },
   {
     id: "4",
-    title: "Michelin Pilot Sport 4S Set",
-    price: 95000,
+    title: "Bilstein B8 Shock Absorbers - BMW X5",
+    brand: "Bilstein",
+    partNumber: "24-220589",
+    category: "Suspension",
     condition: "New",
-    location: "Negombo", 
-    brand: "Michelin",
-    partNumber: "PS4S-225/40R18",
-    compatibility: ["Universal - 225/40R18"],
-    warranty: "6 year warranty",
-    category: "wheels-tires",
-    description: "Ultra-high performance summer tires designed for sports cars and high-performance vehicles. Exceptional grip in dry and wet conditions with precise steering response.",
+    price: 95000,
+    location: "Negombo",
+    compatibility: ["BMW X5 E70", "BMW X5 F15"],
+    warranty: "24 months",
     images: [
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1486496572940-2bb2341fdbdf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
     ],
+    description: "Premium Bilstein shock absorbers for BMW X5. Gas-pressure technology provides superior damping performance and comfort.",
     seller: {
-      id: "seller4",
-      name: "Tire World LK",
-      rating: 4.6,
+      id: "parts4",
+      name: "Suspension Specialists",
+      rating: 4.8,
+      reviewCount: 167,
       verified: true,
-      responseTime: "Within 4 hours"
+      location: "Negombo"
     }
   },
   {
     id: "5",
-    title: "Borla ATAK Exhaust System",
-    price: 165000,
+    title: "Michelin Pilot Sport 4S Tires - 225/40R18",
+    brand: "Michelin",
+    partNumber: "PS4S-225-40-18",
+    category: "Tires",
     condition: "New",
-    location: "Colombo",
-    brand: "Borla",
-    partNumber: "140679",
-    compatibility: ["Subaru WRX STI 2015-2021"],
-    warranty: "1 Million Mile Warranty",
-    category: "exhaust",
-    description: "Aggressive sound exhaust system with ATAK technology. Delivers maximum performance gains with the signature Borla sound. Made from premium T-304 stainless steel.",
+    price: 68000,
+    location: "Matara",
+    compatibility: ["Universal - 225/40R18"],
+    warranty: "5 years",
     images: [
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
     ],
+    description: "Premium Michelin Pilot Sport 4S tires in size 225/40R18. Excellent grip in both wet and dry conditions with sporty handling characteristics.",
     seller: {
-      id: "seller5",
-      name: "Exhaust Specialists",
-      rating: 4.8,
+      id: "parts5",
+      name: "Tire World Lanka",
+      rating: 4.9,
+      reviewCount: 298,
       verified: true,
-      responseTime: "Within 2 hours"
+      location: "Matara"
     }
   },
   {
     id: "6",
-    title: "Recaro Sportster CS Seats",
-    price: 89000,
-    condition: "New",
-    location: "Kandy",
-    brand: "Recaro",
-    partNumber: "410.00.2587",
-    compatibility: ["Universal fitment with brackets"],
-    warranty: "2 year warranty",
-    category: "interior",
-    description: "Premium sport seats with excellent lateral support and comfort. Features Dinamica suede and leather combination with adjustable side bolsters. Perfect for track and street use.",
+    title: "HKS Exhaust System - Subaru WRX STI",
+    brand: "HKS",
+    partNumber: "31021-AF013",
+    category: "Exhaust System",
+    condition: "Like New",
+    price: 155000,
+    location: "Colombo",
+    compatibility: ["Subaru WRX STI 2015-2021"],
+    warranty: "6 months",
     images: [
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1558067164-58beb515d4db?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
     ],
+    description: "HKS performance exhaust system for Subaru WRX STI. Titanium construction with aggressive sound and improved flow characteristics.",
     seller: {
-      id: "seller6",
-      name: "Interior Upgrades Pro",
-      rating: 4.9,
+      id: "parts6",
+      name: "JDM Performance Parts",
+      rating: 4.8,
+      reviewCount: 134,
       verified: true,
-      responseTime: "Within 1 hour"
+      location: "Colombo"
     }
   }
 ];
@@ -352,36 +376,38 @@ const parts = [
 const services = [
   {
     id: "1",
-    title: "Complete ECU Tuning & Dyno Session",
-    description: "Professional ECU tuning with dyno testing to maximize your vehicle's performance safely. Includes before/after dyno sheets and custom tune optimization.",
-    price: 65000,
+    title: "Complete Vehicle Service & Oil Change",
+    description: "Professional vehicle servicing with comprehensive inspection, oil change, filter replacement, and diagnostic check. Our certified technicians use genuine parts and latest equipment.",
+    price: 8500,
     location: "Colombo",
-    serviceType: "performance",
+    serviceType: "maintenance",
     provider: {
-      name: "Precision Auto Tuning",
+      name: "Pro Auto Care",
       rating: 4.9,
-      reviewCount: 156,
+      reviewCount: 247,
       verified: true,
-      experience: "8 years",
-      specialties: ["ECU Tuning", "Dyno Testing", "Performance Upgrades"]
+      experience: "15 years",
+      specialties: ["General Maintenance", "Oil Changes", "Brake Service"]
     },
     features: [
-      "Dyno testing before and after",
-      "Custom tune development", 
-      "Performance optimization",
-      "Data logging included",
-      "6-month tune warranty"
+      "Engine oil change",
+      "Oil filter replacement",
+      "Multi-point inspection",
+      "Brake system check",
+      "Battery test",
+      "Fluid top-up"
     ],
-    duration: "3-4 hours",
+    duration: "2-3 hours",
     warranty: "6 months",
     images: [
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      "https://images.unsplash.com/photo-1632823471565-1ecdf5e37788?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
     ]
   },
   {
     id: "2",
-    title: "Premium Ceramic Coating Package",
-    description: "9H ceramic coating application with paint correction and protection. Includes interior protection and maintenance kit for long-lasting results.",
+    title: "Premium Ceramic Coating & Paint Protection",
+    description: "Professional 9H ceramic coating application with paint correction and protection. Includes interior protection and maintenance kit for long-lasting results.",
     price: 35000,
     location: "Kandy",
     serviceType: "detailing",
@@ -403,7 +429,8 @@ const services = [
     duration: "Full day",
     warranty: "5 years",
     images: [
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      "https://images.unsplash.com/photo-1607860108855-64acf2078ed9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1544829099-b9a0c5303bea?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
     ]
   },
   {
@@ -431,7 +458,8 @@ const services = [
     duration: "2-3 days",
     warranty: "1 year",
     images: [
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      "https://images.unsplash.com/photo-1594736797933-d0c62e6b8bf6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
     ]
   },
   {
@@ -459,7 +487,8 @@ const services = [
     duration: "3-6 months",
     warranty: "2 years",
     images: [
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
     ]
   },
   {
@@ -487,7 +516,8 @@ const services = [
     duration: "2-3 hours",
     warranty: "6 months",
     images: [
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      "https://images.unsplash.com/photo-1632823471565-1ecdf5e37788?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1581540222194-0def2dda95b8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
     ]
   },
   {
@@ -515,7 +545,8 @@ const services = [
     duration: "2-3 hours",
     warranty: "Report accuracy guarantee",
     images: [
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
     ]
   }
 ];
