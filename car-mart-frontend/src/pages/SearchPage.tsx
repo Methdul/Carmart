@@ -13,14 +13,12 @@ import Header from "@/components/Header";
 import VehicleCard from "@/components/VehicleCard";
 import ComparisonBar from "@/components/ComparisonBar";
 import MobileFilterPanel from "@/components/MobileFilterPanel";
-import HealthScoreBadge from "@/components/HealthScoreBadge";
 
 interface ComparisonVehicle {
   id: string;
   title: string;
   price: number;
   image: string;
-  healthScore: number;
 }
 
 interface Vehicle {
@@ -33,7 +31,6 @@ interface Vehicle {
   fuelType: string;
   transmission: string;
   image: string;
-  healthScore: number;
   sellerRating: number;
   isVerified: boolean;
   isFeatured: boolean;
@@ -263,41 +260,41 @@ const SearchPage = () => {
     search: "",
     make: "all",
     model: "",
-    bodyType: "",
+    bodyType: "any",
     fuelType: "all",
-    transmission: "",
+    transmission: "any",
     yearFrom: "",
     yearTo: "",
     location: "",
-    condition: "",
+    condition: "any",
     minPrice: 0,
     maxPrice: 50000000,
     mileageFrom: "",
     mileageTo: "",
-    doors: "",
-    drivetrain: "",
-    color: "",
-    engineSize: "",
-    seatingCapacity: "",
+    doors: "any",
+    drivetrain: "any",
+    color: "any",
+    engineSize: "any",
+    seatingCapacity: "any",
     // Enhanced filter initial state
-    engineType: "",
+    engineType: "any",
     turboCharged: false,
-    interiorColor: "",
-    previousOwners: "",
+    interiorColor: "any",
+    previousOwners: "any",
     priceNegotiable: false,
     financingAvailable: false,
     leasingAvailable: false,
     tradeInAccepted: false,
-    emiRange: "",
+    emiRange: "any",
     inspectionCertificate: false,
     serviceHistory: false,
-    accidentHistory: "",
-    registrationYear: "",
-    registrationProvince: "",
-    importStatus: "",
+    accidentHistory: "any",
+    registrationYear: "any",
+    registrationProvince: "any",
+    importStatus: "any",
     dutyPaid: false,
-    insuranceType: "",
-    registrationStatus: "",
+    insuranceType: "any",
+    registrationStatus: "any",
     documentsComplete: false,
     climateControl: false,
     heatedSeats: false,
@@ -312,7 +309,7 @@ const SearchPage = () => {
     wirelessCharging: false,
     parkingSensors: false,
     blindSpotMonitoring: false,
-    airbagCount: "",
+    airbagCount: "any",
     stabilityControl: false,
     tractionControl: false,
     fabricSeats: false,
@@ -323,7 +320,7 @@ const SearchPage = () => {
     paddleShifters: false,
     sportMode: false,
     ecoMode: false,
-    sellerType: "",
+    sellerType: "any",
     verifiedSeller: false,
     quickResponse: false,
     homeInspection: false,
@@ -346,7 +343,7 @@ const SearchPage = () => {
     powerSteering: false
   });
 
-  // Enhanced mock vehicle data with more properties (keeping your exact vehicles)
+  // Enhanced mock vehicle data with real demo images
   const mockVehicles: Vehicle[] = [
     {
       id: "1",
@@ -357,8 +354,7 @@ const SearchPage = () => {
       location: "Colombo",
       fuelType: "Petrol",
       transmission: "Automatic",
-      image: "/api/placeholder/400/300",
-      healthScore: 92,
+      image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
       sellerRating: 4.8,
       isVerified: true,
       isFeatured: true,
@@ -439,8 +435,7 @@ const SearchPage = () => {
       location: "Kandy",
       fuelType: "Hybrid",
       transmission: "CVT",
-      image: "/api/placeholder/400/300",
-      healthScore: 88,
+      image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
       sellerRating: 4.7,
       isVerified: true,
       isFeatured: false,
@@ -522,8 +517,7 @@ const SearchPage = () => {
       location: "Galle",
       fuelType: "Petrol",
       transmission: "CVT",
-      image: "/api/placeholder/400/300",
-      healthScore: 85,
+      image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
       sellerRating: 4.6,
       isVerified: false,
       isFeatured: false,
@@ -605,8 +599,7 @@ const SearchPage = () => {
       location: "Colombo",
       fuelType: "Petrol",
       transmission: "Automatic",
-      image: "/api/placeholder/400/300",
-      healthScore: 96,
+      image: "https://images.unsplash.com/photo-1563720223185-11003d516935?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
       sellerRating: 4.9,
       isVerified: true,
       isFeatured: true,
@@ -690,8 +683,7 @@ const SearchPage = () => {
       location: "Negombo",
       fuelType: "Petrol",
       transmission: "Automatic",
-      image: "/api/placeholder/400/300",
-      healthScore: 78,
+      image: "https://images.unsplash.com/photo-1570611178717-4c68f8ffe4b1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
       sellerRating: 4.4,
       isVerified: false,
       isFeatured: false,
@@ -774,8 +766,7 @@ const SearchPage = () => {
       location: "Kandy",
       fuelType: "Petrol",
       transmission: "Automatic",
-      image: "/api/placeholder/400/300",
-      healthScore: 91,
+      image: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
       sellerRating: 4.7,
       isVerified: true,
       isFeatured: true,
@@ -906,7 +897,7 @@ const SearchPage = () => {
     }
 
     // Body type filter
-    if (filters.bodyType) {
+    if (filters.bodyType && filters.bodyType !== "any") {
       filtered = filtered.filter(vehicle => 
         vehicle.bodyType && vehicle.bodyType.toLowerCase() === filters.bodyType.toLowerCase()
       );
@@ -920,14 +911,14 @@ const SearchPage = () => {
     }
 
     // Transmission filter
-    if (filters.transmission) {
+    if (filters.transmission && filters.transmission !== "any") {
       filtered = filtered.filter(vehicle => 
         vehicle.transmission.toLowerCase() === filters.transmission.toLowerCase()
       );
     }
 
     // Engine size filter
-    if (filters.engineSize) {
+    if (filters.engineSize && filters.engineSize !== "any") {
       filtered = filtered.filter(vehicle => {
         const engineCC = parseInt(vehicle.engineCapacity || "0");
         switch (filters.engineSize) {
@@ -948,7 +939,7 @@ const SearchPage = () => {
     }
 
     // Drivetrain filter
-    if (filters.drivetrain) {
+    if (filters.drivetrain && filters.drivetrain !== "any") {
       filtered = filtered.filter(vehicle => 
         vehicle.drivetrain && vehicle.drivetrain.toLowerCase() === filters.drivetrain.toLowerCase()
       );
@@ -979,7 +970,7 @@ const SearchPage = () => {
     }
 
     // Condition filter
-    if (filters.condition) {
+    if (filters.condition && filters.condition !== "any") {
       filtered = filtered.filter(vehicle => 
         vehicle.condition && vehicle.condition.toLowerCase() === filters.condition.toLowerCase()
       );
@@ -991,21 +982,21 @@ const SearchPage = () => {
     );
 
     // Color filter
-    if (filters.color) {
+    if (filters.color && filters.color !== "any") {
       filtered = filtered.filter(vehicle => 
         vehicle.color && vehicle.color.toLowerCase() === filters.color.toLowerCase()
       );
     }
 
     // Doors filter
-    if (filters.doors) {
+    if (filters.doors && filters.doors !== "any") {
       filtered = filtered.filter(vehicle => 
         vehicle.doors && vehicle.doors.toString() === filters.doors
       );
     }
 
     // Seating capacity filter
-    if (filters.seatingCapacity) {
+    if (filters.seatingCapacity && filters.seatingCapacity !== "any") {
       filtered = filtered.filter(vehicle => 
         vehicle.seatingCapacity && vehicle.seatingCapacity.toString() === filters.seatingCapacity
       );
@@ -1074,7 +1065,7 @@ const SearchPage = () => {
       filtered = filtered.filter(vehicle => vehicle.warranty);
     }
 
-    // Apply sorting
+    // Apply sorting (removed health-score option)
     switch (sortBy) {
       case "price-low":
         filtered.sort((a, b) => a.price - b.price);
@@ -1087,9 +1078,6 @@ const SearchPage = () => {
         break;
       case "mileage-low":
         filtered.sort((a, b) => a.mileage - b.mileage);
-        break;
-      case "health-score":
-        filtered.sort((a, b) => b.healthScore - a.healthScore);
         break;
       case "rating":
         filtered.sort((a, b) => b.sellerRating - a.sellerRating);
@@ -1138,7 +1126,7 @@ const SearchPage = () => {
       }
       
       if (newFilters.bodyType !== undefined) {
-        updatedFilters.bodyType = newFilters.bodyType;
+        updatedFilters.bodyType = newFilters.bodyType === "" ? "any" : newFilters.bodyType;
       }
       
       // Engine and drivetrain
@@ -1147,32 +1135,32 @@ const SearchPage = () => {
       }
       
       if (newFilters.transmission !== undefined) {
-        updatedFilters.transmission = newFilters.transmission;
+        updatedFilters.transmission = newFilters.transmission === "" ? "any" : newFilters.transmission;
       }
       
       if (newFilters.drivetrain !== undefined) {
-        updatedFilters.drivetrain = newFilters.drivetrain;
+        updatedFilters.drivetrain = newFilters.drivetrain === "" ? "any" : newFilters.drivetrain;
       }
       
       if (newFilters.engineSize !== undefined) {
-        updatedFilters.engineSize = newFilters.engineSize;
+        updatedFilters.engineSize = newFilters.engineSize === "" ? "any" : newFilters.engineSize;
       }
       
       // Vehicle details
       if (newFilters.condition !== undefined) {
-        updatedFilters.condition = newFilters.condition;
+        updatedFilters.condition = newFilters.condition === "" ? "any" : newFilters.condition;
       }
       
       if (newFilters.color !== undefined) {
-        updatedFilters.color = newFilters.color;
+        updatedFilters.color = newFilters.color === "" ? "any" : newFilters.color;
       }
       
       if (newFilters.doors !== undefined) {
-        updatedFilters.doors = newFilters.doors;
+        updatedFilters.doors = newFilters.doors === "" ? "any" : newFilters.doors;
       }
       
       if (newFilters.seatingCapacity !== undefined) {
-        updatedFilters.seatingCapacity = newFilters.seatingCapacity;
+        updatedFilters.seatingCapacity = newFilters.seatingCapacity === "" ? "any" : newFilters.seatingCapacity;
       }
       
       // Year range
@@ -1242,40 +1230,40 @@ const SearchPage = () => {
       search: "",
       make: "all",
       model: "",
-      bodyType: "",
+      bodyType: "any",
       fuelType: "all",
-      transmission: "",
+      transmission: "any",
       yearFrom: "",
       yearTo: "",
       location: "",
-      condition: "",
+      condition: "any",
       minPrice: 0,
       maxPrice: 50000000,
       mileageFrom: "",
       mileageTo: "",
-      doors: "",
-      drivetrain: "",
-      color: "",
-      engineSize: "",
-      seatingCapacity: "",
-      engineType: "",
+      doors: "any",
+      drivetrain: "any",
+      color: "any",
+      engineSize: "any",
+      seatingCapacity: "any",
+      engineType: "any",
       turboCharged: false,
-      interiorColor: "",
-      previousOwners: "",
+      interiorColor: "any",
+      previousOwners: "any",
       priceNegotiable: false,
       financingAvailable: false,
       leasingAvailable: false,
       tradeInAccepted: false,
-      emiRange: "",
+      emiRange: "any",
       inspectionCertificate: false,
       serviceHistory: false,
-      accidentHistory: "",
-      registrationYear: "",
-      registrationProvince: "",
-      importStatus: "",
+      accidentHistory: "any",
+      registrationYear: "any",
+      registrationProvince: "any",
+      importStatus: "any",
       dutyPaid: false,
-      insuranceType: "",
-      registrationStatus: "",
+      insuranceType: "any",
+      registrationStatus: "any",
       documentsComplete: false,
       climateControl: false,
       heatedSeats: false,
@@ -1290,7 +1278,7 @@ const SearchPage = () => {
       wirelessCharging: false,
       parkingSensors: false,
       blindSpotMonitoring: false,
-      airbagCount: "",
+      airbagCount: "any",
       stabilityControl: false,
       tractionControl: false,
       fabricSeats: false,
@@ -1301,7 +1289,7 @@ const SearchPage = () => {
       paddleShifters: false,
       sportMode: false,
       ecoMode: false,
-      sellerType: "",
+      sellerType: "any",
       verifiedSeller: false,
       quickResponse: false,
       homeInspection: false,
@@ -1336,8 +1324,7 @@ const SearchPage = () => {
       id: vehicle.id,
       title: vehicle.title,
       price: vehicle.price,
-      image: vehicle.image,
-      healthScore: vehicle.healthScore
+      image: vehicle.image
     };
     
     setComparisonList([...comparisonList, comparisonVehicle]);
@@ -1445,7 +1432,7 @@ const SearchPage = () => {
                             <SelectValue placeholder="Any Body Type" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Any Body Type</SelectItem>
+                            <SelectItem value="any">Any Body Type</SelectItem>
                             <SelectItem value="sedan">Sedan</SelectItem>
                             <SelectItem value="suv">SUV</SelectItem>
                             <SelectItem value="hatchback">Hatchback</SelectItem>
@@ -1535,7 +1522,7 @@ const SearchPage = () => {
                             <SelectValue placeholder="Any Transmission" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Any Transmission</SelectItem>
+                            <SelectItem value="any">Any Transmission</SelectItem>
                             <SelectItem value="automatic">Automatic</SelectItem>
                             <SelectItem value="manual">Manual</SelectItem>
                             <SelectItem value="cvt">CVT</SelectItem>
@@ -1550,7 +1537,7 @@ const SearchPage = () => {
                             <SelectValue placeholder="Any Engine Size" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Any Engine Size</SelectItem>
+                            <SelectItem value="any">Any Engine Size</SelectItem>
                             <SelectItem value="under-1000cc">Under 1000cc</SelectItem>
                             <SelectItem value="1000-1500cc">1000-1500cc</SelectItem>
                             <SelectItem value="1500-2000cc">1500-2000cc</SelectItem>
@@ -1566,7 +1553,7 @@ const SearchPage = () => {
                             <SelectValue placeholder="Any Drivetrain" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Any Drivetrain</SelectItem>
+                            <SelectItem value="any">Any Drivetrain</SelectItem>
                             <SelectItem value="fwd">Front Wheel Drive (FWD)</SelectItem>
                             <SelectItem value="rwd">Rear Wheel Drive (RWD)</SelectItem>
                             <SelectItem value="awd">All Wheel Drive (AWD)</SelectItem>
@@ -1635,7 +1622,7 @@ const SearchPage = () => {
                             <SelectValue placeholder="Any Condition" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Any Condition</SelectItem>
+                            <SelectItem value="any">Any Condition</SelectItem>
                             <SelectItem value="excellent">Excellent</SelectItem>
                             <SelectItem value="very good">Very Good</SelectItem>
                             <SelectItem value="good">Good</SelectItem>
@@ -1651,7 +1638,7 @@ const SearchPage = () => {
                               <SelectValue placeholder="Any" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Any</SelectItem>
+                              <SelectItem value="any">Any</SelectItem>
                               <SelectItem value="2">2 Doors</SelectItem>
                               <SelectItem value="4">4 Doors</SelectItem>
                               <SelectItem value="5">5 Doors</SelectItem>
@@ -1665,7 +1652,7 @@ const SearchPage = () => {
                               <SelectValue placeholder="Any" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Any</SelectItem>
+                              <SelectItem value="any">Any</SelectItem>
                               <SelectItem value="2">2 Seats</SelectItem>
                               <SelectItem value="5">5 Seats</SelectItem>
                               <SelectItem value="7">7 Seats</SelectItem>
@@ -1680,7 +1667,7 @@ const SearchPage = () => {
                             <SelectValue placeholder="Any Color" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Any Color</SelectItem>
+                            <SelectItem value="any">Any Color</SelectItem>
                             <SelectItem value="white">White</SelectItem>
                             <SelectItem value="black">Black</SelectItem>
                             <SelectItem value="silver">Silver</SelectItem>
@@ -1848,7 +1835,6 @@ const SearchPage = () => {
                     <SelectItem value="price-high">Price: High to Low</SelectItem>
                     <SelectItem value="year-new">Year: Newest First</SelectItem>
                     <SelectItem value="mileage-low">Mileage: Low to High</SelectItem>
-                    <SelectItem value="health-score">Health Score</SelectItem>
                     <SelectItem value="rating">Seller Rating</SelectItem>
                   </SelectContent>
                 </Select>
@@ -1885,7 +1871,7 @@ const SearchPage = () => {
                     <SelectItem value="price-low">Price ↑</SelectItem>
                     <SelectItem value="price-high">Price ↓</SelectItem>
                     <SelectItem value="year-new">Year ↓</SelectItem>
-                    <SelectItem value="health-score">Health Score</SelectItem>
+                    <SelectItem value="rating">Seller Rating</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1941,9 +1927,6 @@ const SearchPage = () => {
                                 alt={vehicle.title}
                                 className="w-full h-full object-cover"
                               />
-                              <div className="absolute top-2 left-2">
-                                <HealthScoreBadge score={vehicle.healthScore} />
-                              </div>
                               {vehicle.isFeatured && (
                                 <div className="absolute top-2 right-2">
                                   <Badge className="bg-highlight text-white">Featured</Badge>

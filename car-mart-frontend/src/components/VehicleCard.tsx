@@ -1,58 +1,67 @@
-import { Heart, Eye, BarChart3, MapPin, Calendar, Fuel, Settings, Star, Badge } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React from "react";
+import { Heart, BarChart3, MapPin, Calendar, Fuel, Settings, Star, Eye } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge as UIBadge } from "@/components/ui/badge";
-import HealthScoreBadge from "./HealthScoreBadge";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
+interface Vehicle {
+  id: string;
+  title: string;
+  price: number;
+  year: number;
+  mileage: number;
+  location: string;
+  fuelType: string;
+  transmission: string;
+  image: string;
+  sellerRating?: number;
+  isVerified?: boolean;
+  isFeatured?: boolean;
+  make?: string;
+  model?: string;
+  bodyType?: string;
+  condition?: string;
+  engineCapacity?: string;
+  color?: string;
+  doors?: number;
+  drivetrain?: string;
+  seatingCapacity?: number;
+}
+
 interface VehicleCardProps {
-  vehicle: {
-    id: string;
-    title: string;
-    price: number;
-    year: number;
-    mileage: number;
-    location: string;
-    fuelType: string;
-    transmission: string;
-    image: string;
-    healthScore: number;
-    sellerRating?: number;
-    isVerified?: boolean;
-    isFeatured?: boolean;
-  };
+  vehicle: Vehicle;
   onSave?: (id: string) => void;
-  onCompare?: (id: string) => void;
-  onClick?: (id: string) => void;
-  isInComparison?: boolean;
+  onCompare?: (vehicle: Vehicle) => void;
+  onContact?: (id: string) => void;
   isSaved?: boolean;
+  isInComparison?: boolean;
   className?: string;
 }
 
-const VehicleCard = ({
+const VehicleCard: React.FC<VehicleCardProps> = ({
   vehicle,
   onSave,
   onCompare,
-  onClick,
-  isInComparison = false,
+  onContact,
   isSaved = false,
-  className
-}: VehicleCardProps) => {
+  isInComparison = false,
+  className = ""
+}) => {
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-LK', {
-      style: 'currency',
-      currency: 'LKR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price).replace('LKR', 'Rs.');
+    if (price >= 1000000) {
+      return `Rs. ${(price / 1000000).toFixed(1)}M`;
+    } else if (price >= 1000) {
+      return `Rs. ${(price / 1000).toFixed(0)}K`;
+    }
+    return `Rs. ${price.toLocaleString()}`;
   };
 
   const formatMileage = (mileage: number) => {
+    if (mileage >= 1000) {
+      return `${(mileage / 1000).toFixed(0)}K km`;
+    }
     return `${mileage.toLocaleString()} km`;
-  };
-
-  const handleCardClick = () => {
-    onClick?.(vehicle.id);
   };
 
   const handleSaveClick = (e: React.MouseEvent) => {
@@ -62,48 +71,53 @@ const VehicleCard = ({
 
   const handleCompareClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onCompare?.(vehicle.id);
+    onCompare?.(vehicle);
+  };
+
+  const handleContactClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onContact?.(vehicle.id);
   };
 
   return (
-    <Card className={cn(
-      "group overflow-hidden transition-all duration-300 hover:shadow-premium hover:-translate-y-1 cursor-pointer",
-      vehicle.isFeatured && "ring-2 ring-accent/20",
-      className
-    )}
-    onClick={handleCardClick}
-    >
+    <Card className={cn("group hover:shadow-lg transition-all duration-300 overflow-hidden", className)}>
       <div className="relative">
-        {/* Vehicle Image */}
-        <div className="relative aspect-[4/3] overflow-hidden">
+        {/* Main Image */}
+        <div className="relative w-full h-48 overflow-hidden">
           <img
             src={vehicle.image}
             alt={vehicle.title}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
           />
           
-          {/* Overlay Badges */}
-          <div className="absolute top-3 left-3 flex flex-col space-y-2">
-            {vehicle.isFeatured && (
-              <UIBadge className="bg-accent text-accent-foreground">
-                <Star className="w-3 h-3 mr-1" />
+          {/* Featured Badge */}
+          {vehicle.isFeatured && (
+            <div className="absolute top-3 left-3">
+              <Badge className="bg-highlight text-white font-medium">
                 Featured
-              </UIBadge>
-            )}
-            {vehicle.isVerified && (
-              <UIBadge className="bg-success text-success-foreground">
-                <Badge className="w-3 h-3 mr-1" />
-                Verified
-              </UIBadge>
-            )}
-          </div>
+              </Badge>
+            </div>
+          )}
+
+          {/* Verified Badge */}
+          {vehicle.isVerified && (
+            <div className="absolute top-3 right-3">
+              <Badge className="bg-success text-white font-medium">
+                ✓ Verified
+              </Badge>
+            </div>
+          )}
 
           {/* Action Buttons */}
-          <div className="absolute top-3 right-3 flex space-x-2">
+          <div className="absolute top-3 right-3 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <Button
               size="icon"
               variant="secondary"
-              className="w-8 h-8 rounded-full bg-background/80 hover:bg-background"
+              className={cn(
+                "w-8 h-8 rounded-full bg-background/80 hover:bg-background",
+                isSaved && "bg-destructive/10 text-destructive"
+              )}
               onClick={handleSaveClick}
             >
               <Heart className={cn(
@@ -122,15 +136,6 @@ const VehicleCard = ({
             >
               <BarChart3 className="w-4 h-4" />
             </Button>
-          </div>
-
-          {/* Health Score Badge - Positioned over image */}
-          <div className="absolute bottom-3 left-3">
-            <HealthScoreBadge 
-              score={vehicle.healthScore} 
-              size="sm"
-              className="bg-background/90 rounded-lg px-2 py-1"
-            />
           </div>
         </div>
 
@@ -175,9 +180,37 @@ const VehicleCard = ({
           </div>
 
           {/* Location */}
-          <div className="flex items-center space-x-1 text-sm text-muted-foreground">
+          <div className="flex items-center space-x-1 text-sm text-muted-foreground mb-4">
             <MapPin className="w-4 h-4" />
             <span>{vehicle.location}</span>
+          </div>
+
+          {/* Action Buttons for Mobile */}
+          <div className="flex space-x-2 sm:hidden">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={handleContactClick}
+            >
+              Contact
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSaveClick}
+              className={cn(isSaved && "text-destructive border-destructive")}
+            >
+              <Heart className={cn("w-4 h-4", isSaved && "fill-destructive")} />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCompareClick}
+              className={cn(isInComparison && "bg-accent text-accent-foreground")}
+            >
+              <BarChart3 className="w-4 h-4" />
+            </Button>
           </div>
         </CardContent>
       </div>

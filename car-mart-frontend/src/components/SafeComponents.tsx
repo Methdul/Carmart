@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Heart, BarChart3, MapPin, Calendar, Fuel, Settings, Star, AlertTriangle } from 'lucide-react';
+import { Heart, BarChart3, MapPin, Calendar, Fuel, Settings, Star, AlertTriangle, Package } from 'lucide-react';
 import { SafeImage, safeGet, safeString, safeNumber, EmptyState, ApiErrorDisplay } from '@/components/ErrorBoundary';
 
 // Safe Vehicle Card Component
@@ -39,7 +39,6 @@ export const SafeVehicleCard: React.FC<SafeVehicleCardProps> = ({
   const title = safeString(vehicle.title, 'Vehicle Title Not Available');
   const price = safeNumber(vehicle.price, 0);
   const image = safeString(vehicle.image, '');
-  const healthScore = safeNumber(vehicle.healthScore, 0);
   const year = safeNumber(vehicle.year, new Date().getFullYear());
   const mileage = safeNumber(vehicle.mileage, 0);
   const location = safeString(vehicle.location, 'Location Not Specified');
@@ -76,13 +75,6 @@ export const SafeVehicleCard: React.FC<SafeVehicleCardProps> = ({
     }
   };
 
-  const getHealthScoreColor = (score: number) => {
-    if (score >= 90) return 'text-green-600 bg-green-100';
-    if (score >= 80) return 'text-blue-600 bg-blue-100';
-    if (score >= 70) return 'text-yellow-600 bg-yellow-100';
-    return 'text-red-600 bg-red-100';
-  };
-
   return (
     <Card className={`group hover:shadow-lg transition-all duration-300 overflow-hidden ${className}`}>
       <div className="relative">
@@ -91,13 +83,6 @@ export const SafeVehicleCard: React.FC<SafeVehicleCardProps> = ({
           alt={title}
           className="w-full h-48 object-cover"
         />
-        
-        {/* Health Score Badge */}
-        {healthScore > 0 && (
-          <div className={`absolute top-3 left-3 px-2 py-1 rounded-full text-xs font-medium ${getHealthScoreColor(healthScore)}`}>
-            AI Score: {healthScore}
-          </div>
-        )}
         
         {/* Verified Badge */}
         {isVerified && (
@@ -139,38 +124,34 @@ export const SafeVehicleCard: React.FC<SafeVehicleCardProps> = ({
         </div>
 
         {/* Vehicle Details */}
-        <div className="space-y-2 text-sm text-muted-foreground">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Calendar className="h-4 w-4 mr-1" />
-              <span>{year}</span>
-            </div>
-            <div className="flex items-center">
-              <Settings className="h-4 w-4 mr-1" />
-              <span>{mileage.toLocaleString()} km</span>
-            </div>
+        <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground mb-3">
+          <div className="flex items-center">
+            <Calendar className="h-4 w-4 mr-1" />
+            {year}
           </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Fuel className="h-4 w-4 mr-1" />
-              <span>{fuelType}</span>
-            </div>
-            <span>{transmission}</span>
+          <div className="flex items-center">
+            <MapPin className="h-4 w-4 mr-1" />
+            {location}
           </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <MapPin className="h-4 w-4 mr-1" />
-              <span>{location}</span>
-            </div>
-            {sellerRating > 0 && (
-              <div className="flex items-center">
-                <Star className="h-4 w-4 mr-1 text-yellow-500" />
-                <span>{sellerRating.toFixed(1)}</span>
-              </div>
-            )}
+          <div className="flex items-center">
+            <Fuel className="h-4 w-4 mr-1" />
+            {fuelType}
           </div>
+          <div className="flex items-center">
+            <Settings className="h-4 w-4 mr-1" />
+            {transmission}
+          </div>
+        </div>
+
+        {/* Mileage and Rating */}
+        <div className="flex justify-between items-center text-sm text-muted-foreground">
+          <span>{mileage.toLocaleString()} km</span>
+          {sellerRating > 0 && (
+            <div className="flex items-center">
+              <Star className="h-4 w-4 mr-1 text-yellow-500" />
+              {sellerRating}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -205,6 +186,7 @@ export const SafePartsCard: React.FC<SafePartsCardProps> = ({
     );
   }
 
+  // Extract data safely with defaults
   const id = safeString(part.id, 'unknown');
   const title = safeString(part.title, 'Part Title Not Available');
   const price = safeNumber(part.price, 0);
@@ -332,9 +314,9 @@ export function SafeList<T>({
     return (
       <div className={className}>
         <EmptyState
-          title={emptyMessage}
-          description="Try adjusting your search or filters"
-          icon={<AlertTriangle />}
+          title="No Items Found"
+          description={emptyMessage}
+          icon={<Package />}
         />
       </div>
     );
@@ -342,24 +324,43 @@ export function SafeList<T>({
 
   return (
     <div className={className}>
-      {safeItems.map((item, index) => {
-        try {
-          return renderItem(item, index);
-        } catch (error) {
-          console.error('Error rendering item:', error);
-          return (
-            <Card key={index} className="p-4">
-              <p className="text-destructive text-sm">Error displaying item</p>
-            </Card>
-          );
-        }
-      })}
+      {safeItems.map((item, index) => (
+        <React.Fragment key={index}>
+          {renderItem(item, index)}
+        </React.Fragment>
+      ))}
     </div>
   );
 }
 
-export default {
-  SafeVehicleCard,
-  SafePartsCard,
-  SafeList
+// Safe Wrapper Component for error boundaries
+interface SafeWrapperProps {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+  className?: string;
+}
+
+export const SafeWrapper: React.FC<SafeWrapperProps> = ({
+  children,
+  fallback,
+  className = ""
+}) => {
+  try {
+    return <div className={className}>{children}</div>;
+  } catch (error) {
+    console.error('SafeWrapper caught error:', error);
+    
+    if (fallback) {
+      return <div className={className}>{fallback}</div>;
+    }
+    
+    return (
+      <div className={className}>
+        <ApiErrorDisplay
+          error="An unexpected error occurred while rendering this component"
+          showRetry={false}
+        />
+      </div>
+    );
+  }
 };
