@@ -1,3 +1,4 @@
+// car-mart-backend/src/routes/parts.js
 const express = require('express');
 const router = express.Router();
 const { parts } = require('../data/mockData');

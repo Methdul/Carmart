@@ -1,3 +1,4 @@
+// car-mart-backend/src/routes/vehicles.js
 const express = require('express');
 const router = express.Router();
 const { vehicles } = require('../data/mockData');
@@ -80,14 +81,6 @@ router.get('/:id', (req, res) => {
       error: error.message
     });
   }
-});
-
-// POST /api/vehicles - Create new vehicle (for later)
-router.post('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Vehicle creation will be implemented with database'
-  });
 });
 
 module.exports = router;

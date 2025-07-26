@@ -1,5 +1,5 @@
-// car-mart-backend/src/app.js
-// Final working version with the 404 handler fix
+// car-mart-backend/src/app-no-db.js
+// Test without any database imports
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://your-frontend-domain.com'] 
-    : ['http://localhost:8080', 'http://localhost:3000', 'http://localhost:5173'], // ← ADDED 8080
+    : ['http://localhost:3000', 'http://localhost:5173'],
   credentials: true
 }));
 
@@ -40,10 +40,46 @@ app.get('/', (req, res) => {
   });
 });
 
-// API Routes - Your existing working routes
-app.use('/api/vehicles', require('./routes/vehicles'));
-app.use('/api/parts', require('./routes/parts'));
-app.use('/api/auth', require('./routes/auth'));
+// Load routes - using ONLY the original route files
+console.log('🧪 Testing with original routes only...');
+
+try {
+  console.log('Loading vehicles routes...');
+  app.use('/api/vehicles', require('./routes/vehicles'));
+  console.log('✅ Vehicles routes loaded');
+} catch (error) {
+  console.error('❌ Error loading vehicles routes:', error.message);
+}
+
+try {
+  console.log('Loading parts routes...');
+  app.use('/api/parts', require('./routes/parts'));
+  console.log('✅ Parts routes loaded');
+} catch (error) {
+  console.error('❌ Error loading parts routes:', error.message);
+}
+
+// Create a simple mock auth route without imports
+const authRouter = express.Router();
+
+authRouter.post('/register', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Mock registration',
+    user: { id: 'mock-id', email: req.body.email }
+  });
+});
+
+authRouter.post('/login', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Mock login',
+    user: { id: 'mock-id', email: req.body.email }
+  });
+});
+
+app.use('/api/auth', authRouter);
+console.log('✅ Mock auth routes loaded');
 
 // Global error handling middleware
 app.use((error, req, res, next) => {
@@ -56,20 +92,22 @@ app.use((error, req, res, next) => {
   });
 });
 
-// FIXED: 404 handler without the problematic '*' pattern
-app.use((req, res) => {
+// 404 handler for undefined routes
+app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
     message: `Route ${req.originalUrl} not found`
   });
 });
 
-// Start server
+console.log('🚀 Starting server without database imports...');
+
 app.listen(PORT, () => {
   console.log(`
 🚀 Car Mart API Server Started Successfully!
 📍 Port: ${PORT}
 🌍 Environment: ${process.env.NODE_ENV || 'development'}
+📊 Database: NOT IMPORTED (for testing)
 🕐 Started at: ${new Date().toISOString()}
   `);
 });

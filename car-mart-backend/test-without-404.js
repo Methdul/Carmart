@@ -1,29 +1,30 @@
-// car-mart-backend/src/app.js
-// Final working version with the 404 handler fix
+// car-mart-backend/test-without-404.js
+// Test everything EXCEPT the 404 handler
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
 
-// Load environment variables
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = 5004;
 
-// Middleware
+console.log('🧪 Testing without 404 handler...');
+
+// All middleware except 404 handler
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://your-frontend-domain.com'] 
-    : ['http://localhost:8080', 'http://localhost:3000', 'http://localhost:5173'], // ← ADDED 8080
+    : ['http://localhost:3000', 'http://localhost:5173'],
   credentials: true
 }));
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Static file serving for uploads
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Static file serving
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -40,10 +41,9 @@ app.get('/', (req, res) => {
   });
 });
 
-// API Routes - Your existing working routes
-app.use('/api/vehicles', require('./routes/vehicles'));
-app.use('/api/parts', require('./routes/parts'));
-app.use('/api/auth', require('./routes/auth'));
+// API Routes
+app.use('/api/vehicles', require('./src/routes/vehicles'));
+app.use('/api/parts', require('./src/routes/parts'));
 
 // Global error handling middleware
 app.use((error, req, res, next) => {
@@ -56,22 +56,11 @@ app.use((error, req, res, next) => {
   });
 });
 
-// FIXED: 404 handler without the problematic '*' pattern
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: `Route ${req.originalUrl} not found`
-  });
-});
+// DON'T add the 404 handler - test without it
 
-// Start server
+console.log('🚀 Starting server WITHOUT 404 handler...');
+
 app.listen(PORT, () => {
-  console.log(`
-🚀 Car Mart API Server Started Successfully!
-📍 Port: ${PORT}
-🌍 Environment: ${process.env.NODE_ENV || 'development'}
-🕐 Started at: ${new Date().toISOString()}
-  `);
+  console.log(`✅ SUCCESS! Server started on port ${PORT} WITHOUT 404 handler`);
+  process.exit(0);
 });
-
-module.exports = app;
