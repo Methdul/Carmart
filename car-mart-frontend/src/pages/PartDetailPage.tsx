@@ -92,7 +92,7 @@ const PartDetailPage = () => {
       <Header />
       
       {/* Mobile-First Layout */}
-      <div className="container mx-auto px-4 py-4 max-w-6xl">
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Back Button */}
         <Button variant="ghost" className="mb-4 -ml-2">
           <ArrowLeft className="h-4 w-4 mr-2" />

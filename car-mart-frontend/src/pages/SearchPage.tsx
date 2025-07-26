@@ -13,7 +13,6 @@ import Header from "@/components/Header";
 import VehicleCard from "@/components/VehicleCard";
 import ComparisonBar from "@/components/ComparisonBar";
 import MobileFilterPanel from "@/components/MobileFilterPanel";
-import HealthScoreBadge from "@/components/HealthScoreBadge";
 
 interface ComparisonVehicle {
   id: string;
@@ -249,6 +248,8 @@ const SearchPage = () => {
     const checkMobile = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
+      
+      // Force list view on mobile
       if (mobile) {
         setViewMode("list");
       }
@@ -1848,7 +1849,6 @@ const SearchPage = () => {
                     <SelectItem value="price-high">Price: High to Low</SelectItem>
                     <SelectItem value="year-new">Year: Newest First</SelectItem>
                     <SelectItem value="mileage-low">Mileage: Low to High</SelectItem>
-                    <SelectItem value="health-score">Health Score</SelectItem>
                     <SelectItem value="rating">Seller Rating</SelectItem>
                   </SelectContent>
                 </Select>
@@ -1867,7 +1867,6 @@ const SearchPage = () => {
                     size="sm"
                     onClick={() => setViewMode("grid")}
                     className="rounded-l-none"
-                    disabled={isMobile}
                   >
                     <Grid3x3 className="h-4 w-4" />
                   </Button>
@@ -1885,7 +1884,6 @@ const SearchPage = () => {
                     <SelectItem value="price-low">Price ↑</SelectItem>
                     <SelectItem value="price-high">Price ↓</SelectItem>
                     <SelectItem value="year-new">Year ↓</SelectItem>
-                    <SelectItem value="health-score">Health Score</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1915,104 +1913,100 @@ const SearchPage = () => {
                   </div>
                 ) : (
                   <div className={
-                    viewMode === "grid" && !isMobile
-                      ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
-                      : "space-y-4"
+                    isMobile || viewMode === "list"
+                      ? "space-y-4"
+                      : "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
                   }>
-                    {filteredVehicles.map((vehicle) => (
-                      viewMode === "grid" && !isMobile ? (
-                        <VehicleCard
-                          key={vehicle.id}
-                          vehicle={vehicle}
-                          onSave={() => handleSave(vehicle.id)}
-                          onCompare={() => handleAddToComparison(vehicle)}
-                          isSaved={false}
-                        />
-                      ) : (
-                        <Card
-                          key={vehicle.id}
-                          className="overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer"
-                          onClick={() => handleVehicleClick(vehicle.id)}
-                        >
-                          <div className="flex flex-col sm:flex-row">
-                            <div className="relative w-full sm:w-48 h-48 sm:h-32 flex-shrink-0">
-                              <img
-                                src={vehicle.image}
-                                alt={vehicle.title}
-                                className="w-full h-full object-cover"
-                              />
-                              <div className="absolute top-2 left-2">
-                                <HealthScoreBadge score={vehicle.healthScore} />
+                  {filteredVehicles.map((vehicle) => (
+                    isMobile || viewMode === "list" ? (
+                      <Card
+                        key={vehicle.id}
+                        className="overflow-hidden hover:shadow-md transition-all duration-150 cursor-pointer"
+                        onClick={() => handleVehicleClick(vehicle.id)}
+                      >
+                        <div className="flex flex-row">
+                          <div className="relative w-28 h-20 sm:w-48 sm:h-32 flex-shrink-0">
+                            <img
+                              src={vehicle.image}
+                              alt={vehicle.title}
+                              className="w-full h-full object-cover"
+                            />
+                            {vehicle.isFeatured && (
+                              <div className="absolute top-1 right-1">
+                                <Badge className="bg-highlight text-white text-[10px] px-1 py-0.5">Featured</Badge>
                               </div>
-                              {vehicle.isFeatured && (
-                                <div className="absolute top-2 right-2">
-                                  <Badge className="bg-highlight text-white">Featured</Badge>
-                                </div>
-                              )}
+                            )}
+                          </div>       
+                          <div className="flex-1 p-2 sm:p-4 flex flex-col justify-between">
+                            <div>
+                              <div className="flex justify-between mb-1">
+                                <h3 className="text-sm sm:text-base font-semibold text-primary">
+                                  {vehicle.title.length > 40 ? vehicle.title.slice(0, 40) + '…' : vehicle.title}
+                                </h3>
+                                <p className="text-sm sm:text-lg font-bold text-primary whitespace-nowrap">
+                                  {formatPrice(vehicle.price)}
+                                </p>
+                              </div>
+                              <div className="flex flex-wrap gap-1 text-[10px] sm:text-xs text-muted-foreground max-h-[40px] overflow-hidden">
+                                <Badge variant="secondary">{vehicle.year}</Badge>
+                                <Badge variant="outline">{vehicle.fuelType}</Badge>
+                                <Badge variant="outline">{vehicle.transmission}</Badge>
+                                {vehicle.isVerified && <Badge className="bg-success">✓ Verified</Badge>}
+                              </div>
                             </div>
-                            
-                            <div className="flex-1 p-4 flex flex-col justify-between">
-                              <div>
-                                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2">
-                                  <h3 className="text-lg font-semibold text-primary mb-1 sm:mb-0">
-                                    {vehicle.title}
-                                  </h3>
-                                  <p className="text-xl font-bold text-primary">
-                                    {formatPrice(vehicle.price)}
-                                  </p>
+
+                            <div className="flex justify-between items-center mt-2">
+                              <div className="text-[11px] sm:text-sm text-muted-foreground">
+                                <div className="flex items-center gap-1">
+                                  <MapPin className="w-3 h-3" />
+                                  <span>{vehicle.location}</span>
+                                  <span className="mx-1">•</span>
+                                  <span>{vehicle.mileage.toLocaleString()} km</span>
                                 </div>
-                                
-                                <div className="flex flex-wrap gap-2 mb-3">
-                                  <Badge variant="secondary" className="text-xs">{vehicle.year}</Badge>
-                                  <Badge variant="outline" className="text-xs">{vehicle.fuelType}</Badge>
-                                  <Badge variant="outline" className="text-xs">{vehicle.transmission}</Badge>
-                                  {vehicle.isVerified && <Badge className="bg-success text-xs">✓ Verified</Badge>}
+                                <div className="flex items-center gap-1">
+                                  <Star className="w-3 h-3 text-yellow-500" />
+                                  <span>{vehicle.sellerRating}</span>
                                 </div>
                               </div>
-                              
-                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                                <div className="flex flex-col space-y-1 mb-3 sm:mb-0">
-                                  <div className="flex items-center text-sm text-muted-foreground">
-                                    <MapPin className="w-4 h-4 mr-1" />
-                                    <span>{vehicle.location}</span>
-                                    <span className="mx-2">•</span>
-                                    <span>{vehicle.mileage.toLocaleString()} km</span>
-                                  </div>
-                                  <div className="flex items-center text-sm text-muted-foreground">
-                                    <Star className="w-4 h-4 mr-1 text-yellow-500" />
-                                    <span>{vehicle.sellerRating}</span>
-                                  </div>
-                                </div>
-                                
-                                <div className="flex space-x-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleSave(vehicle.id);
-                                    }}
-                                  >
-                                    <Heart className="w-4 h-4" />
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleAddToComparison(vehicle);
-                                    }}
-                                    disabled={comparisonList.some(v => v.id === vehicle.id)}
-                                  >
-                                    <BarChart3 className="w-4 h-4" />
-                                  </Button>
-                                </div>
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSave(vehicle.id);
+                                  }}
+                                >
+                                  <Heart className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAddToComparison(vehicle);
+                                  }}
+                                  disabled={comparisonList.some(v => v.id === vehicle.id)}
+                                >
+                                  <BarChart3 className="w-3 h-3" />
+                                </Button>
                               </div>
                             </div>
                           </div>
-                        </Card>
-                      )
-                    ))}
+                        </div>
+                      </Card>
+                    ) : (
+                      <VehicleCard
+                        key={vehicle.id}
+                        vehicle={vehicle}
+                        onSave={() => handleSave(vehicle.id)}
+                        onCompare={() => handleAddToComparison(vehicle)}
+                        isSaved={false}
+                      />
+                    )
+                  ))}
                   </div>
                 )}
               </>

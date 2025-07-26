@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { Heart, Share2, Phone, Mail, MapPin, Calendar, Fuel, Settings, Eye, Camera, Shield, Star, ArrowLeft, BarChart3, MessageCircle } from "lucide-react";
+import {
+  Heart, Share2, Phone, Mail, MapPin, Calendar, Fuel, Settings,
+  Eye, Camera, Shield, Star, ArrowLeft, BarChart3, MessageCircle
+} from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import vehicleSedan from "@/assets/vehicle-sedan.jpg";
@@ -13,8 +17,7 @@ import vehicleSedan from "@/assets/vehicle-sedan.jpg";
 const VehicleDetailPage = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isSaved, setIsSaved] = useState(false);
-  
-  // Mock vehicle data
+
   const vehicle = {
     id: "1",
     title: "BMW 3 Series 320i Sport Line",
@@ -31,13 +34,12 @@ const VehicleDetailPage = () => {
     healthScore: 92,
     images: [vehicleSedan, vehicleSedan, vehicleSedan, vehicleSedan, vehicleSedan],
     features: [
-      "Leather Seats", "Sunroof", "Navigation System", "Bluetooth", 
+      "Leather Seats", "Sunroof", "Navigation System", "Bluetooth",
       "Reverse Camera", "Parking Sensors", "Alloy Wheels", "LED Headlights"
     ],
-    description: `This pristine BMW 3 Series 320i Sport Line is a perfect combination of luxury and performance. 
-    The vehicle has been meticulously maintained with full service history available. Features include premium leather interior, 
-    advanced infotainment system, and exceptional fuel efficiency. This is an ideal choice for those seeking German engineering 
-    excellence with style and reliability.`,
+    description: `This pristine BMW 3 Series 320i Sport Line is a perfect combination of luxury and performance.
+    The vehicle has been meticulously maintained with full service history available. Features include premium leather interior,
+    advanced infotainment system, and exceptional fuel efficiency.`,
     seller: {
       id: "seller1",
       name: "John Perera",
@@ -71,32 +73,19 @@ const VehicleDetailPage = () => {
     }
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-LK', {
-      style: 'currency',
-      currency: 'LKR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price).replace('LKR', 'Rs.');
-  };
-
-  const handleContactSeller = () => {
-    alert("Contact seller functionality would be implemented here");
-  };
+  const formatPrice = (price: number) => `Rs. ${price.toLocaleString()}`;
+  const handleContactSeller = () => alert("Contact seller functionality would be implemented here");
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
-      {/* Mobile-First Layout */}
-      <div className="container mx-auto px-4 py-4 max-w-6xl">
-        {/* Back Button */}
+
+      <div className="container mx-auto px-4 py-4 max-w-4xl">
         <Button variant="ghost" className="mb-4 -ml-2">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Search
+          <ArrowLeft className="h-4 w-4 mr-2" /> Back to Search
         </Button>
 
-        {/* Mobile-Optimized Image Gallery */}
+        {/* Image Gallery */}
         <Card className="mb-4 overflow-hidden">
           <div className="relative">
             <div className="aspect-[16/10] sm:aspect-[16/9] overflow-hidden">
@@ -105,218 +94,138 @@ const VehicleDetailPage = () => {
                 alt={vehicle.title}
                 className="w-full h-full object-cover"
               />
-              
-              {/* Mobile Image Controls */}
-              <div className="absolute top-4 left-4 flex flex-wrap gap-2">
+              <div className="absolute top-3 left-3 flex gap-2">
                 {vehicle.seller.verified && (
-                  <Badge className="bg-success/90 text-success-foreground text-xs">
-                    <Shield className="h-3 w-3 mr-1" />
-                    Verified
+                  <Badge className="bg-success text-white text-xs">
+                    <Shield className="h-3 w-3 mr-1" /> Verified
                   </Badge>
                 )}
-                <Badge className="bg-accent/90 text-accent-foreground text-xs">
-                  Featured
-                </Badge>
+                <Badge className="bg-accent text-xs">Featured</Badge>
               </div>
-              
-              <div className="absolute top-4 right-4 flex gap-2">
+              <div className="absolute top-3 right-3 flex gap-2">
                 <Button
                   size="icon"
                   variant="secondary"
-                  className="h-8 w-8 rounded-full bg-background/80"
+                  className="h-8 w-8 bg-background/80"
                   onClick={() => setIsSaved(!isSaved)}
                 >
-                  <Heart className={`h-4 w-4 ${isSaved ? 'fill-destructive text-destructive' : ''}`} />
+                  <Heart className={`h-4 w-4 ${isSaved ? "fill-destructive text-destructive" : ""}`} />
                 </Button>
                 <Button
                   size="icon"
                   variant="secondary"
-                  className="h-8 w-8 rounded-full bg-background/80"
+                  className="h-8 w-8 bg-background/80"
                 >
                   <Share2 className="h-4 w-4" />
                 </Button>
               </div>
-              
-              {/* Image Counter */}
-              <div className="absolute bottom-4 right-4 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
+              <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded">
                 {selectedImage + 1} / {vehicle.images.length}
               </div>
             </div>
-            
-            {/* Mobile-Optimized Thumbnail Strip */}
-            <div className="flex overflow-x-auto gap-2 p-4 bg-muted/30">
-              {vehicle.images.map((image, index) => (
+
+            {/* Thumbnails */}
+            <div className="flex overflow-x-auto gap-2 p-3 sm:p-4 bg-muted/30 rounded-b-md">
+              {vehicle.images.map((img, i) => (
                 <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`flex-shrink-0 w-16 h-12 sm:w-20 sm:h-16 rounded-lg overflow-hidden border-2 ${
-                    selectedImage === index ? 'border-primary' : 'border-transparent'
-                  }`}
+                  key={i}
+                  onClick={() => setSelectedImage(i)}
+                  className={`w-16 h-12 sm:w-20 sm:h-16 rounded-lg overflow-hidden border-2 ${selectedImage === i ? "border-primary" : "border-transparent"}`}
                 >
-                  <img
-                    src={image}
-                    alt={`View ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={img} alt={`View ${i + 1}`} className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
           </div>
         </Card>
 
-        {/* Vehicle Title & Price - Mobile Optimized */}
+        {/* Title & Price */}
         <Card className="mb-4">
           <CardContent className="p-4 sm:p-6">
-            <div className="space-y-4">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-primary mb-2 leading-tight">
-                  {vehicle.title}
-                </h1>
-                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-3">
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    {vehicle.year}
-                  </div>
-                  <div className="flex items-center">
-                    <Eye className="h-4 w-4 mr-1" />
-                    {vehicle.mileage.toLocaleString()} km
-                  </div>
-                  <div className="flex items-center">
-                    <MapPin className="h-4 w-4 mr-1" />
-                    {vehicle.location}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                  <div className="text-2xl sm:text-3xl font-bold text-primary">
-                    {formatPrice(vehicle.price)}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Negotiable</div>
-                </div>
-                
-                {/* Mobile Action Buttons */}
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
-                    <BarChart3 className="h-4 w-4 mr-2" />
-                    Compare
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    Message
-                  </Button>
-                </div>
-              </div>
+            <h1 className="text-xl sm:text-2xl font-bold text-primary mb-2 leading-tight">{vehicle.title}</h1>
+            <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-muted-foreground mb-2">
+              <span className="flex items-center"><Calendar className="w-4 h-4 mr-1" /> {vehicle.year}</span>
+              <span className="flex items-center"><Eye className="w-4 h-4 mr-1" /> {vehicle.mileage.toLocaleString()} km</span>
+              <span className="flex items-center"><MapPin className="w-4 h-4 mr-1" /> {vehicle.location}</span>
+            </div>
+            <div className="text-xl sm:text-2xl font-bold text-primary mb-1">{formatPrice(vehicle.price)}</div>
+            <div className="text-sm text-muted-foreground mb-4">Negotiable</div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="flex-1 sm:flex-none"><BarChart3 className="h-4 w-4 mr-2" /> Compare</Button>
+              <Button variant="outline" size="sm" className="flex-1 sm:flex-none"><MessageCircle className="h-4 w-4 mr-2" /> Message</Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Quick Stats - Mobile Grid */}
+        {/* Quick Stats */}
         <Card className="mb-4">
           <CardContent className="p-4">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="text-center p-3 bg-muted/50 rounded-lg">
-                <div className="text-lg sm:text-xl font-bold text-primary">{vehicle.year}</div>
-                <div className="text-xs sm:text-sm text-muted-foreground">Year</div>
-              </div>
-              <div className="text-center p-3 bg-muted/50 rounded-lg">
-                <div className="text-lg sm:text-xl font-bold text-primary">{vehicle.mileage.toLocaleString()}</div>
-                <div className="text-xs sm:text-sm text-muted-foreground">Kilometers</div>
-              </div>
-              <div className="text-center p-3 bg-muted/50 rounded-lg">
-                <div className="text-lg sm:text-xl font-bold text-primary">{vehicle.fuelType}</div>
-                <div className="text-xs sm:text-sm text-muted-foreground">Fuel Type</div>
-              </div>
-              <div className="text-center p-3 bg-muted/50 rounded-lg">
-                <div className="text-lg sm:text-xl font-bold text-primary">{vehicle.transmission}</div>
-                <div className="text-xs sm:text-sm text-muted-foreground">Transmission</div>
-              </div>
+              {[
+                ["Year", vehicle.year],
+                ["Kilometers", vehicle.mileage.toLocaleString()],
+                ["Fuel Type", vehicle.fuelType],
+                ["Transmission", vehicle.transmission]
+              ].map(([label, value], i) => (
+                <div key={i} className="text-center p-2 sm:p-3 bg-muted/50 rounded-lg">
+                  <div className="text-sm sm:text-lg font-bold text-primary">{value}</div>
+                  <div className="text-xs text-muted-foreground">{label}</div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
 
-        {/* Main Content Area */}
+        {/* Tabs and Sidebar */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Details */}
           <div className="lg:col-span-2 space-y-4">
-            {/* Mobile-Optimized Tabs */}
             <Card>
               <CardContent className="p-0">
-                <Tabs defaultValue="overview" className="w-full">
-                  {/* Mobile-Scrollable Tabs */}
+                <Tabs defaultValue="overview">
                   <div className="overflow-x-auto">
-                    <TabsList className="grid w-full grid-cols-4 min-w-max sm:min-w-0">
-                      <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 sm:px-4">
-                        Overview
-                      </TabsTrigger>
-                      <TabsTrigger value="specs" className="text-xs sm:text-sm px-2 sm:px-4">
-                        Specs
-                      </TabsTrigger>
-                      <TabsTrigger value="features" className="text-xs sm:text-sm px-2 sm:px-4">
-                        Features
-                      </TabsTrigger>
-                      <TabsTrigger value="history" className="text-xs sm:text-sm px-2 sm:px-4">
-                        History
-                      </TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-4 min-w-max">
+                      <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+                      <TabsTrigger value="specs" className="text-xs sm:text-sm">Specs</TabsTrigger>
+                      <TabsTrigger value="features" className="text-xs sm:text-sm">Features</TabsTrigger>
+                      <TabsTrigger value="history" className="text-xs sm:text-sm">History</TabsTrigger>
                     </TabsList>
                   </div>
-
                   <div className="p-4 sm:p-6">
                     <TabsContent value="overview" className="mt-0">
-                      <div className="space-y-4">
-                        <div>
-                          <h3 className="font-semibold text-primary mb-2">Description</h3>
-                          <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
-                            {vehicle.description}
-                          </p>
-                        </div>
-                      </div>
+                      <h3 className="font-semibold text-primary mb-2">Description</h3>
+                      <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">{vehicle.description}</p>
                     </TabsContent>
-
                     <TabsContent value="specs" className="mt-0">
-                      <div className="space-y-4">
-                        <h3 className="font-semibold text-primary">Specifications</h3>
-                        <div className="space-y-3">
-                          {Object.entries(vehicle.specs).map(([key, value]) => (
-                            <div key={key} className="flex justify-between items-center py-2 border-b border-border/50 last:border-0">
-                              <span className="text-muted-foreground capitalize text-sm">
-                                {key.replace(/([A-Z])/g, ' $1')}
-                              </span>
-                              <span className="font-medium text-sm text-right">{value}</span>
-                            </div>
-                          ))}
-                        </div>
+                      <h3 className="font-semibold text-primary mb-3">Specifications</h3>
+                      <div className="space-y-2">
+                        {Object.entries(vehicle.specs).map(([key, value]) => (
+                          <div key={key} className="flex justify-between border-b border-border/50 py-1 text-sm">
+                            <span className="capitalize text-muted-foreground">{key.replace(/([A-Z])/g, ' $1')}</span>
+                            <span className="text-right font-medium">{value}</span>
+                          </div>
+                        ))}
                       </div>
                     </TabsContent>
-
                     <TabsContent value="features" className="mt-0">
-                      <div className="space-y-4">
-                        <h3 className="font-semibold text-primary">Features</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          {vehicle.features.map((feature, index) => (
-                            <div key={index} className="flex items-center space-x-2 p-2 bg-muted/50 rounded-lg">
-                              <div className="w-2 h-2 bg-success rounded-full flex-shrink-0"></div>
-                              <span className="text-sm">{feature}</span>
-                            </div>
-                          ))}
-                        </div>
+                      <h3 className="font-semibold text-primary mb-3">Features</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {vehicle.features.map((f, i) => (
+                          <div key={i} className="flex items-center space-x-2 text-sm p-2 bg-muted/40 rounded">
+                            <div className="w-2 h-2 bg-success rounded-full" />
+                            <span>{f}</span>
+                          </div>
+                        ))}
                       </div>
                     </TabsContent>
-
                     <TabsContent value="history" className="mt-0">
-                      <div className="space-y-4">
-                        <h3 className="font-semibold text-primary">Vehicle History</h3>
-                        <div className="space-y-3">
-                          {Object.entries(vehicle.history).map(([key, value]) => (
-                            <div key={key} className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-3 border-b border-border/50 last:border-0 gap-1">
-                              <span className="text-muted-foreground capitalize text-sm font-medium">
-                                {key.replace(/([A-Z])/g, ' $1')}
-                              </span>
-                              <span className="text-sm">{value}</span>
-                            </div>
-                          ))}
-                        </div>
+                      <h3 className="font-semibold text-primary mb-3">Vehicle History</h3>
+                      <div className="space-y-2">
+                        {Object.entries(vehicle.history).map(([key, value]) => (
+                          <div key={key} className="flex flex-col sm:flex-row justify-between text-sm border-b border-border/50 pb-2">
+                            <span className="capitalize text-muted-foreground">{key.replace(/([A-Z])/g, ' $1')}</span>
+                            <span>{value}</span>
+                          </div>
+                        ))}
                       </div>
                     </TabsContent>
                   </div>
@@ -325,9 +234,8 @@ const VehicleDetailPage = () => {
             </Card>
           </div>
 
-          {/* Seller Info Sidebar */}
+          {/* Seller Sidebar */}
           <div className="space-y-4">
-            {/* Seller Card */}
             <Card>
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg">Seller Information</CardTitle>
@@ -336,88 +244,47 @@ const VehicleDetailPage = () => {
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-12 w-12">
                     <AvatarImage src={vehicle.seller.avatar} />
-                    <AvatarFallback className="bg-primary text-primary-foreground">
+                    <AvatarFallback className="bg-primary text-white">
                       {vehicle.seller.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className="font-medium text-sm truncate">{vehicle.seller.name}</span>
-                      {vehicle.seller.verified && (
-                        <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
-                          <Shield className="h-3 w-3 mr-1" />
-                          Verified
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                      <span>{vehicle.seller.rating}</span>
-                      <span>({vehicle.seller.reviewCount} reviews)</span>
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">{vehicle.seller.name}</p>
+                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Star className="h-3 w-3 text-yellow-500" /> {vehicle.seller.rating} ({vehicle.seller.reviewCount} reviews)
                     </div>
                   </div>
                 </div>
-
-                <div className="space-y-2 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Member Since</span>
-                    <span>{vehicle.seller.memberSince}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Response Time</span>
-                    <span>{vehicle.seller.responseTime}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Location</span>
-                    <span>{vehicle.seller.location}</span>
-                  </div>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <p>Since {vehicle.seller.memberSince}</p>
+                  <p>Location: {vehicle.seller.location}</p>
+                  <p>Response Time: {vehicle.seller.responseTime}</p>
                 </div>
-
                 <div className="pt-2">
-                  <Button 
-                    className="w-full" 
-                    onClick={handleContactSeller}
-                  >
-                    <Phone className="h-4 w-4 mr-2" />
-                    Call Seller
+                  <Button className="w-full" onClick={handleContactSeller}>
+                    <Phone className="h-4 w-4 mr-2" /> Call Seller
                   </Button>
                 </div>
               </CardContent>
             </Card>
-
-            {/* Quick Contact Card */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Mail className="h-4 w-4 mr-2" />
-                  Send Message
-                </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Share Listing
-                </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Price Analysis
-                </Button>
+                <Button variant="outline" size="sm" className="w-full justify-start"><Mail className="h-4 w-4 mr-2" /> Send Message</Button>
+                <Button variant="outline" size="sm" className="w-full justify-start"><Share2 className="h-4 w-4 mr-2" /> Share Listing</Button>
+                <Button variant="outline" size="sm" className="w-full justify-start"><BarChart3 className="h-4 w-4 mr-2" /> Price Analysis</Button>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
 
-      {/* Mobile Sticky Bottom Actions */}
-      <div className="sticky bottom-0 left-0 right-0 bg-background border-t border-border p-4 lg:hidden">
-        <Button 
-          size="lg" 
-          className="w-full"
-          onClick={handleContactSeller}
-        >
-          <Phone className="h-4 w-4 mr-2" />
-          Call Now
+      {/* Sticky Footer CTA for Mobile */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 z-50">
+        <Button size="lg" className="w-full" onClick={handleContactSeller}>
+          <Phone className="h-4 w-4 mr-2" /> Call Now
         </Button>
       </div>
 

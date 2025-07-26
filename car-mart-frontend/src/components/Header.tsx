@@ -1,11 +1,12 @@
 import { Menu, User, Heart, BarChart3, UserCheck, X, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 
 const Header = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
@@ -37,31 +38,40 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-6">
-            <Link to="/search">
+            <Link to="/search" className="relative">
               <Button 
                 variant="ghost" 
                 className="text-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 font-medium"
               >
                 Buy Vehicles
               </Button>
+              {location.pathname === '/search' && (
+                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full"></div>
+              )}
             </Link>
-            <Link to="/parts">
+            <Link to="/parts" className="relative">
               <Button 
                 variant="ghost" 
                 className="text-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 font-medium"
               >
                 Auto Parts
               </Button>
+              {location.pathname === '/parts' && (
+                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full"></div>
+              )}
             </Link>
-            <Link to="/services">
+            <Link to="/services" className="relative">
               <Button 
                 variant="ghost" 
                 className="text-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 font-medium"
               >
                 Services
               </Button>
+              {location.pathname === '/services' && (
+                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full"></div>
+              )}
             </Link>
-            <Link to="/compare">
+            <Link to="/compare" className="relative">
               <Button 
                 variant="ghost" 
                 className="text-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 font-medium flex items-center gap-2"
@@ -69,6 +79,9 @@ const Header = () => {
                 <BarChart3 className="h-4 w-4" />
                 Compare
               </Button>
+              {location.pathname === '/compare' && (
+                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full"></div>
+              )}
             </Link>
           </nav>
 

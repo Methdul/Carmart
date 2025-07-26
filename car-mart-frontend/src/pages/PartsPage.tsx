@@ -636,97 +636,94 @@ const PartsPage = () => {
                       ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
                       : "space-y-4"
                   }>
-                    {filteredParts.map((part) => (
+                  {filteredParts.map((part) => {
+                    const badges = [
+                      part.brand,
+                      part.condition,
+                      ...(part.warranty ? ["Warranty"] : []),
+                      ...(part.oem ? ["OEM"] : [])
+                    ];
+
+                    return (
                       <Card
                         key={part.id}
-                        className="overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer"
+                        className="overflow-hidden hover:shadow-md transition-all duration-150 cursor-pointer"
                         onClick={() => handlePartClick(part.id)}
                       >
-                        <div className="flex flex-col sm:flex-row">
-                          <div className="relative w-full sm:w-48 h-48 sm:h-32 flex-shrink-0">
+                        <div className="flex flex-row">
+                          <div className="relative w-28 h-20 sm:w-48 sm:h-32 flex-shrink-0">
                             <img
                               src={part.image}
                               alt={part.title}
                               className="w-full h-full object-cover"
                             />
                             {part.isVerified && (
-                              <div className="absolute top-2 right-2">
-                                <Badge className="bg-success text-white text-xs">✓ Verified</Badge>
-                              </div>
-                            )}
-                            {!part.inStock && (
-                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <Badge variant="destructive">Out of Stock</Badge>
+                              <div className="absolute top-1 right-1">
+                                <Badge className="bg-success text-white text-[10px] px-1 py-0.5">✓ Verified</Badge>
                               </div>
                             )}
                           </div>
-                          
-                          <div className="flex-1 p-4 flex flex-col justify-between">
+                          <div className="flex-1 p-2 sm:p-4 flex flex-col justify-between">
                             <div>
-                              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2">
-                                <h3 className="text-lg font-semibold text-primary mb-1 sm:mb-0">
-                                  {part.title}
+                              <div className="flex justify-between mb-1">
+                                <h3 className="text-sm sm:text-base font-semibold text-primary">
+                                  {part.title.length > 40 ? part.title.slice(0, 40) + '…' : part.title}
                                 </h3>
-                                <p className="text-xl font-bold text-primary">
+                                <p className="text-sm sm:text-lg font-bold text-primary whitespace-nowrap">
                                   Rs. {part.price.toLocaleString()}
                                 </p>
                               </div>
-                              
-                              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                              <p className="text-xs text-muted-foreground mb-1 line-clamp-2">
                                 {part.description}
                               </p>
-                              
-                              <div className="flex flex-wrap gap-1 mb-2">
-                                <Badge variant="secondary" className="text-xs px-1.5 py-0.5 h-5">{part.brand}</Badge>
-                                <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">{part.condition}</Badge>
-                                {part.warranty && <Badge className="bg-green-100 text-green-800 text-xs px-1.5 py-0.5 h-5">Warranty</Badge>}
-                                {part.oem && <Badge className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 h-5">OEM</Badge>}
-                                {part.fastShipping && <Badge className="bg-purple-100 text-purple-800 text-xs px-1.5 py-0.5 h-5">Fast Ship</Badge>}
+                              <div className="flex flex-wrap gap-1 text-[10px] sm:text-xs text-muted-foreground max-h-[40px] overflow-hidden">
+                                {badges.map((badge) => (
+                                  <Badge variant="outline" key={badge}>{badge}</Badge>
+                                ))}
                               </div>
                             </div>
-                            
-                            <div className="flex items-center justify-between mt-auto">
-                              <div className="flex flex-col space-y-0.5">
-                                <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
-                                  <MapPin className="w-3 h-3 mr-1 flex-shrink-0" />
-                                  <span className="truncate">{part.location}</span>
+
+                            <div className="flex justify-between items-center mt-2">
+                              <div className="text-[11px] sm:text-sm text-muted-foreground">
+                                <div className="flex items-center gap-1">
+                                  <MapPin className="w-3 h-3" />
+                                  <span>{part.location}</span>
                                 </div>
-                                <div className="flex items-center text-xs text-muted-foreground">
-                                  <Star className="w-3 h-3 mr-1 text-yellow-500" />
+                                <div className="flex items-center gap-1">
+                                  <Star className="w-3 h-3 text-yellow-500" />
                                   <span>{part.sellerRating}</span>
-                                  <span className={`ml-2 ${part.inStock ? 'text-green-600' : 'text-red-600'}`}>
-                                    {part.inStock ? 'In Stock' : 'Out of Stock'}
-                                  </span>
                                 </div>
                               </div>
-                              
-                              <div className="flex space-x-2">
+                              <div className="flex gap-1">
                                 <Button
-                                  variant="outline"
-                                  size="sm"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleSave(part.id);
                                   }}
                                 >
-                                  <Heart className="w-4 h-4" />
+                                  <Heart className="w-3 h-3" />
                                 </Button>
                                 <Button
-                                  variant="outline"
-                                  size="sm"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleContact(part.id);
                                   }}
                                 >
-                                  <Settings className="w-4 h-4" />
+                                  <Settings className="w-3 h-3" />
                                 </Button>
                               </div>
                             </div>
                           </div>
                         </div>
                       </Card>
-                    ))}
+                    );
+                  })}
                   </div>
                 )}
               </>

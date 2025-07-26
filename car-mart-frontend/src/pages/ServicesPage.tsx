@@ -630,97 +630,103 @@ const ServicesPage = () => {
                       ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
                       : "space-y-4"
                   }>
-                    {filteredServices.map((service) => (
-                      <Card
-                        key={service.id}
-                        className="overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer"
-                        onClick={() => handleServiceClick(service.id)}
-                      >
-                        <div className="flex flex-col sm:flex-row">
-                          <div className="relative w-full sm:w-48 h-48 sm:h-32 flex-shrink-0">
-                            <img
-                              src={service.image}
-                              alt={service.title}
-                              className="w-full h-full object-cover"
-                            />
-                            {service.isVerified && (
-                              <div className="absolute top-2 right-2">
-                                <Badge className="bg-success text-white text-xs">✓ Verified</Badge>
-                              </div>
-                            )}
-                            {service.emergencyService && (
-                              <div className="absolute top-2 left-2">
-                                <Badge className="bg-red-100 text-red-800 text-xs">Emergency</Badge>
-                              </div>
-                            )}
-                          </div>
-                          
-                          <div className="flex-1 p-4 flex flex-col justify-between">
-                            <div>
-                              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2">
-                                <h3 className="text-lg font-semibold text-primary mb-1 sm:mb-0">
-                                  {service.title}
-                                </h3>
-                                <p className="text-xl font-bold text-primary">
-                                  Rs. {service.price.toLocaleString()}
+                    {filteredServices.map((service) => {
+                      const badges = [
+                        service.serviceType,
+                        ...(service.certified ? ["Certified"] : []),
+                        ...(service.warranty ? ["Warranty"] : []),
+                        ...(service.homeService ? ["Home Service"] : []),
+                        ...(service.onlineBooking ? ["Online Booking"] : [])
+                      ];
+
+                      return (
+                        <Card
+                          key={service.id}
+                          className="overflow-hidden hover:shadow-md transition-all duration-150 cursor-pointer"
+                          onClick={() => handleServiceClick(service.id)}
+                        >
+                          <div className="flex flex-row">
+                            <div className="relative w-28 h-20 sm:w-48 sm:h-32 flex-shrink-0">
+                              <img
+                                src={service.image}
+                                alt={service.title}
+                                className="w-full h-full object-cover"
+                              />
+                              {service.isVerified && (
+                                <div className="absolute top-1 right-1">
+                                  <Badge className="bg-success text-white text-[10px] px-1 py-0.5">✓ Verified</Badge>
+                                </div>
+                              )}
+                              {service.emergencyService && (
+                                <div className="absolute top-1 left-1">
+                                  <Badge className="bg-red-100 text-red-800 text-[10px] px-1 py-0.5">Emergency</Badge>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 p-2 sm:p-4 flex flex-col justify-between">
+                              <div>
+                                <div className="flex justify-between mb-1">
+                                  <h3 className="text-sm sm:text-base font-semibold text-primary">
+                                    {service.title.length > 40 ? service.title.slice(0, 40) + '…' : service.title}
+                                  </h3>
+                                  <p className="text-sm sm:text-lg font-bold text-primary whitespace-nowrap">
+                                    Rs. {service.price.toLocaleString()}
+                                  </p>
+                                </div>
+                                <p className="text-xs text-muted-foreground mb-1 line-clamp-2">
+                                  {service.description}
                                 </p>
-                              </div>
-                              
-                              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                                {service.description}
-                              </p>
-                              
-                              <div className="flex flex-wrap gap-1 mb-2">
-                                <Badge variant="secondary" className="text-xs px-1.5 py-0.5 h-5">{service.serviceType}</Badge>
-                                {service.certified && <Badge className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 h-5">Certified</Badge>}
-                                {service.warranty && <Badge className="bg-green-100 text-green-800 text-xs px-1.5 py-0.5 h-5">Warranty</Badge>}
-                                {service.homeService && <Badge className="bg-purple-100 text-purple-800 text-xs px-1.5 py-0.5 h-5">Home Service</Badge>}
-                                {service.onlineBooking && <Badge className="bg-orange-100 text-orange-800 text-xs px-1.5 py-0.5 h-5">Online Booking</Badge>}
-                              </div>
-                            </div>
-                            
-                            <div className="flex items-center justify-between mt-auto">
-                              <div className="flex flex-col space-y-0.5">
-                                <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
-                                  <MapPin className="w-3 h-3 mr-1 flex-shrink-0" />
-                                  <span className="truncate">{service.location}</span>
-                                </div>
-                                <div className="flex items-center text-xs text-muted-foreground">
-                                  <Star className="w-3 h-3 mr-1 text-yellow-500" />
-                                  <span>{service.providerRating}</span>
-                                  <span className="mx-1">•</span>
-                                  <Clock className="w-3 h-3 mr-1" />
-                                  <span>{service.responseTime}</span>
+                                <div className="flex flex-wrap gap-1 text-[10px] sm:text-xs text-muted-foreground max-h-[40px] overflow-hidden">
+                                  {badges.map((badge) => (
+                                    <Badge variant="outline" key={badge}>{badge}</Badge>
+                                  ))}
                                 </div>
                               </div>
-                              
-                              <div className="flex space-x-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleSave(service.id);
-                                  }}
-                                >
-                                  <Heart className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleContact(service.id);
-                                  }}
-                                >
-                                  <Phone className="w-4 h-4" />
-                                </Button>
+
+                              <div className="flex justify-between items-center mt-2">
+                                <div className="text-[11px] sm:text-sm text-muted-foreground">
+                                  <div className="flex items-center gap-1">
+                                    <MapPin className="w-3 h-3" />
+                                    <span>{service.location}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Star className="w-3 h-3 text-yellow-500" />
+                                    <span>{service.providerRating}</span>
+                                    <span className="mx-1">•</span>
+                                    <Clock className="w-3 h-3" />
+                                    <span>{service.responseTime}</span>
+                                  </div>
+                                </div>
+                                <div className="flex gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleSave(service.id);
+                                    }}
+                                  >
+                                    <Heart className="w-3 h-3" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleContact(service.id);
+                                    }}
+                                  >
+                                    <Phone className="w-3 h-3" />
+                                  </Button>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </Card>
-                    ))}
+                        </Card>
+                      );
+                    })}
                   </div>
                 )}
               </>
