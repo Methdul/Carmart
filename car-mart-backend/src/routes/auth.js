@@ -1,90 +1,82 @@
-// car-mart-backend/src/routes/auth.js
 const express = require('express');
-const bcrypt = require('bcryptjs');
-const { generateToken, generateRefreshToken } = require('../middleware/auth');
+const router = express.Router();
+const jwt = require('jsonwebtoken');
 const { UserService } = require('../services/database');
 
-const router = express.Router();
-const userService = new UserService();
-
-// POST /api/auth/register
+// POST /api/auth/register - User registration
 router.post('/register', async (req, res) => {
   try {
-    const { firstName, lastName, email, phone, password, confirmPassword } = req.body;
+    const { email, password, firstName, lastName, phone, location } = req.body;
 
     // Validate required fields
-    if (!firstName || !lastName || !email || !password) {
+    if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({
         success: false,
-        message: 'All required fields must be provided'
+        message: 'Please provide all required fields'
       });
     }
 
-    // Validate password match
-    if (password !== confirmPassword) {
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
       return res.status(400).json({
         success: false,
-        message: 'Passwords do not match'
+        message: 'Please provide a valid email address'
       });
     }
 
-    // Check if user already exists
-    const existingUser = await userService.findByEmail(email);
-    if (existingUser.success && existingUser.data) {
+    // Validate password length
+    if (password.length < 6) {
       return res.status(400).json({
         success: false,
-        message: 'User already exists with this email'
+        message: 'Password must be at least 6 characters long'
       });
     }
-
-    // Hash password
-    const saltRounds = 10;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
 
     // Create user
-    const userData = {
-      first_name: firstName,
-      last_name: lastName,
-      email: email.toLowerCase(),
-      phone: phone || null,
-      password_hash: passwordHash
-    };
+    const user = await UserService.createUser({
+      email,
+      password,
+      firstName,
+      lastName,
+      phone,
+      location
+    });
 
-    const result = await userService.createUser(userData);
-
-    if (!result.success) {
-      return res.status(500).json({
-        success: false,
-        message: 'Error creating user account',
-        error: result.error
-      });
-    }
-
-    // Generate tokens
-    const token = generateToken(result.data.id);
-    const refreshToken = generateRefreshToken(result.data.id);
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
 
     res.status(201).json({
       success: true,
       message: 'User registered successfully',
       data: {
-        user: result.data,
-        token,
-        refreshToken
+        user: user,
+        token: token
       }
     });
-
   } catch (error) {
     console.error('Registration error:', error);
+    
+    if (error.message === 'Email already exists') {
+      return res.status(409).json({
+        success: false,
+        message: 'Email already exists'
+      });
+    }
+
     res.status(500).json({
       success: false,
-      message: 'Server error during registration',
+      message: 'Server Error',
       error: error.message
     });
   }
 });
 
-// POST /api/auth/login
+// POST /api/auth/login - User login
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -93,34 +85,22 @@ router.post('/login', async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Email and password are required'
+        message: 'Please provide email and password'
       });
     }
 
-    // Find user by email
-    const userResult = await userService.findByEmail(email);
-    
-    if (!userResult.success || !userResult.data) {
+    // Get user by email
+    const user = await UserService.getUserByEmail(email);
+    if (!user) {
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
       });
     }
 
-    const user = userResult.data;
-
-    // Check if account is active
-    if (!user.is_active) {
-      return res.status(401).json({
-        success: false,
-        message: 'Account is deactivated'
-      });
-    }
-
     // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-    
-    if (!isPasswordValid) {
+    const isValidPassword = await UserService.verifyPassword(password, user.password_hash);
+    if (!isValidPassword) {
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
@@ -128,13 +108,16 @@ router.post('/login', async (req, res) => {
     }
 
     // Update last login
-    await userService.updateLastLogin(user.id);
+    await UserService.updateLastLogin(user.id);
 
-    // Generate tokens
-    const token = generateToken(user.id);
-    const refreshToken = generateRefreshToken(user.id);
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
 
-    // Remove password from response
+    // Remove password hash from response
     const { password_hash, ...userWithoutPassword } = user;
 
     res.json({
@@ -142,73 +125,64 @@ router.post('/login', async (req, res) => {
       message: 'Login successful',
       data: {
         user: userWithoutPassword,
-        token,
-        refreshToken
+        token: token
       }
     });
-
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error during login',
+      message: 'Server Error',
       error: error.message
     });
   }
 });
 
-// POST /api/auth/refresh
+// POST /api/auth/refresh - Refresh JWT token
 router.post('/refresh', async (req, res) => {
   try {
-    const { refreshToken } = req.body;
+    const { token } = req.body;
 
-    if (!refreshToken) {
+    if (!token) {
       return res.status(400).json({
         success: false,
-        message: 'Refresh token is required'
+        message: 'Token is required'
       });
     }
 
-    const { verifyRefreshToken } = require('../middleware/auth');
-    const verification = verifyRefreshToken(refreshToken);
-
-    if (!verification.success) {
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // Get fresh user data
+    const user = await UserService.getUserById(decoded.userId);
+    if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid refresh token'
+        message: 'User not found'
       });
     }
 
-    // Generate new tokens
-    const newToken = generateToken(verification.userId);
-    const newRefreshToken = generateRefreshToken(verification.userId);
+    // Generate new token
+    const newToken = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
 
     res.json({
       success: true,
       data: {
-        token: newToken,
-        refreshToken: newRefreshToken
+        user: user,
+        token: newToken
       }
     });
-
   } catch (error) {
     console.error('Token refresh error:', error);
-    res.status(500).json({
+    res.status(401).json({
       success: false,
-      message: 'Server error during token refresh',
-      error: error.message
+      message: 'Invalid token'
     });
   }
-});
-
-// POST /api/auth/logout
-router.post('/logout', (req, res) => {
-  // Since we're using stateless JWT, logout is handled client-side
-  // In a production app, you might want to maintain a token blacklist
-  res.json({
-    success: true,
-    message: 'Logged out successfully'
-  });
 });
 
 module.exports = router;

@@ -1,537 +1,477 @@
-// car-mart-backend/src/services/database.js
-const { supabaseAdmin } = require('../config/database');
+const { supabase } = require('../config/database');
+const bcrypt = require('bcryptjs');
 
-class DatabaseService {
-  constructor(tableName) {
-    this.table = tableName;
-    this.db = supabaseAdmin;
-  }
+class VehicleService {
+  // Get all vehicles with filtering
+  static async getVehicles(filters = {}) {
+    let query = supabase
+      .from('vehicles')
+      .select(`
+        *,
+        users!vehicles_user_id_fkey (
+          first_name,
+          last_name,
+          phone,
+          location
+        )
+      `)
+      .eq('is_active', true);
 
-  // Generic CRUD operations
-  async create(data) {
-    try {
-      const { data: result, error } = await this.db
-        .from(this.table)
-        .insert(data)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return { success: true, data: result };
-    } catch (error) {
-      return { success: false, error: error.message };
+    // Apply filters
+    if (filters.search) {
+      query = query.or(`title.ilike.%${filters.search}%,make.ilike.%${filters.search}%,model.ilike.%${filters.search}%`);
     }
-  }
 
-  async findById(id) {
-    try {
-      const { data, error } = await this.db
-        .from(this.table)
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows returned
-      return { success: true, data: data || null };
-    } catch (error) {
-      return { success: false, error: error.message };
+    if (filters.location) {
+      query = query.ilike('location', `%${filters.location}%`);
     }
+
+    if (filters.minPrice) {
+      query = query.gte('price', filters.minPrice);
+    }
+
+    if (filters.maxPrice) {
+      query = query.lte('price', filters.maxPrice);
+    }
+
+    if (filters.make) {
+      query = query.ilike('make', `%${filters.make}%`);
+    }
+
+    if (filters.fuelType) {
+      query = query.eq('fuel_type', filters.fuelType);
+    }
+
+    if (filters.bodyType) {
+      query = query.eq('body_type', filters.bodyType);
+    }
+
+    if (filters.transmission) {
+      query = query.eq('transmission', filters.transmission);
+    }
+
+    // Order by created_at desc by default
+    query = query.order('created_at', { ascending: false });
+
+    const { data, error } = await query;
+
+    if (error) {
+      throw new Error(`Failed to fetch vehicles: ${error.message}`);
+    }
+
+    return data;
   }
 
-  async findAll(filters = {}, options = {}) {
-    try {
-      let query = this.db.from(this.table).select('*');
+  // Get single vehicle by ID
+  static async getVehicleById(id) {
+    const { data, error } = await supabase
+      .from('vehicles')
+      .select(`
+        *,
+        users!vehicles_user_id_fkey (
+          first_name,
+          last_name,
+          phone,
+          location,
+          email
+        )
+      `)
+      .eq('id', id)
+      .eq('is_active', true)
+      .single();
 
-      // Apply filters
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          query = query.eq(key, value);
-        }
-      });
-
-      // Apply pagination
-      if (options.limit) {
-        query = query.limit(options.limit);
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null; // Not found
       }
-      if (options.offset) {
-        query = query.range(options.offset, options.offset + (options.limit || 10) - 1);
-      }
-
-      // Apply ordering
-      if (options.orderBy) {
-        query = query.order(options.orderBy, { ascending: options.ascending !== false });
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      return { success: true, data: data || [] };
-    } catch (error) {
-      return { success: false, error: error.message };
+      throw new Error(`Failed to fetch vehicle: ${error.message}`);
     }
+
+    // Increment view count
+    await this.incrementViews(id);
+
+    return data;
   }
 
-  async update(id, data) {
-    try {
-      const { data: result, error } = await this.db
-        .from(this.table)
-        .update(data)
-        .eq('id', id)
-        .select()
-        .single();
+  // Create new vehicle
+  static async createVehicle(vehicleData, userId) {
+    const { data, error } = await supabase
+      .from('vehicles')
+      .insert([{
+        ...vehicleData,
+        user_id: userId
+      }])
+      .select()
+      .single();
 
-      if (error) throw error;
-      return { success: true, data: result };
-    } catch (error) {
-      return { success: false, error: error.message };
+    if (error) {
+      throw new Error(`Failed to create vehicle: ${error.message}`);
     }
+
+    return data;
   }
 
-  async delete(id) {
-    try {
-      const { error } = await this.db
-        .from(this.table)
-        .delete()
-        .eq('id', id);
+  // Update vehicle
+  static async updateVehicle(id, vehicleData, userId) {
+    const { data, error } = await supabase
+      .from('vehicles')
+      .update(vehicleData)
+      .eq('id', id)
+      .eq('user_id', userId)
+      .select()
+      .single();
 
-      if (error) throw error;
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: error.message };
+    if (error) {
+      throw new Error(`Failed to update vehicle: ${error.message}`);
     }
+
+    return data;
   }
 
-  async count(filters = {}) {
-    try {
-      let query = this.db.from(this.table).select('*', { count: 'exact', head: true });
+  // Delete vehicle
+  static async deleteVehicle(id, userId) {
+    const { data, error } = await supabase
+      .from('vehicles')
+      .update({ is_active: false })
+      .eq('id', id)
+      .eq('user_id', userId)
+      .select()
+      .single();
 
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          query = query.eq(key, value);
-        }
-      });
-
-      const { count, error } = await query;
-      if (error) throw error;
-
-      return { success: true, count };
-    } catch (error) {
-      return { success: false, error: error.message };
+    if (error) {
+      throw new Error(`Failed to delete vehicle: ${error.message}`);
     }
-  }
-}
 
-// Specialized service classes
-class UserService extends DatabaseService {
-  constructor() {
-    super('users');
+    return data;
   }
 
-  async findByEmail(email) {
-    try {
-      const { data, error } = await this.db
-        .from('users')
-        .select('*')
-        .eq('email', email.toLowerCase())
-        .single();
+  // Increment view count
+  static async incrementViews(id) {
+    const { error } = await supabase
+      .rpc('increment_vehicle_views', { vehicle_id: id });
 
-      if (error && error.code !== 'PGRST116') throw error;
-      return { success: true, data: data || null };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  }
-
-  async createUser(userData) {
-    try {
-      // Ensure email is lowercase
-      userData.email = userData.email.toLowerCase();
-      
-      const { data, error } = await this.db
-        .from('users')
-        .insert(userData)
-        .select('id, email, first_name, last_name, phone, avatar_url, bio, location, account_type, is_verified, member_since')
-        .single();
-
-      if (error) throw error;
-      return { success: true, data };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  }
-
-  async updateLastLogin(userId) {
-    try {
-      const { error } = await this.db
-        .from('users')
-        .update({ last_login: new Date().toISOString() })
-        .eq('id', userId);
-
-      if (error) throw error;
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: error.message };
+    if (error) {
+      console.error('Failed to increment views:', error);
     }
   }
 }
 
-class VehicleService extends DatabaseService {
-  constructor() {
-    super('vehicles');
-  }
+class PartService {
+  // Get all parts with filtering
+  static async getParts(filters = {}) {
+    let query = supabase
+      .from('parts')
+      .select(`
+        *,
+        users!parts_user_id_fkey (
+          first_name,
+          last_name,
+          phone,
+          location
+        )
+      `)
+      .eq('is_active', true);
 
-  async searchVehicles(searchParams) {
-    try {
-      let query = this.db
-        .from('vehicles')
-        .select(`
-          *,
-          users(first_name, last_name, account_type, is_verified),
-          business_profiles(company_name)
-        `)
-        .eq('is_active', true);
-
-      // Text search
-      if (searchParams.search) {
-        query = query.or(`title.ilike.%${searchParams.search}%,make.ilike.%${searchParams.search}%,model.ilike.%${searchParams.search}%`);
-      }
-
-      // Location filter
-      if (searchParams.location) {
-        query = query.ilike('location', `%${searchParams.location}%`);
-      }
-
-      // Price range
-      if (searchParams.minPrice) {
-        query = query.gte('price', parseFloat(searchParams.minPrice));
-      }
-      if (searchParams.maxPrice) {
-        query = query.lte('price', parseFloat(searchParams.maxPrice));
-      }
-
-      // Make filter
-      if (searchParams.make) {
-        query = query.eq('make', searchParams.make);
-      }
-
-      // Fuel type filter
-      if (searchParams.fuelType) {
-        query = query.eq('fuel_type', searchParams.fuelType);
-      }
-
-      // Body type filter
-      if (searchParams.bodyType) {
-        query = query.eq('body_type', searchParams.bodyType);
-      }
-
-      // Year range
-      if (searchParams.minYear) {
-        query = query.gte('year', parseInt(searchParams.minYear));
-      }
-      if (searchParams.maxYear) {
-        query = query.lte('year', parseInt(searchParams.maxYear));
-      }
-
-      // Sorting
-      const sortBy = searchParams.sortBy || 'created_at';
-      const sortOrder = searchParams.sortOrder === 'asc';
-      
-      if (sortBy === 'price_asc') {
-        query = query.order('price', { ascending: true });
-      } else if (sortBy === 'price_desc') {
-        query = query.order('price', { ascending: false });
-      } else if (sortBy === 'year_desc') {
-        query = query.order('year', { ascending: false });
-      } else if (sortBy === 'mileage_asc') {
-        query = query.order('mileage', { ascending: true });
-      } else {
-        query = query.order('created_at', { ascending: false });
-      }
-
-      // Pagination
-      const page = parseInt(searchParams.page) || 1;
-      const limit = parseInt(searchParams.limit) || 20;
-      const offset = (page - 1) * limit;
-
-      query = query.range(offset, offset + limit - 1);
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      return { success: true, data: data || [] };
-    } catch (error) {
-      return { success: false, error: error.message };
+    // Apply filters
+    if (filters.search) {
+      query = query.or(`title.ilike.%${filters.search}%,brand.ilike.%${filters.search}%,category.ilike.%${filters.search}%`);
     }
-  }
 
-  async incrementViews(vehicleId) {
-    try {
-      const { error } = await this.db
-        .rpc('increment_views', { 
-          table_name: 'vehicles',
-          row_id: vehicleId 
-        });
-
-      if (error) throw error;
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: error.message };
+    if (filters.location) {
+      query = query.ilike('location', `%${filters.location}%`);
     }
+
+    if (filters.minPrice) {
+      query = query.gte('price', filters.minPrice);
+    }
+
+    if (filters.maxPrice) {
+      query = query.lte('price', filters.maxPrice);
+    }
+
+    if (filters.category) {
+      query = query.eq('category', filters.category);
+    }
+
+    if (filters.brand) {
+      query = query.ilike('brand', `%${filters.brand}%`);
+    }
+
+    if (filters.condition) {
+      query = query.eq('condition', filters.condition);
+    }
+
+    // Order by created_at desc by default
+    query = query.order('created_at', { ascending: false });
+
+    const { data, error } = await query;
+
+    if (error) {
+      throw new Error(`Failed to fetch parts: ${error.message}`);
+    }
+
+    return data;
   }
-}
 
-class PartService extends DatabaseService {
-  constructor() {
-    super('parts');
+  // Get single part by ID
+  static async getPartById(id) {
+    const { data, error } = await supabase
+      .from('parts')
+      .select(`
+        *,
+        users!parts_user_id_fkey (
+          first_name,
+          last_name,
+          phone,
+          location,
+          email
+        )
+      `)
+      .eq('id', id)
+      .eq('is_active', true)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null; // Not found
+      }
+      throw new Error(`Failed to fetch part: ${error.message}`);
+    }
+
+    // Increment view count
+    await this.incrementViews(id);
+
+    return data;
   }
 
-  async searchParts(searchParams) {
-    try {
-      let query = this.db
-        .from('parts')
-        .select(`
-          *,
-          users(first_name, last_name, account_type, is_verified),
-          business_profiles(company_name)
-        `)
-        .eq('is_active', true);
+  // Create new part
+  static async createPart(partData, userId) {
+    const { data, error } = await supabase
+      .from('parts')
+      .insert([{
+        ...partData,
+        user_id: userId
+      }])
+      .select()
+      .single();
 
-      // Text search
-      if (searchParams.search) {
-        query = query.or(`title.ilike.%${searchParams.search}%,brand.ilike.%${searchParams.search}%,part_number.ilike.%${searchParams.search}%`);
-      }
+    if (error) {
+      throw new Error(`Failed to create part: ${error.message}`);
+    }
 
-      // Category filter
-      if (searchParams.category) {
-        query = query.eq('category', searchParams.category);
-      }
+    return data;
+  }
 
-      // Condition filter
-      if (searchParams.condition) {
-        query = query.eq('condition', searchParams.condition);
-      }
+  // Increment view count
+  static async incrementViews(id) {
+    const { error } = await supabase
+      .rpc('increment_part_views', { part_id: id });
 
-      // Brand filter
-      if (searchParams.brand) {
-        query = query.ilike('brand', `%${searchParams.brand}%`);
-      }
-
-      // Location filter
-      if (searchParams.location) {
-        query = query.ilike('location', `%${searchParams.location}%`);
-      }
-
-      // Price range
-      if (searchParams.minPrice) {
-        query = query.gte('price', parseFloat(searchParams.minPrice));
-      }
-      if (searchParams.maxPrice) {
-        query = query.lte('price', parseFloat(searchParams.maxPrice));
-      }
-
-      // Sorting
-      const sortBy = searchParams.sortBy || 'created_at';
-      if (sortBy === 'price_asc') {
-        query = query.order('price', { ascending: true });
-      } else if (sortBy === 'price_desc') {
-        query = query.order('price', { ascending: false });
-      } else {
-        query = query.order('created_at', { ascending: false });
-      }
-
-      // Pagination
-      const page = parseInt(searchParams.page) || 1;
-      const limit = parseInt(searchParams.limit) || 20;
-      const offset = (page - 1) * limit;
-
-      query = query.range(offset, offset + limit - 1);
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      return { success: true, data: data || [] };
-    } catch (error) {
-      return { success: false, error: error.message };
+    if (error) {
+      console.error('Failed to increment views:', error);
     }
   }
 }
 
-class ServiceProviderService extends DatabaseService {
-  constructor() {
-    super('services');
+class UserService {
+  // Create new user
+  static async createUser(userData) {
+    const hashedPassword = await bcrypt.hash(userData.password, 12);
+    
+    const { data, error } = await supabase
+      .from('users')
+      .insert([{
+        email: userData.email,
+        password_hash: hashedPassword,
+        first_name: userData.firstName,
+        last_name: userData.lastName,
+        phone: userData.phone,
+        location: userData.location
+      }])
+      .select('id, email, first_name, last_name, phone, location, account_type, created_at')
+      .single();
+
+    if (error) {
+      if (error.code === '23505') { // Unique constraint violation
+        throw new Error('Email already exists');
+      }
+      throw new Error(`Failed to create user: ${error.message}`);
+    }
+
+    return data;
   }
 
-  async searchServices(searchParams) {
-    try {
-      let query = this.db
-        .from('services')
-        .select(`
-          *,
-          users(first_name, last_name, account_type, is_verified),
-          business_profiles(company_name, experience_years)
-        `)
-        .eq('is_active', true);
+  // Get user by email
+  static async getUserByEmail(email) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .eq('is_active', true)
+      .single();
 
-      // Text search
-      if (searchParams.search) {
-        query = query.or(`title.ilike.%${searchParams.search}%,description.ilike.%${searchParams.search}%,service_type.ilike.%${searchParams.search}%`);
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null; // Not found
       }
+      throw new Error(`Failed to fetch user: ${error.message}`);
+    }
 
-      // Service type filter
-      if (searchParams.serviceType && searchParams.serviceType !== 'all') {
-        query = query.eq('service_type', searchParams.serviceType);
+    return data;
+  }
+
+  // Get user by ID
+  static async getUserById(id) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, email, first_name, last_name, phone, location, account_type, is_verified, created_at')
+      .eq('id', id)
+      .eq('is_active', true)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null; // Not found
       }
+      throw new Error(`Failed to fetch user: ${error.message}`);
+    }
 
-      // Location filter
-      if (searchParams.location) {
-        query = query.ilike('location', `%${searchParams.location}%`);
-      }
+    return data;
+  }
 
-      // Price range
-      if (searchParams.minPrice) {
-        query = query.gte('price', parseFloat(searchParams.minPrice));
-      }
-      if (searchParams.maxPrice) {
-        query = query.lte('price', parseFloat(searchParams.maxPrice));
-      }
+  // Update user profile
+  static async updateUser(id, userData) {
+    const { data, error } = await supabase
+      .from('users')
+      .update(userData)
+      .eq('id', id)
+      .select('id, email, first_name, last_name, phone, location, account_type, is_verified, created_at')
+      .single();
 
-      // Additional filters
-      if (searchParams.certified) {
-        query = query.contains('certifications', [searchParams.certified]);
-      }
-      
-      if (searchParams.homeService) {
-        query = query.eq('home_service', true);
-      }
+    if (error) {
+      throw new Error(`Failed to update user: ${error.message}`);
+    }
 
-      if (searchParams.emergencyService) {
-        query = query.eq('emergency_service', true);
-      }
+    return data;
+  }
 
-      // Sorting
-      const sortBy = searchParams.sortBy || 'created_at';
-      if (sortBy === 'price_asc') {
-        query = query.order('price', { ascending: true });
-      } else if (sortBy === 'price_desc') {
-        query = query.order('price', { ascending: false });
-      } else {
-        query = query.order('created_at', { ascending: false });
-      }
+  // Verify password
+  static async verifyPassword(plainPassword, hashedPassword) {
+    return await bcrypt.compare(plainPassword, hashedPassword);
+  }
 
-      // Pagination
-      const page = parseInt(searchParams.page) || 1;
-      const limit = parseInt(searchParams.limit) || 20;
-      const offset = (page - 1) * limit;
+  // Update last login
+  static async updateLastLogin(id) {
+    const { error } = await supabase
+      .from('users')
+      .update({ last_login: new Date().toISOString() })
+      .eq('id', id);
 
-      query = query.range(offset, offset + limit - 1);
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      return { success: true, data: data || [] };
-    } catch (error) {
-      return { success: false, error: error.message };
+    if (error) {
+      console.error('Failed to update last login:', error);
     }
   }
 }
 
-class MessageService extends DatabaseService {
-  constructor() {
-    super('messages');
-  }
+class ServiceService {
+  // Get all services with filtering
+  static async getServices(filters = {}) {
+    let query = supabase
+      .from('services')
+      .select(`
+        *,
+        users!services_user_id_fkey (
+          first_name,
+          last_name,
+          phone,
+          location
+        )
+      `)
+      .eq('is_active', true);
 
-  async getConversations(userId) {
-    try {
-      const { data, error } = await this.db
-        .from('messages')
-        .select(`
-          conversation_id,
-          sender_id,
-          recipient_id,
-          content,
-          created_at,
-          is_read,
-          users!sender_id(first_name, last_name, avatar_url),
-          users!recipient_id(first_name, last_name, avatar_url)
-        `)
-        .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Group by conversation and get latest message for each
-      const conversations = {};
-      data.forEach(message => {
-        const convId = message.conversation_id;
-        if (!conversations[convId] || new Date(message.created_at) > new Date(conversations[convId].created_at)) {
-          conversations[convId] = message;
-        }
-      });
-
-      return { success: true, data: Object.values(conversations) };
-    } catch (error) {
-      return { success: false, error: error.message };
+    // Apply filters
+    if (filters.search) {
+      query = query.or(`title.ilike.%${filters.search}%,service_type.ilike.%${filters.search}%`);
     }
-  }
 
-  async getConversationMessages(conversationId, userId) {
-    try {
-      const { data, error } = await this.db
-        .from('messages')
-        .select(`
-          *,
-          users!sender_id(first_name, last_name, avatar_url)
-        `)
-        .eq('conversation_id', conversationId)
-        .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
-        .order('created_at', { ascending: true });
-
-      if (error) throw error;
-      return { success: true, data: data || [] };
-    } catch (error) {
-      return { success: false, error: error.message };
+    if (filters.location) {
+      query = query.ilike('location', `%${filters.location}%`);
     }
+
+    if (filters.serviceType) {
+      query = query.eq('service_type', filters.serviceType);
+    }
+
+    if (filters.minPrice) {
+      query = query.gte('price', filters.minPrice);
+    }
+
+    if (filters.maxPrice) {
+      query = query.lte('price', filters.maxPrice);
+    }
+
+    // Order by created_at desc by default
+    query = query.order('created_at', { ascending: false });
+
+    const { data, error } = await query;
+
+    if (error) {
+      throw new Error(`Failed to fetch services: ${error.message}`);
+    }
+
+    return data;
   }
-}
 
-class ReviewService extends DatabaseService {
-  constructor() {
-    super('reviews');
-  }
+  // Get single service by ID
+  static async getServiceById(id) {
+    const { data, error } = await supabase
+      .from('services')
+      .select(`
+        *,
+        users!services_user_id_fkey (
+          first_name,
+          last_name,
+          phone,
+          location,
+          email
+        )
+      `)
+      .eq('id', id)
+      .eq('is_active', true)
+      .single();
 
-  async getAverageRating(userId) {
-    try {
-      const { data, error } = await this.db
-        .from('reviews')
-        .select('rating')
-        .eq('reviewed_user_id', userId);
-
-      if (error) throw error;
-
-      if (!data || data.length === 0) {
-        return { success: true, data: { average: 0, count: 0 } };
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null; // Not found
       }
-
-      const average = data.reduce((sum, review) => sum + review.rating, 0) / data.length;
-      return { 
-        success: true, 
-        data: { 
-          average: Math.round(average * 10) / 10, 
-          count: data.length 
-        } 
-      };
-    } catch (error) {
-      return { success: false, error: error.message };
+      throw new Error(`Failed to fetch service: ${error.message}`);
     }
+
+    return data;
+  }
+
+  // Create new service
+  static async createService(serviceData, userId) {
+    const { data, error } = await supabase
+      .from('services')
+      .insert([{
+        ...serviceData,
+        user_id: userId
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to create service: ${error.message}`);
+    }
+
+    return data;
   }
 }
 
 module.exports = {
-  DatabaseService,
-  UserService,
   VehicleService,
   PartService,
-  ServiceProviderService,
-  MessageService,
-  ReviewService
+  UserService,
+  ServiceService
 };

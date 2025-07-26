@@ -1,48 +1,38 @@
-// car-mart-backend/src/config/database.js
-// Copy this entire code into your src/config/database.js file
 const { createClient } = require('@supabase/supabase-js');
 
+// Supabase configuration
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY; // Service role key for server-side operations
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY; // Anonymous key for client-side operations
+const supabaseKey = process.env.SUPABASE_SERVICE_KEY; // Use service key for server-side operations
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  throw new Error('Missing Supabase configuration. Please check your environment variables.');
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Missing Supabase environment variables');
 }
 
-// Service role client for server-side operations (full access)
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-});
-
-// Anonymous client for public operations
-const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+// Create Supabase client
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Test database connection
 const testConnection = async () => {
   try {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await supabase
       .from('users')
-      .select('count', { count: 'exact', head: true });
+      .select('count')
+      .limit(1);
     
     if (error) {
-      console.error('Database connection failed:', error.message);
+      console.error('Database connection error:', error);
       return false;
     }
     
-    console.log('✅ Database connected successfully');
+    console.log('✅ Database connection successful!');
     return true;
   } catch (error) {
-    console.error('Database connection error:', error.message);
+    console.error('Database connection failed:', error);
     return false;
   }
 };
 
 module.exports = {
-  supabaseAdmin,
-  supabaseClient,
+  supabase,
   testConnection
 };

@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:3001/api';
+//                                                                    ^^^^ CHANGED FROM 5000 TO 3001
 
 class ApiService {
   private async request(endpoint: string, options: RequestInit = {}) {
@@ -58,6 +59,10 @@ class ApiService {
     return this.request(endpoint);
   }
 
+  async getPartById(id: string) {
+    return this.request(`/parts/${id}`);
+  }
+
   // Auth API methods
   async login(credentials: { email: string; password: string }) {
     return this.request('/auth/login', {
@@ -71,6 +76,20 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify(userData),
     });
+  }
+
+  // Services API methods (for future use)
+  async getServices(filters?: any) {
+    const params = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          params.append(key, String(value));
+        }
+      });
+    }
+    const endpoint = `/services${params.toString() ? `?${params.toString()}` : ''}`;
+    return this.request(endpoint);
   }
 }
 
