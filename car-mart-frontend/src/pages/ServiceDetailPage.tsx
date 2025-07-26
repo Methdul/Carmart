@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Heart, Share2, Phone, Mail, MapPin, Calendar, Shield, Star, ArrowLeft, BarChart3, MessageCircle
 } from "lucide-react";
@@ -11,6 +12,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const ServiceDetailPage = () => {
+  const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(0);
   const [isSaved, setIsSaved] = useState(false);
 
@@ -51,7 +53,7 @@ const ServiceDetailPage = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container mx-auto px-4 py-4 max-w-4xl">
-        <Button variant="ghost" className="mb-4 -ml-2">
+        <Button variant="ghost" className="mb-4 -ml-2" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4 mr-2" /> Back to Services
         </Button>
 
@@ -112,10 +114,9 @@ const ServiceDetailPage = () => {
           <CardContent className="p-4 sm:p-6">
             <Tabs defaultValue="overview">
               <div className="overflow-x-auto">
-                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 min-w-max">
+                <TabsList className="grid w-full grid-cols-2 min-w-max">
                   <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
                   <TabsTrigger value="features" className="text-xs sm:text-sm">Features</TabsTrigger>
-                  <TabsTrigger value="provider" className="text-xs sm:text-sm">Provider</TabsTrigger>
                 </TabsList>
               </div>
               <div className="p-4 sm:p-6">
@@ -134,38 +135,44 @@ const ServiceDetailPage = () => {
                     ))}
                   </div>
                 </TabsContent>
-                <TabsContent value="provider" className="mt-0">
-                  <h3 className="font-semibold text-primary mb-3">Provider Info</h3>
-                  <Card className="shadow-sm">
-                    <CardContent className="p-4 space-y-3">
-                      <div className="flex items-center space-x-3">
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage src={service.provider.avatar} />
-                          <AvatarFallback className="bg-primary text-white">
-                            {service.provider.name.split(' ').map(n => n[0]).join('')}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <p className="font-medium text-sm">{service.provider.name}</p>
-                          <div className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Star className="h-3 w-3 text-yellow-500" />
-                            {service.provider.rating} ({service.provider.reviewCount} reviews)
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-xs text-muted-foreground space-y-1">
-                        <p>Since {service.provider.memberSince}</p>
-                        <p>Location: {service.provider.location}</p>
-                        <p>Response Time: {service.provider.responseTime}</p>
-                      </div>
-                      <Button className="w-full" onClick={handleContact}>
-                        <Phone className="h-4 w-4 mr-2" /> Call Provider
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
               </div>
             </Tabs>
+          </CardContent>
+        </Card>
+
+        {/* Provider Section - Moved from Tab */}
+        <Card className="mb-4">
+          <CardHeader>
+            <CardTitle className="text-lg">Service Provider</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6">
+            <Card className="shadow-sm">
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center space-x-3">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={service.provider.avatar} />
+                    <AvatarFallback className="bg-primary text-white">
+                      {service.provider.name.split(' ').map(n => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">{service.provider.name}</p>
+                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Star className="h-3 w-3 text-yellow-500" />
+                      {service.provider.rating} ({service.provider.reviewCount} reviews)
+                    </div>
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <p>Since {service.provider.memberSince}</p>
+                  <p>Location: {service.provider.location}</p>
+                  <p>Response Time: {service.provider.responseTime}</p>
+                </div>
+                <Button className="w-full" onClick={handleContact}>
+                  <Phone className="h-4 w-4 mr-2" /> Call Provider
+                </Button>
+              </CardContent>
+            </Card>
           </CardContent>
         </Card>
       </div>

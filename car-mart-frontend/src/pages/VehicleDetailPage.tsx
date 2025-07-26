@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Heart, Share2, Phone, Mail, MapPin, Calendar, Fuel, Settings,
   Eye, Camera, Shield, Star, ArrowLeft, BarChart3, MessageCircle
@@ -15,6 +16,7 @@ import Footer from "@/components/Footer";
 import vehicleSedan from "@/assets/vehicle-sedan.jpg";
 
 const VehicleDetailPage = () => {
+  const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(0);
   const [isSaved, setIsSaved] = useState(false);
 
@@ -81,7 +83,7 @@ const VehicleDetailPage = () => {
       <Header />
 
       <div className="container mx-auto px-4 py-4 max-w-4xl">
-        <Button variant="ghost" className="mb-4 -ml-2">
+        <Button variant="ghost" className="mb-4 -ml-2" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4 mr-2" /> Back to Search
         </Button>
 
@@ -176,109 +178,93 @@ const VehicleDetailPage = () => {
           </CardContent>
         </Card>
 
-        {/* Tabs and Sidebar */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-4">
-            <Card>
-              <CardContent className="p-0">
-                <Tabs defaultValue="overview">
-                  <div className="overflow-x-auto">
-                    <TabsList className="grid w-full grid-cols-4 min-w-max">
-                      <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
-                      <TabsTrigger value="specs" className="text-xs sm:text-sm">Specs</TabsTrigger>
-                      <TabsTrigger value="features" className="text-xs sm:text-sm">Features</TabsTrigger>
-                      <TabsTrigger value="history" className="text-xs sm:text-sm">History</TabsTrigger>
-                    </TabsList>
+        {/* Vehicle Details Tabs */}
+        <Card className="mb-4">
+          <CardContent className="p-0">
+            <Tabs defaultValue="overview">
+              <div className="overflow-x-auto">
+                <TabsList className="grid w-full grid-cols-4 min-w-max">
+                  <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+                  <TabsTrigger value="specs" className="text-xs sm:text-sm">Specs</TabsTrigger>
+                  <TabsTrigger value="features" className="text-xs sm:text-sm">Features</TabsTrigger>
+                  <TabsTrigger value="history" className="text-xs sm:text-sm">History</TabsTrigger>
+                </TabsList>
+              </div>
+              <div className="p-4 sm:p-6">
+                <TabsContent value="overview" className="mt-0">
+                  <h3 className="font-semibold text-primary mb-2">Description</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">{vehicle.description}</p>
+                </TabsContent>
+                <TabsContent value="specs" className="mt-0">
+                  <h3 className="font-semibold text-primary mb-3">Specifications</h3>
+                  <div className="space-y-2">
+                    {Object.entries(vehicle.specs).map(([key, value]) => (
+                      <div key={key} className="flex justify-between border-b border-border/50 py-1 text-sm">
+                        <span className="capitalize text-muted-foreground">{key.replace(/([A-Z])/g, ' $1')}</span>
+                        <span className="text-right font-medium">{value}</span>
+                      </div>
+                    ))}
                   </div>
-                  <div className="p-4 sm:p-6">
-                    <TabsContent value="overview" className="mt-0">
-                      <h3 className="font-semibold text-primary mb-2">Description</h3>
-                      <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">{vehicle.description}</p>
-                    </TabsContent>
-                    <TabsContent value="specs" className="mt-0">
-                      <h3 className="font-semibold text-primary mb-3">Specifications</h3>
-                      <div className="space-y-2">
-                        {Object.entries(vehicle.specs).map(([key, value]) => (
-                          <div key={key} className="flex justify-between border-b border-border/50 py-1 text-sm">
-                            <span className="capitalize text-muted-foreground">{key.replace(/([A-Z])/g, ' $1')}</span>
-                            <span className="text-right font-medium">{value}</span>
-                          </div>
-                        ))}
+                </TabsContent>
+                <TabsContent value="features" className="mt-0">
+                  <h3 className="font-semibold text-primary mb-3">Features</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {vehicle.features.map((f, i) => (
+                      <div key={i} className="flex items-center space-x-2 text-sm p-2 bg-muted/40 rounded">
+                        <div className="w-2 h-2 bg-success rounded-full" />
+                        <span>{f}</span>
                       </div>
-                    </TabsContent>
-                    <TabsContent value="features" className="mt-0">
-                      <h3 className="font-semibold text-primary mb-3">Features</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {vehicle.features.map((f, i) => (
-                          <div key={i} className="flex items-center space-x-2 text-sm p-2 bg-muted/40 rounded">
-                            <div className="w-2 h-2 bg-success rounded-full" />
-                            <span>{f}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </TabsContent>
-                    <TabsContent value="history" className="mt-0">
-                      <h3 className="font-semibold text-primary mb-3">Vehicle History</h3>
-                      <div className="space-y-2">
-                        {Object.entries(vehicle.history).map(([key, value]) => (
-                          <div key={key} className="flex flex-col sm:flex-row justify-between text-sm border-b border-border/50 pb-2">
-                            <span className="capitalize text-muted-foreground">{key.replace(/([A-Z])/g, ' $1')}</span>
-                            <span>{value}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </TabsContent>
+                    ))}
                   </div>
-                </Tabs>
-              </CardContent>
-            </Card>
-          </div>
+                </TabsContent>
+                <TabsContent value="history" className="mt-0">
+                  <h3 className="font-semibold text-primary mb-3">Vehicle History</h3>
+                  <div className="space-y-2">
+                    {Object.entries(vehicle.history).map(([key, value]) => (
+                      <div key={key} className="flex flex-col sm:flex-row justify-between text-sm border-b border-border/50 pb-2">
+                        <span className="capitalize text-muted-foreground">{key.replace(/([A-Z])/g, ' $1')}</span>
+                        <span>{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </TabsContent>
+              </div>
+            </Tabs>
+          </CardContent>
+        </Card>
 
-          {/* Seller Sidebar */}
-          <div className="space-y-4">
-            <Card>
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg">Seller Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={vehicle.seller.avatar} />
-                    <AvatarFallback className="bg-primary text-white">
-                      {vehicle.seller.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <p className="font-medium text-sm">{vehicle.seller.name}</p>
-                    <div className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Star className="h-3 w-3 text-yellow-500" /> {vehicle.seller.rating} ({vehicle.seller.reviewCount} reviews)
-                    </div>
-                  </div>
+        {/* Seller Information - Moved from sidebar */}
+        <Card className="mb-4">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">Seller Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <Avatar className="h-12 w-12">
+                <AvatarImage src={vehicle.seller.avatar} />
+                <AvatarFallback className="bg-primary text-white">
+                  {vehicle.seller.name.split(' ').map(n => n[0]).join('')}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <p className="font-medium text-sm">{vehicle.seller.name}</p>
+                <div className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Star className="h-3 w-3 text-yellow-500" /> {vehicle.seller.rating} ({vehicle.seller.reviewCount} reviews)
                 </div>
-                <div className="text-xs text-muted-foreground space-y-1">
-                  <p>Since {vehicle.seller.memberSince}</p>
-                  <p>Location: {vehicle.seller.location}</p>
-                  <p>Response Time: {vehicle.seller.responseTime}</p>
-                </div>
-                <div className="pt-2">
-                  <Button className="w-full" onClick={handleContactSeller}>
-                    <Phone className="h-4 w-4 mr-2" /> Call Seller
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="outline" size="sm" className="w-full justify-start"><Mail className="h-4 w-4 mr-2" /> Send Message</Button>
-                <Button variant="outline" size="sm" className="w-full justify-start"><Share2 className="h-4 w-4 mr-2" /> Share Listing</Button>
-                <Button variant="outline" size="sm" className="w-full justify-start"><BarChart3 className="h-4 w-4 mr-2" /> Price Analysis</Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+              </div>
+            </div>
+            <div className="text-xs text-muted-foreground space-y-1">
+              <p>Since {vehicle.seller.memberSince}</p>
+              <p>Location: {vehicle.seller.location}</p>
+              <p>Response Time: {vehicle.seller.responseTime}</p>
+            </div>
+            <div className="pt-2">
+              <Button className="w-full" onClick={handleContactSeller}>
+                <Phone className="h-4 w-4 mr-2" /> Call Seller
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Sticky Footer CTA for Mobile */}

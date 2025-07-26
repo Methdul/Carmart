@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Share2, Download, MessageCircle, Send, Bot, User, Car, Star, MapPin, Calendar, Fuel, Settings, Eye, Phone, Mail, MessageSquare } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowLeft, Share2, Download, BarChart3, User, Bot, Send, Plus, X, Crown, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Header from "@/components/Header";
 
+  // Enhanced Vehicle interface for comparison
 interface Vehicle {
   id: string;
   title: string;
@@ -18,304 +20,535 @@ interface Vehicle {
   fuelType: string;
   transmission: string;
   image: string;
+  healthScore: number;
   sellerRating: number;
   isVerified: boolean;
+  isFeatured: boolean;
   make: string;
   model: string;
   bodyType: string;
   condition: string;
+  engine: string;
+  engineCapacity: string;
   color: string;
   doors: number;
   drivetrain: string;
   seatingCapacity: number;
-  engineCapacity: string;
-  engine: string;
-  sellerPhone?: string;
-  sellerEmail?: string;
-  sellerName?: string;
+  // Performance & Economy data
+  fuelConsumption: string;
+  marketValue: number;
+  insuranceGroup: string;
+  resaleValue: number;
+  maintenanceCost: string;
+  safetyRating: number;
+  acceleration: string;
+  topSpeed: string;
+  co2Emissions: string;
 }
 
+// AI Chat Message interface
 interface ChatMessage {
   id: string;
-  sender: 'user' | 'ai';
   message: string;
+  sender: 'user' | 'ai';
   timestamp: string;
 }
 
 const ComparisonPage = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [selectedVehicles, setSelectedVehicles] = useState<Vehicle[]>([]);
   const [showCarSelector, setShowCarSelector] = useState(true);
+  const [loading, setLoading] = useState(false);
+  
+  // AI Chat states
+  const [showAIChat, setShowAIChat] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Mock data with real demo images
+  // Enhanced mock vehicle data
   const mockVehicles: Vehicle[] = [
     {
       id: "1",
       title: "BMW 3 Series 320i Sport Line",
       price: 12500000,
-      year: 2020,
-      mileage: 35000,
+      year: 2022,
+      mileage: 25000,
       location: "Colombo",
       fuelType: "Petrol",
       transmission: "Automatic",
-      image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+      image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      healthScore: 92,
       sellerRating: 4.8,
       isVerified: true,
+      isFeatured: true,
       make: "BMW",
       model: "3 Series",
       bodyType: "Sedan",
       condition: "Excellent",
-      color: "White",
+      engine: "2.0L TFSI Turbo",
+      engineCapacity: "2000cc",
+      color: "Alpine White",
       doors: 4,
       drivetrain: "RWD",
       seatingCapacity: 5,
-      engineCapacity: "2000cc",
-      engine: "2.0L Turbo",
-      sellerName: "Premium Motors",
-      sellerPhone: "+94 77 123 4567",
-      sellerEmail: "sales@premiummotors.lk"
+      // Performance & Economy data
+      fuelConsumption: "7.2L/100km",
+      marketValue: 11800000,
+      insuranceGroup: "Group 25",
+      resaleValue: 85,
+      maintenanceCost: "Medium",
+      safetyRating: 5,
+      acceleration: "6.8s (0-100km/h)",
+      topSpeed: "250 km/h",
+      co2Emissions: "168 g/km"
     },
     {
       id: "2",
       title: "Toyota RAV4 Hybrid AWD",
       price: 15800000,
-      year: 2021,
-      mileage: 28000,
+      year: 2023,
+      mileage: 15000,
       location: "Kandy",
       fuelType: "Hybrid",
       transmission: "CVT",
-      image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-      sellerRating: 4.7,
+      image: "https://images.unsplash.com/photo-1570611178717-4c68f8ffe4b1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      healthScore: 88,
+      sellerRating: 4.6,
       isVerified: true,
+      isFeatured: false,
       make: "Toyota",
       model: "RAV4",
       bodyType: "SUV",
-      condition: "Very Good",
-      color: "Silver",
+      condition: "Excellent",
+      engine: "2.5L Hybrid",
+      engineCapacity: "2500cc",
+      color: "Magnetic Gray",
       doors: 5,
       drivetrain: "AWD",
       seatingCapacity: 5,
-      engineCapacity: "2500cc",
-      engine: "2.5L Hybrid",
-      sellerName: "Lanka Auto",
-      sellerPhone: "+94 71 987 6543",
-      sellerEmail: "info@lankaauto.lk"
+      // Performance & Economy data
+      fuelConsumption: "4.8L/100km",
+      marketValue: 15200000,
+      insuranceGroup: "Group 18",
+      resaleValue: 92,
+      maintenanceCost: "Low",
+      safetyRating: 5,
+      acceleration: "8.1s (0-100km/h)",
+      topSpeed: "180 km/h",
+      co2Emissions: "118 g/km"
     },
     {
       id: "3",
+      title: "Ford Ranger Wildtrak 4x4",
+      price: 18500000,
+      year: 2023,
+      mileage: 8000,
+      location: "Galle",
+      fuelType: "Diesel",
+      transmission: "Automatic",
+      image: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      healthScore: 95,
+      sellerRating: 4.9,
+      isVerified: true,
+      isFeatured: true,
+      make: "Ford",
+      model: "Ranger",
+      bodyType: "Pickup Truck",
+      condition: "Like New",
+      engine: "3.2L Duratorq TDCi",
+      engineCapacity: "3200cc",
+      color: "Lightning Blue",
+      doors: 4,
+      drivetrain: "4WD",
+      seatingCapacity: 5,
+      // Performance & Economy data
+      fuelConsumption: "8.5L/100km",
+      marketValue: 17800000,
+      insuranceGroup: "Group 35",
+      resaleValue: 88,
+      maintenanceCost: "Medium",
+      safetyRating: 5,
+      acceleration: "9.2s (0-100km/h)",
+      topSpeed: "180 km/h",
+      co2Emissions: "225 g/km"
+    },
+    {
+      id: "4",
       title: "Honda Civic RS Turbo",
       price: 8900000,
-      year: 2019,
-      mileage: 58000,
-      location: "Galle",
+      year: 2021,
+      mileage: 35000,
+      location: "Negombo",
       fuelType: "Petrol",
-      transmission: "CVT",
-      image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-      sellerRating: 4.6,
+      transmission: "Manual",
+      image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      healthScore: 85,
+      sellerRating: 4.5,
       isVerified: false,
+      isFeatured: false,
       make: "Honda",
       model: "Civic",
       bodyType: "Sedan",
       condition: "Good",
-      color: "Black",
+      engine: "1.5L VTEC Turbo",
+      engineCapacity: "1500cc",
+      color: "Rallye Red",
       doors: 4,
       drivetrain: "FWD",
       seatingCapacity: 5,
-      engineCapacity: "1500cc",
-      engine: "1.5L Turbo",
-      sellerName: "John Perera",
-      sellerPhone: "+94 76 555 1234",
-      sellerEmail: "john.perera@email.com"
-    },
-    {
-      id: "4",
-      title: "Mercedes-Benz C200 AMG Line",
-      price: 18500000,
-      year: 2022,
-      mileage: 15000,
-      location: "Colombo",
-      fuelType: "Petrol",
-      transmission: "Automatic",
-      image: "https://images.unsplash.com/photo-1563720223185-11003d516935?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-      sellerRating: 4.9,
-      isVerified: true,
-      make: "Mercedes-Benz",
-      model: "C-Class",
-      bodyType: "Sedan",
-      condition: "Excellent",
-      color: "Blue",
-      doors: 4,
-      drivetrain: "RWD",
-      seatingCapacity: 5,
-      engineCapacity: "2000cc",
-      engine: "2.0L AMG Turbo",
-      sellerName: "Elite Motors",
-      sellerPhone: "+94 77 999 8888",
-      sellerEmail: "sales@elitemotors.lk"
+      // Performance & Economy data
+      fuelConsumption: "6.5L/100km",
+      marketValue: 8200000,
+      insuranceGroup: "Group 22",
+      resaleValue: 75,
+      maintenanceCost: "Low",
+      safetyRating: 4,
+      acceleration: "8.2s (0-100km/h)",
+      topSpeed: "200 km/h",
+      co2Emissions: "152 g/km"
     },
     {
       id: "5",
-      title: "Nissan X-Trail 4WD",
-      price: 9800000,
-      year: 2018,
-      mileage: 72000,
-      location: "Negombo",
+      title: "Nissan X-Trail Premium",
+      price: 14200000,
+      year: 2022,
+      mileage: 22000,
+      location: "Colombo",
       fuelType: "Petrol",
-      transmission: "Automatic",
-      image: "https://images.unsplash.com/photo-1570611178717-4c68f8ffe4b1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-      sellerRating: 4.4,
-      isVerified: false,
+      transmission: "CVT",
+      image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      healthScore: 89,
+      sellerRating: 4.7,
+      isVerified: true,
+      isFeatured: false,
       make: "Nissan",
       model: "X-Trail",
       bodyType: "SUV",
-      condition: "Good",
-      color: "Gray",
-      doors: 5,
-      drivetrain: "4WD",
-      seatingCapacity: 7,
+      condition: "Excellent",
+      engine: "2.5L DOHC",
       engineCapacity: "2500cc",
-      engine: "2.5L",
-      sellerName: "Auto Traders",
-      sellerPhone: "+94 75 444 3333",
-      sellerEmail: "contact@autotraders.lk"
+      color: "Gun Metallic",
+      doors: 5,
+      drivetrain: "AWD",
+      seatingCapacity: 7,
+      // Performance & Economy data
+      fuelConsumption: "7.8L/100km",
+      marketValue: 13500000,
+      insuranceGroup: "Group 28",
+      resaleValue: 80,
+      maintenanceCost: "Low",
+      safetyRating: 5,
+      acceleration: "9.5s (0-100km/h)",
+      topSpeed: "200 km/h",
+      co2Emissions: "182 g/km"
     },
     {
       id: "6",
-      title: "Audi A4 TFSI Quattro",
-      price: 16200000,
-      year: 2021,
-      mileage: 22000,
-      location: "Kandy",
+      title: "Mercedes-Benz C200 AMG",
+      price: 22500000,
+      year: 2023,
+      mileage: 12000,
+      location: "Mount Lavinia",
       fuelType: "Petrol",
       transmission: "Automatic",
-      image: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-      sellerRating: 4.7,
+      image: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      healthScore: 94,
+      sellerRating: 5.0,
       isVerified: true,
-      make: "Audi",
-      model: "A4",
+      isFeatured: true,
+      make: "Mercedes-Benz",
+      model: "C200",
       bodyType: "Sedan",
-      condition: "Excellent",
-      color: "White",
-      doors: 4,
-      drivetrain: "AWD",
-      seatingCapacity: 5,
+      condition: "Like New",
+      engine: "2.0L Turbo",
       engineCapacity: "2000cc",
-      engine: "2.0L TFSI",
-      sellerName: "Luxury Cars",
-      sellerPhone: "+94 77 777 6666",
-      sellerEmail: "info@luxurycars.lk"
+      color: "Obsidian Black",
+      doors: 4,
+      drivetrain: "RWD",
+      seatingCapacity: 5,
+      // Performance & Economy data
+      fuelConsumption: "7.5L/100km",
+      marketValue: 21800000,
+      insuranceGroup: "Group 40",
+      resaleValue: 88,
+      maintenanceCost: "High",
+      safetyRating: 5,
+      acceleration: "7.3s (0-100km/h)",
+      topSpeed: "250 km/h",
+      co2Emissions: "174 g/km"
     }
   ];
 
+  // Load vehicles from URL parameters or show selector
+  useEffect(() => {
+    const vehicleIds = searchParams.get('vehicles');
+    if (vehicleIds) {
+      const ids = vehicleIds.split(',');
+      const vehicles = mockVehicles.filter(v => ids.includes(v.id));
+      if (vehicles.length >= 2) {
+        setSelectedVehicles(vehicles);
+        setShowCarSelector(false);
+      }
+    }
+  }, [searchParams]);
+
+  // Initialize AI chat with welcome message
+  useEffect(() => {
+    if (selectedVehicles.length >= 2 && chatMessages.length === 0) {
+      const welcomeMessage: ChatMessage = {
+        id: '1',
+        message: generateWelcomeMessage(),
+        sender: 'ai',
+        timestamp: new Date().toLocaleTimeString()
+      };
+      setChatMessages([welcomeMessage]);
+    }
+  }, [selectedVehicles]);
+
+  // Add vehicle to comparison
   const addVehicleToComparison = (vehicle: Vehicle) => {
-    if (selectedVehicles.length < 3 && !selectedVehicles.find(v => v.id === vehicle.id)) {
-      setSelectedVehicles([...selectedVehicles, vehicle]);
+    if (selectedVehicles.length < 4 && !selectedVehicles.find(v => v.id === vehicle.id)) {
+      const newSelection = [...selectedVehicles, vehicle];
+      setSelectedVehicles(newSelection);
       
-      if (selectedVehicles.length >= 1) {
+      if (newSelection.length >= 2) {
         setShowCarSelector(false);
       }
     }
   };
 
+  // Remove vehicle from comparison
   const removeVehicleFromComparison = (vehicleId: string) => {
     const updated = selectedVehicles.filter(v => v.id !== vehicleId);
     setSelectedVehicles(updated);
     
-    if (updated.length === 0) {
+    if (updated.length < 2) {
       setShowCarSelector(true);
     }
   };
 
-  // Comparison rows (removed AI Health Score)
-  const comparisonRows = [
-    { label: "Price", key: "price" },
-    { label: "Year", key: "year" },
-    { label: "Mileage", key: "mileage" },
-    { label: "Location", key: "location" },
-    { label: "Seller Rating", key: "sellerRating" },
-    { label: "Engine", key: "engine" },
-    { label: "Transmission", key: "transmission" },
-    { label: "Fuel Type", key: "fuelType" },
-    { label: "Make & Model", key: "makeModel" },
-    { label: "Body Type", key: "bodyType" },
-    { label: "Condition", key: "condition" },
-    { label: "Color", key: "color" },
-    { label: "Doors", key: "doors" },
-    { label: "Drivetrain", key: "drivetrain" },
-    { label: "Seating", key: "seatingCapacity" }
+  // Format price helper with error handling
+  const formatPrice = (price: number | undefined | null) => {
+    if (!price || typeof price !== 'number' || isNaN(price)) {
+      return 'Price N/A';
+    }
+    
+    if (price >= 1000000) {
+      return `Rs. ${(price / 1000000).toFixed(1)}M`;
+    }
+    return `Rs. ${price.toLocaleString()}`;
+  };
+
+  // Get health score styling
+  const getHealthScoreStyle = (score: number) => {
+    if (score >= 90) return "bg-green-500 text-white";
+    if (score >= 70) return "bg-blue-500 text-white";
+    if (score >= 50) return "bg-yellow-500 text-white";
+    return "bg-red-500 text-white";
+  };
+
+  // Get health score text
+  const getHealthScoreText = (score: number) => {
+    if (score >= 90) return "Excellent";
+    if (score >= 70) return "Good";
+    if (score >= 50) return "Fair";
+    return "Poor";
+  };
+
+  // Comparison data structure
+  const comparisonSections = [
+    {
+      title: "Basic Information",
+      rows: [
+        { label: "Price", key: "price", type: "price" },
+        { label: "Market Value", key: "marketValue", type: "price" },
+        { label: "Year", key: "year" },
+        { label: "Mileage", key: "mileage", type: "mileage" },
+        { label: "Location", key: "location" },
+        { label: "Condition", key: "condition" },
+        { label: "Health Score", key: "healthScore", type: "health" }
+      ]
+    },
+    {
+      title: "Technical Specifications",
+      rows: [
+        { label: "Make & Model", key: "makeModel", type: "makeModel" },
+        { label: "Body Type", key: "bodyType" },
+        { label: "Engine", key: "engine" },
+        { label: "Engine Capacity", key: "engineCapacity" },
+        { label: "Fuel Type", key: "fuelType" },
+        { label: "Transmission", key: "transmission" },
+        { label: "Drivetrain", key: "drivetrain" }
+      ]
+    },
+    {
+      title: "Performance & Economy",
+      rows: [
+        { label: "Fuel Consumption", key: "fuelConsumption" },
+        { label: "Acceleration (0-100km/h)", key: "acceleration" },
+        { label: "Top Speed", key: "topSpeed" },
+        { label: "CO2 Emissions", key: "co2Emissions" },
+        { label: "Safety Rating", key: "safetyRating", type: "safety" }
+      ]
+    },
+    {
+      title: "Ownership Costs",
+      rows: [
+        { label: "Insurance Group", key: "insuranceGroup" },
+        { label: "Maintenance Cost", key: "maintenanceCost" },
+        { label: "Resale Value", key: "resaleValue", type: "percentage" },
+        { label: "Depreciation", key: "depreciation", type: "depreciation" }
+      ]
+    }
   ];
 
-  const getWinner = (label: string) => {
+  // Get formatted value for comparison table with error handling
+  const getFormattedValue = (vehicle: Vehicle, row: any) => {
+    try {
+      const value = vehicle[row.key as keyof Vehicle];
+      
+      switch (row.type) {
+        case "price":
+          return formatPrice(value as number);
+        case "mileage":
+          if (!value || typeof value !== 'number') return "N/A";
+          return `${(value as number).toLocaleString()} km`;
+        case "health":
+          if (!value || typeof value !== 'number') return "N/A";
+          return (
+            <Badge className={getHealthScoreStyle(value as number)}>
+              {value} - {getHealthScoreText(value as number)}
+            </Badge>
+          );
+        case "safety":
+          if (!value || typeof value !== 'number') return "N/A";
+          return `${value}/5 ⭐`;
+        case "percentage":
+          if (!value || typeof value !== 'number') return "N/A";
+          return `${value}%`;
+        case "depreciation":
+          try {
+            const currentPrice = vehicle.price || 0;
+            const marketValue = vehicle.marketValue || currentPrice;
+            if (currentPrice === 0) return "N/A";
+            const depreciation = ((currentPrice - marketValue) / currentPrice * 100).toFixed(1);
+            return `${depreciation}%`;
+          } catch {
+            return "N/A";
+          }
+        case "boolean":
+          return value ? "✅ Yes" : "❌ No";
+        case "makeModel":
+          const make = vehicle.make || "Unknown";
+          const model = vehicle.model || "Model";
+          return `${make} ${model}`;
+        default:
+          return String(value || "N/A");
+      }
+    } catch (error) {
+      console.error('Error formatting value:', error);
+      return "N/A";
+    }
+  };
+
+  // Determine winner for each row with error handling
+  const getWinner = (row: any): Vehicle | null => {
     if (selectedVehicles.length < 2) return null;
     
-    switch (label) {
-      case "Price":
-        return selectedVehicles.reduce((min, vehicle) => 
-          vehicle.price < min.price ? vehicle : min
-        );
-      case "Year":
-        return selectedVehicles.reduce((max, vehicle) => 
-          vehicle.year > max.year ? vehicle : max
-        );
-      case "Mileage":
-        return selectedVehicles.reduce((min, vehicle) => 
-          vehicle.mileage < min.mileage ? vehicle : min
-        );
-      case "Seller Rating":
-        return selectedVehicles.reduce((max, vehicle) => 
-          vehicle.sellerRating > max.sellerRating ? vehicle : max
-        );
-      default:
-        return null;
+    try {
+      switch (row.key) {
+        case "price":
+        case "marketValue":
+          return selectedVehicles.reduce((min, vehicle) => {
+            const minValue = min[row.key] || Number.MAX_VALUE;
+            const vehicleValue = vehicle[row.key] || Number.MAX_VALUE;
+            return vehicleValue < minValue ? vehicle : min;
+          });
+        case "year":
+          return selectedVehicles.reduce((max, vehicle) => 
+            (vehicle.year || 0) > (max.year || 0) ? vehicle : max
+          );
+        case "mileage":
+          return selectedVehicles.reduce((min, vehicle) => 
+            (vehicle.mileage || Number.MAX_VALUE) < (min.mileage || Number.MAX_VALUE) ? vehicle : min
+          );
+        case "healthScore":
+        case "safetyRating":
+        case "resaleValue":
+          return selectedVehicles.reduce((max, vehicle) => {
+            const maxValue = max[row.key] || 0;
+            const vehicleValue = vehicle[row.key] || 0;
+            return vehicleValue > maxValue ? vehicle : max;
+          });
+        case "fuelConsumption":
+          // Lower fuel consumption is better
+          return selectedVehicles.reduce((min, vehicle) => {
+            try {
+              const minConsumption = parseFloat((min.fuelConsumption || "999L").split('L')[0]);
+              const vehicleConsumption = parseFloat((vehicle.fuelConsumption || "999L").split('L')[0]);
+              return vehicleConsumption < minConsumption ? vehicle : min;
+            } catch {
+              return min;
+            }
+          });
+        case "co2Emissions":
+          // Lower emissions are better
+          return selectedVehicles.reduce((min, vehicle) => {
+            try {
+              const minEmissions = parseFloat((min.co2Emissions || "999 g").split(' ')[0]);
+              const vehicleEmissions = parseFloat((vehicle.co2Emissions || "999 g").split(' ')[0]);
+              return vehicleEmissions < minEmissions ? vehicle : min;
+            } catch {
+              return min;
+            }
+          });
+        case "acceleration":
+          // Faster acceleration (lower time) is better
+          return selectedVehicles.reduce((min, vehicle) => {
+            try {
+              const minTime = parseFloat((min.acceleration || "999s").split('s')[0]);
+              const vehicleTime = parseFloat((vehicle.acceleration || "999s").split('s')[0]);
+              return vehicleTime < minTime ? vehicle : min;
+            } catch {
+              return min;
+            }
+          });
+        case "topSpeed":
+          // Higher top speed is better
+          return selectedVehicles.reduce((max, vehicle) => {
+            try {
+              const maxSpeed = parseFloat((max.topSpeed || "0 km").split(' ')[0]);
+              const vehicleSpeed = parseFloat((vehicle.topSpeed || "0 km").split(' ')[0]);
+              return vehicleSpeed > maxSpeed ? vehicle : max;
+            } catch {
+              return max;
+            }
+          });
+        default:
+          return null;
+      }
+    } catch (error) {
+      console.error('Error determining winner:', error);
+      return null;
     }
   };
 
-  const getValue = (vehicle: Vehicle, label: string) => {
-    switch (label) {
-      case "Price":
-        return `Rs. ${vehicle.price.toLocaleString()}`;
-      case "Year":
-        return vehicle.year;
-      case "Mileage":
-        return `${vehicle.mileage.toLocaleString()} km`;
-      case "Location":
-        return vehicle.location;
-      case "Seller Rating":
-        return `⭐ ${vehicle.sellerRating}`;
-      case "Engine":
-        return vehicle.engine;
-      case "Transmission":
-        return vehicle.transmission;
-      case "Fuel Type":
-        return vehicle.fuelType;
-      case "Make & Model":
-        return `${vehicle.make} ${vehicle.model}`;
-      case "Body Type":
-        return vehicle.bodyType;
-      case "Condition":
-        return vehicle.condition;
-      case "Color":
-        return vehicle.color;
-      case "Doors":
-        return vehicle.doors;
-      case "Drivetrain":
-        return vehicle.drivetrain;
-      case "Seating":
-        return `${vehicle.seatingCapacity} seats`;
-      default:
-        return "-";
-    }
+  // Generate AI welcome message
+  const generateWelcomeMessage = () => {
+    const vehicleNames = selectedVehicles.map(v => v.make + " " + v.model).join(", ");
+    return `Hello! I'm here to help you compare these vehicles: ${vehicleNames}. I can provide insights about performance, value for money, maintenance costs, and help you make the best decision based on your needs. What would you like to know?`;
   };
 
+  // Handle AI chat
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
-      sender: 'user',
       message: newMessage,
+      sender: 'user',
       timestamp: new Date().toLocaleTimeString()
     };
 
@@ -325,92 +558,170 @@ const ComparisonPage = () => {
 
     // Simulate AI response
     setTimeout(() => {
-      const aiMessage: ChatMessage = {
+      const aiResponse: ChatMessage = {
         id: (Date.now() + 1).toString(),
+        message: generateAIResponse(newMessage),
         sender: 'ai',
-        message: getAIResponse(newMessage),
         timestamp: new Date().toLocaleTimeString()
       };
-      setChatMessages(prev => [...prev, aiMessage]);
+      setChatMessages(prev => [...prev, aiResponse]);
       setIsLoading(false);
     }, 1500);
   };
 
-  const getAIResponse = (message: string) => {
-    const lowerMessage = message.toLowerCase();
+  // Generate AI response based on user message with error handling
+  const generateAIResponse = (userMessage: string) => {
+    const message = userMessage.toLowerCase();
     
-    if (lowerMessage.includes('price') || lowerMessage.includes('cost')) {
-      return "Based on the comparison, the Honda Civic offers the best value for money at Rs. 8,900,000, while the Mercedes-Benz C200 is the most expensive but offers luxury features. Consider your budget and desired features.";
-    } else if (lowerMessage.includes('fuel') || lowerMessage.includes('economy')) {
-      return "The Toyota RAV4 Hybrid will give you the best fuel economy, especially for city driving. The BMW 3 Series and Honda Civic are both petrol engines - the Civic will be more economical for daily commuting.";
-    } else if (lowerMessage.includes('maintenance') || lowerMessage.includes('service')) {
-      return "Honda typically has lower maintenance costs and widely available parts. BMW will have higher service costs but excellent dealer network. Toyota offers reliable service with good resale value.";
-    } else if (lowerMessage.includes('recommend') || lowerMessage.includes('suggest')) {
-      return "For daily commuting: Honda Civic. For family use: Toyota RAV4 Hybrid. For luxury: BMW 3 Series or Mercedes C200. For off-road capability: Nissan X-Trail. What's your primary use case?";
-    } else {
-      return "I can help you compare these vehicles across various aspects like price, fuel efficiency, maintenance costs, and features. What specific comparison would you like me to focus on?";
+    try {
+      if (message.includes('price') || message.includes('cost') || message.includes('budget') || message.includes('value')) {
+        const cheapest = selectedVehicles.reduce((min, v) => (v.price || Number.MAX_VALUE) < (min.price || Number.MAX_VALUE) ? v : min);
+        const bestValue = selectedVehicles.reduce((max, v) => (v.resaleValue || 0) > (max.resaleValue || 0) ? v : max);
+        return `Looking at value for money, the ${cheapest.make} ${cheapest.model} at ${formatPrice(cheapest.price)} is the most affordable option. However, the ${bestValue.make} ${bestValue.model} offers the best resale value at ${bestValue.resaleValue || 'N/A'}%, which could save you more money long-term.`;
+      }
+      
+      if (message.includes('fuel') || message.includes('efficiency') || message.includes('economy') || message.includes('consumption')) {
+        const mostEfficient = selectedVehicles.reduce((min, v) => {
+          const minConsumption = parseFloat((min.fuelConsumption || "999L").split('L')[0]);
+          const vConsumption = parseFloat((v.fuelConsumption || "999L").split('L')[0]);
+          return vConsumption < minConsumption ? v : min;
+        });
+        return `For fuel efficiency, the ${mostEfficient.make} ${mostEfficient.model} is your best choice with ${mostEfficient.fuelConsumption || 'N/A'} consumption and ${mostEfficient.co2Emissions || 'N/A'} CO2 emissions. This will save you significantly on fuel costs over time.`;
+      }
+      
+      if (message.includes('performance') || message.includes('speed') || message.includes('acceleration') || message.includes('power')) {
+        const fastest = selectedVehicles.reduce((min, v) => {
+          const minTime = parseFloat((min.acceleration || "999s").split('s')[0]);
+          const vTime = parseFloat((v.acceleration || "999s").split('s')[0]);
+          return vTime < minTime ? v : min;
+        });
+        return `For performance, the ${fastest.make} ${fastest.model} leads with ${fastest.acceleration || 'N/A'} acceleration and a top speed of ${fastest.topSpeed || 'N/A'}. It offers the most thrilling driving experience among your selections.`;
+      }
+      
+      if (message.includes('reliable') || message.includes('maintenance') || message.includes('service') || message.includes('repair')) {
+        const lowMaintenance = selectedVehicles.filter(v => v.maintenanceCost === 'Low');
+        const bestHealth = selectedVehicles.reduce((max, v) => (v.healthScore || 0) > (max.healthScore || 0) ? v : max);
+        if (lowMaintenance.length > 0) {
+          return `For reliability and low maintenance costs, consider the ${lowMaintenance[0].make} ${lowMaintenance[0].model} with low maintenance costs and ${lowMaintenance[0].healthScore || 'N/A'} health score. It's designed for minimal ownership hassles.`;
+        }
+        return `The ${bestHealth.make} ${bestHealth.model} has the highest health score of ${bestHealth.healthScore || 'N/A'}, indicating excellent condition and likely lower immediate maintenance needs.`;
+      }
+      
+      if (message.includes('safe') || message.includes('safety') || message.includes('family')) {
+        const safest = selectedVehicles.reduce((max, v) => (v.safetyRating || 0) > (max.safetyRating || 0) ? v : max);
+        return `For safety, the ${safest.make} ${safest.model} leads with a ${safest.safetyRating || 'N/A'}/5 safety rating. This makes it an excellent choice for family use with advanced safety features and crash protection.`;
+      }
+      
+      if (message.includes('recommend') || message.includes('suggest') || message.includes('best') || message.includes('choose')) {
+        const bestOverall = selectedVehicles.reduce((best, v) => {
+          const bestScore = ((best.healthScore || 0) + (best.safetyRating || 0) * 20 + (best.resaleValue || 0)) / 3;
+          const vScore = ((v.healthScore || 0) + (v.safetyRating || 0) * 20 + (v.resaleValue || 0)) / 3;
+          return vScore > bestScore ? v : best;
+        });
+        return `Based on overall value, safety, condition, and resale value, I'd recommend the ${bestOverall.make} ${bestOverall.model}. It offers the best balance of performance (${bestOverall.acceleration || 'N/A'}), economy (${bestOverall.fuelConsumption || 'N/A'}), safety (${bestOverall.safetyRating || 'N/A'}/5), and maintains ${bestOverall.resaleValue || 'N/A'}% of its value.`;
+      }
+    } catch (error) {
+      console.error('Error generating AI response:', error);
+    }
+    
+    return `I can help you compare these vehicles across various aspects like price, fuel efficiency, performance, safety ratings, and ownership costs. What specific aspect would you like me to focus on? You can ask about fuel economy, performance, reliability, safety, or overall value for money.`;
+  };
+
+  // Handle share functionality
+  const handleShare = async () => {
+    const vehicleIds = selectedVehicles.map(v => v.id).join(',');
+    const shareUrl = `${window.location.origin}/comparison?vehicles=${vehicleIds}`;
+    
+    try {
+      await navigator.share({
+        title: 'Vehicle Comparison - Car Mart',
+        text: `Compare ${selectedVehicles.map(v => v.make + ' ' + v.model).join(', ')}`,
+        url: shareUrl
+      });
+    } catch (error) {
+      // Fallback to copying to clipboard
+      navigator.clipboard.writeText(shareUrl);
+      alert('Comparison link copied to clipboard!');
     }
   };
 
-  const formatPrice = (price: number) => {
-    return `Rs. ${price.toLocaleString()}`;
+  // Handle export functionality
+  const handleExport = () => {
+    const comparisonData = {
+      vehicles: selectedVehicles,
+      comparison: comparisonSections,
+      generatedAt: new Date().toISOString()
+    };
+    
+    const dataStr = JSON.stringify(comparisonData, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `vehicle-comparison-${Date.now()}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
   };
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
-      <div className="container mx-auto px-4 py-6">
+      <div className="max-w-6xl mx-auto px-4 py-6">
         {showCarSelector ? (
-          /* Car Selection */
-          <div className="space-y-4 sm:space-y-6">
+          /* Vehicle Selection Mode */
+          <div className="space-y-6">
             <div className="text-center space-y-2">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary">Vehicle Comparison</h1>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                Select up to 3 vehicles to compare side by side
+              <h1 className="text-3xl lg:text-4xl font-bold text-primary">Vehicle Comparison</h1>
+              <p className="text-muted-foreground">
+                Select 2-4 vehicles to compare side by side
               </p>
             </div>
 
+            {/* Selected Vehicles Preview */}
             {selectedVehicles.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg sm:text-xl">Selected for Comparison ({selectedVehicles.length}/3)</CardTitle>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>Selected for Comparison ({selectedVehicles.length}/4)</span>
+                    {selectedVehicles.length >= 2 && (
+                      <Button onClick={() => setShowCarSelector(false)}>
+                        Compare Now
+                      </Button>
+                    )}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {selectedVehicles.map((vehicle) => (
                       <div key={vehicle.id} className="relative bg-muted/30 rounded-lg p-4">
                         <button
                           onClick={() => removeVehicleFromComparison(vehicle.id)}
-                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium"
+                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hover:bg-destructive/90"
                         >
                           ×
                         </button>
-                        <img src={vehicle.image} alt={vehicle.title} className="w-full h-24 sm:h-32 object-cover rounded mb-2" />
-                        <h3 className="font-medium text-sm sm:text-base line-clamp-2 mb-1">{vehicle.title}</h3>
-                        <p className="text-xs sm:text-sm text-primary font-semibold">Rs. {(vehicle.price / 1000000).toFixed(1)}M</p>
+                        <img src={vehicle.image} alt={vehicle.title} className="w-full h-32 object-cover rounded mb-2" />
+                        <h3 className="font-medium text-sm line-clamp-2 mb-1">{vehicle.title}</h3>
+                        <p className="text-primary font-bold text-sm">{formatPrice(vehicle.price)}</p>
+                        <Badge className={`mt-1 ${getHealthScoreStyle(vehicle.healthScore)} text-xs`}>
+                          Health: {vehicle.healthScore}
+                        </Badge>
                       </div>
                     ))}
                   </div>
-                  
-                  {selectedVehicles.length >= 2 && (
-                    <Button
-                      onClick={() => setShowCarSelector(false)}
-                      className="w-full sm:w-auto"
-                    >
-                      Compare Selected Vehicles
-                    </Button>
-                  )}
                 </CardContent>
               </Card>
             )}
 
+            {/* Available Vehicles */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg sm:text-xl">Available Vehicles</CardTitle>
+                <CardTitle>Available Vehicles</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {mockVehicles
                     .filter(vehicle => !selectedVehicles.find(v => v.id === vehicle.id))
                     .map((vehicle) => (
@@ -423,46 +734,47 @@ const ComparisonPage = () => {
                         <img
                           src={vehicle.image}
                           alt={vehicle.title}
-                          className="w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-200"
+                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
                         />
                         {vehicle.isVerified && (
-                          <Badge className="absolute top-2 right-2 bg-success text-white text-xs">
+                          <Badge className="absolute top-2 right-2 bg-green-600 text-white text-xs">
                             ✓ Verified
                           </Badge>
                         )}
+                        {vehicle.isFeatured && (
+                          <Badge className="absolute top-2 left-2 bg-highlight text-white text-xs">
+                            <Crown className="w-3 h-3 mr-1" />
+                            Featured
+                          </Badge>
+                        )}
                       </div>
-                      <div className="p-3 sm:p-4">
-                        <h3 className="font-semibold text-sm sm:text-base mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                      <div className="p-4">
+                        <h3 className="font-semibold text-base mb-2 line-clamp-2 group-hover:text-primary transition-colors">
                           {vehicle.title}
                         </h3>
-                        <div className="space-y-1 text-xs sm:text-sm text-muted-foreground mb-3">
+                        <div className="space-y-2 text-sm text-muted-foreground mb-3">
                           <div className="flex items-center justify-between">
-                            <span className="font-semibold text-primary text-sm sm:text-lg">
-                              Rs. {(vehicle.price / 1000000).toFixed(1)}M
+                            <span className="font-bold text-primary text-lg">
+                              {formatPrice(vehicle.price)}
                             </span>
-                            <div className="flex items-center">
-                              <Star className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500 mr-1" />
-                              <span>{vehicle.sellerRating}</span>
-                            </div>
+                            <Badge className={getHealthScoreStyle(vehicle.healthScore)}>
+                              {vehicle.healthScore}
+                            </Badge>
                           </div>
-                          <div className="flex items-center">
-                            <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                          <div className="flex items-center space-x-4">
                             <span>{vehicle.year}</span>
-                            <span className="mx-2">•</span>
+                            <span>•</span>
                             <span>{vehicle.mileage.toLocaleString()} km</span>
                           </div>
-                          <div className="flex items-center">
-                            <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                            <span>{vehicle.location}</span>
-                          </div>
+                          <div className="text-muted-foreground">📍 {vehicle.location}</div>
                         </div>
-                        <Button
+                        <Button 
+                          className="w-full" 
                           variant="outline"
-                          size="sm"
-                          className="w-full"
-                          disabled={selectedVehicles.length >= 3}
+                          disabled={selectedVehicles.length >= 4}
                         >
-                          {selectedVehicles.length >= 3 ? 'Max 3 vehicles' : 'Add to Compare'}
+                          <Plus className="w-4 h-4 mr-2" />
+                          {selectedVehicles.length >= 4 ? 'Max 4 vehicles' : 'Add to Compare'}
                         </Button>
                       </div>
                     </div>
@@ -472,256 +784,227 @@ const ComparisonPage = () => {
             </Card>
           </div>
         ) : (
-          /* Comparison Results */
-          <div className="space-y-4 sm:space-y-6">
+          /* Comparison Results Mode */
+          <div className="space-y-6">
             {/* Header */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <div className="flex items-center space-x-2 sm:space-x-4 mb-2">
+                <div className="flex items-center space-x-4 mb-2">
                   <Button 
                     variant="outline" 
-                    size="sm" 
                     onClick={() => setShowCarSelector(true)}
-                    className="h-8 sm:h-10"
                   >
-                    <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                    <span className="text-xs sm:text-sm">Back</span>
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back to Selection
                   </Button>
-                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">Vehicle Comparison</h1>
+                  <h1 className="text-2xl lg:text-3xl font-bold text-primary">Vehicle Comparison</h1>
                 </div>
-                <p className="text-xs sm:text-sm text-muted-foreground">
+                <p className="text-muted-foreground">
                   Comparing {selectedVehicles.length} vehicles side by side
                 </p>
               </div>
               
-              <div className="flex space-x-2 w-full sm:w-auto">
-                <Button variant="outline" size="sm" className="flex-1 sm:flex-none h-8 sm:h-10 text-xs sm:text-sm">
-                  <Share2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <div className="flex items-center space-x-2">
+                <Button variant="outline" size="sm" onClick={handleShare}>
+                  <Share2 className="h-4 w-4 mr-2" />
                   Share
                 </Button>
-                <Button variant="outline" size="sm" className="flex-1 sm:flex-none h-8 sm:h-10 text-xs sm:text-sm">
-                  <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <Button variant="outline" size="sm" onClick={handleExport}>
+                  <Download className="h-4 w-4 mr-2" />
                   Export
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setShowAIChat(!showAIChat)}
+                  className={showAIChat ? "bg-primary text-primary-foreground" : ""}
+                >
+                  <Bot className="h-4 w-4 mr-2" />
+                  AI Assistant
                 </Button>
               </div>
             </div>
 
-            {/* Vehicle Overview Cards */}
-            <div className={`grid grid-cols-1 ${selectedVehicles.length === 2 ? 'sm:grid-cols-2' : selectedVehicles.length === 3 ? 'sm:grid-cols-3' : ''} gap-4 sm:gap-6`}>
-              {selectedVehicles.map((vehicle) => (
-                <Card key={vehicle.id} className="overflow-hidden">
-                  <div className="relative">
-                    <img
-                      src={vehicle.image}
-                      alt={vehicle.title}
-                      className="w-full h-32 sm:h-40 object-cover"
-                    />
-                    {vehicle.isVerified && (
-                      <Badge className="absolute top-2 right-2 bg-success text-white text-xs">
-                        ✓ Verified
-                      </Badge>
-                    )}
-                  </div>
-                  <CardContent className="p-3 sm:p-4">
-                    <h3 className="font-semibold text-sm sm:text-base mb-2 line-clamp-2">
-                      {vehicle.title}
-                    </h3>
-                    <div className="space-y-1 text-xs sm:text-sm text-muted-foreground">
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-primary text-sm sm:text-lg">
-                          {formatPrice(vehicle.price)}
-                        </span>
-                        <div className="flex items-center">
-                          <Star className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500 mr-1" />
-                          <span>{vehicle.sellerRating}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center">
-                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                        <span>{vehicle.year}</span>
-                        <span className="mx-2">•</span>
-                        <span>{vehicle.mileage.toLocaleString()} km</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {/* Detailed Comparison Table */}
-            {selectedVehicles.length >= 2 && comparisonRows.map((section, sectionIndex) => (
-              <Card key={sectionIndex}>
-                <CardHeader className="pb-3 sm:pb-4">
-                  <CardTitle className="text-base sm:text-lg">Detailed Comparison</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <div className="overflow-x-auto">
-                    <div className="min-w-full">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b bg-muted/30">
-                            <th className="text-left p-2 sm:p-4 font-medium text-muted-foreground text-xs sm:text-sm w-1/4">
-                              Specification
-                            </th>
-                            {selectedVehicles.map((vehicle) => (
-                              <th key={vehicle.id} className="text-center p-2 sm:p-4 font-medium text-xs sm:text-sm">
-                                <div className="flex flex-col items-center space-y-1">
-                                  <img 
-                                    src={vehicle.image} 
-                                    alt={vehicle.title}
-                                    className="w-12 h-8 sm:w-16 sm:h-10 object-cover rounded"
-                                  />
-                                  <span className="text-xs leading-tight text-center line-clamp-2">
-                                    {vehicle.make} {vehicle.model}
-                                  </span>
-                                </div>
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {comparisonRows.map((row) => {
-                            const winner = getWinner(row.label);
-                            
-                            return (
-                              <tr key={row.label} className="border-b">
-                                <td className="p-2 sm:p-4 font-medium text-muted-foreground text-xs sm:text-sm">
-                                  {row.label}
-                                </td>
-                                {selectedVehicles.map((vehicle) => {
-                                  const isWinner = winner?.id === vehicle.id;
-                                  const value = getValue(vehicle, row.label);
-                                  
-                                  return (
-                                    <td key={vehicle.id} className="p-2 sm:p-4 text-center">
-                                      <div className={`flex items-center justify-center space-x-1 sm:space-x-2 ${
-                                        isWinner ? 'text-success font-semibold' : ''
-                                      }`}>
-                                        <span className="text-xs sm:text-sm">{value}</span>
-                                        {isWinner && (
-                                          <Badge className="bg-success text-xs">Best</Badge>
-                                        )}
-                                      </div>
-                                    </td>
-                                  );
-                                })}
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-
-            {/* Contact Seller Buttons */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg sm:text-xl">Contact Sellers</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className={`grid grid-cols-1 ${selectedVehicles.length === 2 ? 'sm:grid-cols-2' : selectedVehicles.length === 3 ? 'sm:grid-cols-3' : ''} gap-4`}>
-                  {selectedVehicles.map((vehicle) => (
-                    <div key={vehicle.id} className="bg-muted/30 rounded-lg p-4">
-                      <div className="flex items-center space-x-3 mb-3">
-                        <img src={vehicle.image} alt={vehicle.title} className="w-12 h-8 object-cover rounded" />
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-sm line-clamp-1">{vehicle.make} {vehicle.model}</h4>
-                          <p className="text-xs text-muted-foreground">{vehicle.sellerName}</p>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Button variant="outline" size="sm" className="w-full text-xs">
-                          <Phone className="w-3 h-3 mr-2" />
-                          {vehicle.sellerPhone}
-                        </Button>
-                        <Button variant="outline" size="sm" className="w-full text-xs">
-                          <MessageSquare className="w-3 h-3 mr-2" />
-                          Message
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* AI Chat Assistant */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg sm:text-xl flex items-center">
-                  <Bot className="w-5 h-5 mr-2" />
-                  Comparison Assistant
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <ScrollArea className="h-64 border rounded-lg p-3">
-                    <div className="space-y-3">
-                      {chatMessages.length === 0 && (
-                        <div className="text-center text-muted-foreground text-sm py-8">
-                          Ask me anything about these vehicles! I can help you compare prices, features, fuel efficiency, and more.
-                        </div>
-                      )}
-                      
-                      {chatMessages.map((message) => (
-                        <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`flex items-start space-x-2 max-w-[80%] ${message.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                            <Avatar className="w-6 h-6">
-                              <AvatarFallback className="text-xs">
-                                {message.sender === 'user' ? <User className="w-3 h-3" /> : <Bot className="w-3 h-3" />}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className={`p-3 rounded-lg text-sm ${
-                              message.sender === 'user' 
-                                ? 'bg-primary text-primary-foreground' 
-                                : 'bg-muted'
-                            }`}>
-                              <p>{message.message}</p>
-                              <span className="text-xs opacity-70 mt-1 block">{message.timestamp}</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                      
-                      {isLoading && (
-                        <div className="flex justify-start">
-                          <div className="flex items-start space-x-2 max-w-[80%]">
-                            <Avatar className="w-6 h-6">
-                              <AvatarFallback className="text-xs">
-                                <Bot className="w-3 h-3" />
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="bg-muted p-3 rounded-lg">
-                              <div className="flex space-x-1">
-                                <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce"></div>
-                                <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                                <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Main Comparison Area */}
+              <div className={`${showAIChat ? 'lg:col-span-3' : 'lg:col-span-4'} space-y-6`}>
+                {/* Vehicle Overview Cards */}
+                <div className={`grid grid-cols-1 ${
+                  selectedVehicles.length === 2 ? 'sm:grid-cols-2' : 
+                  selectedVehicles.length === 3 ? 'sm:grid-cols-3' : 
+                  'sm:grid-cols-2 lg:grid-cols-4'
+                } gap-4`}>
+                  {selectedVehicles.map((vehicle, index) => (
+                    <Card key={vehicle.id} className="relative">
+                      <button
+                        onClick={() => removeVehicleFromComparison(vehicle.id)}
+                        className="absolute top-2 right-2 z-10 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hover:bg-destructive/90"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                      <CardContent className="p-4">
+                        <div className="text-center space-y-3">
+                          <img
+                            src={vehicle.image}
+                            alt={vehicle.title}
+                            className="w-full h-32 object-cover rounded"
+                          />
+                          <div>
+                            <h3 className="font-semibold text-sm line-clamp-2 mb-2">
+                              {vehicle.title}
+                            </h3>
+                            <div className="space-y-2">
+                              <div className="text-lg font-bold text-primary">
+                                {formatPrice(vehicle.price)}
+                              </div>
+                              <Badge className={getHealthScoreStyle(vehicle.healthScore)}>
+                                Health: {vehicle.healthScore}
+                              </Badge>
+                              <div className="text-xs text-muted-foreground">
+                                {vehicle.year} • {vehicle.mileage.toLocaleString()} km
                               </div>
                             </div>
                           </div>
                         </div>
-                      )}
-                    </div>
-                  </ScrollArea>
-                  
-                  <div className="flex space-x-2">
-                    <Input
-                      placeholder="Ask about these vehicles..."
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                      className="flex-1"
-                    />
-                    <Button onClick={handleSendMessage} size="sm" disabled={!newMessage.trim() || isLoading}>
-                      <Send className="w-4 h-4" />
-                    </Button>
-                  </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
-              </CardContent>
-            </Card>
+
+                {/* Detailed Comparison Tables */}
+                {comparisonSections.map((section, sectionIndex) => (
+                  <Card key={sectionIndex}>
+                    <CardHeader>
+                      <CardTitle className="text-lg">{section.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b bg-muted/30">
+                              <th className="text-left p-4 font-medium text-muted-foreground text-sm">
+                                Specification
+                              </th>
+                              {selectedVehicles.map((vehicle) => (
+                                <th key={vehicle.id} className="text-center p-4 font-medium text-sm min-w-[150px]">
+                                  <div className="flex flex-col items-center space-y-1">
+                                    <img 
+                                      src={vehicle.image} 
+                                      alt={vehicle.title}
+                                      className="w-12 h-8 object-cover rounded"
+                                    />
+                                    <span className="text-xs">{vehicle.make} {vehicle.model}</span>
+                                  </div>
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {section.rows.map((row, rowIndex) => {
+                              const winner = getWinner(row);
+                              return (
+                                <tr key={rowIndex} className="border-b hover:bg-muted/30">
+                                  <td className="p-4 font-medium text-sm">
+                                    {row.label}
+                                  </td>
+                                  {selectedVehicles.map((vehicle) => (
+                                    <td key={vehicle.id} className={`p-4 text-center text-sm ${
+                                      winner?.id === vehicle.id ? 'bg-green-50 font-semibold' : ''
+                                    }`}>
+                                      <div className="flex items-center justify-center space-x-1">
+                                        {winner?.id === vehicle.id && (
+                                          <CheckCircle className="w-4 h-4 text-green-600" />
+                                        )}
+                                        <span>{getFormattedValue(vehicle, row)}</span>
+                                      </div>
+                                    </td>
+                                  ))}
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* AI Chat Panel */}
+              {showAIChat && (
+                <div className="lg:col-span-1">
+                  <Card className="h-[600px] flex flex-col">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg flex items-center">
+                        <Bot className="w-5 h-5 mr-2" />
+                        AI Assistant
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 flex flex-col p-0">
+                      <ScrollArea className="flex-1 p-4">
+                        <div className="space-y-4">
+                          {chatMessages.map((message) => (
+                            <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                              <div className={`flex items-start space-x-2 max-w-[85%] ${
+                                message.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''
+                              }`}>
+                                <Avatar className="w-6 h-6 flex-shrink-0">
+                                  <AvatarFallback className="text-xs">
+                                    {message.sender === 'user' ? <User className="w-3 h-3" /> : <Bot className="w-3 h-3" />}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className={`p-3 rounded-lg text-sm ${
+                                  message.sender === 'user' 
+                                    ? 'bg-primary text-primary-foreground' 
+                                    : 'bg-muted'
+                                }`}>
+                                  <p className="leading-relaxed">{message.message}</p>
+                                  <span className="text-xs opacity-70 mt-1 block">{message.timestamp}</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          
+                          {isLoading && (
+                            <div className="flex justify-start">
+                              <div className="flex items-start space-x-2 max-w-[85%]">
+                                <Avatar className="w-6 h-6">
+                                  <AvatarFallback className="text-xs">
+                                    <Bot className="w-3 h-3" />
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="bg-muted p-3 rounded-lg">
+                                  <div className="flex space-x-1">
+                                    <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce"></div>
+                                    <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                                    <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </ScrollArea>
+                      
+                      <div className="p-4 border-t">
+                        <div className="flex space-x-2">
+                          <Input
+                            placeholder="Ask about these vehicles..."
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                            className="flex-1"
+                          />
+                          <Button onClick={handleSendMessage} size="sm" disabled={!newMessage.trim() || isLoading}>
+                            <Send className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

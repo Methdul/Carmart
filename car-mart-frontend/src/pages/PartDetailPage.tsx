@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Heart, Share2, Phone, Mail, MapPin, Calendar, Settings, Eye, Shield, Star, ArrowLeft, MessageCircle, CheckCircle, Package, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const PartDetailPage = () => {
+  const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(0);
   const [isSaved, setIsSaved] = useState(false);
   
@@ -94,7 +96,7 @@ const PartDetailPage = () => {
       {/* Mobile-First Layout */}
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Back Button */}
-        <Button variant="ghost" className="mb-4 -ml-2">
+        <Button variant="ghost" className="mb-4 -ml-2" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Parts
         </Button>
@@ -243,211 +245,182 @@ const PartDetailPage = () => {
           </CardContent>
         </Card>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-4">
-            {/* Part Details Tabs */}
-            <Card>
-              <CardContent className="p-0">
-                <Tabs defaultValue="overview" className="w-full">
-                  <div className="overflow-x-auto">
-                    <TabsList className="grid w-full grid-cols-4 min-w-max sm:min-w-0">
-                      <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 sm:px-4">
-                        Overview
-                      </TabsTrigger>
-                      <TabsTrigger value="specs" className="text-xs sm:text-sm px-2 sm:px-4">
-                        Specs
-                      </TabsTrigger>
-                      <TabsTrigger value="compatibility" className="text-xs sm:text-sm px-2 sm:px-4">
-                        Compatibility
-                      </TabsTrigger>
-                      <TabsTrigger value="reviews" className="text-xs sm:text-sm px-2 sm:px-4">
-                        Reviews
-                      </TabsTrigger>
-                    </TabsList>
-                  </div>
+        {/* Part Details Tabs */}
+        <Card className="mb-4">
+          <CardContent className="p-0">
+            <Tabs defaultValue="overview" className="w-full">
+              <div className="overflow-x-auto">
+                <TabsList className="grid w-full grid-cols-4 min-w-max sm:min-w-0">
+                  <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 sm:px-4">
+                    Overview
+                  </TabsTrigger>
+                  <TabsTrigger value="specs" className="text-xs sm:text-sm px-2 sm:px-4">
+                    Specs
+                  </TabsTrigger>
+                  <TabsTrigger value="compatibility" className="text-xs sm:text-sm px-2 sm:px-4">
+                    Compatibility
+                  </TabsTrigger>
+                  <TabsTrigger value="reviews" className="text-xs sm:text-sm px-2 sm:px-4">
+                    Reviews
+                  </TabsTrigger>
+                </TabsList>
+              </div>
 
-                  <div className="p-4 sm:p-6">
-                    <TabsContent value="overview" className="mt-0">
-                      <div className="space-y-4">
-                        <div>
-                          <h3 className="font-semibold text-primary mb-2">Part Description</h3>
-                          <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
-                            {part.description}
-                          </p>
-                        </div>
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="specs" className="mt-0">
-                      <div className="space-y-4">
-                        <h3 className="font-semibold text-primary">Specifications</h3>
-                        <div className="space-y-3">
-                          {Object.entries(part.specifications).map(([key, value]) => (
-                            <div key={key} className="flex justify-between items-center py-2 border-b border-border/50 last:border-0">
-                              <span className="text-muted-foreground capitalize text-sm">
-                                {key.replace(/([A-Z])/g, ' $1')}
-                              </span>
-                              <span className="font-medium text-sm text-right">{value}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="compatibility" className="mt-0">
-                      <div className="space-y-4">
-                        <h3 className="font-semibold text-primary">Compatible Vehicles</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          {part.compatibility.map((vehicle, index) => (
-                            <div key={index} className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
-                              <CheckCircle className="w-4 h-4 text-success flex-shrink-0" />
-                              <span className="text-sm font-medium">{vehicle}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="reviews" className="mt-0">
-                      <div className="space-y-4">
-                        <h3 className="font-semibold text-primary">Customer Reviews</h3>
-                        <div className="space-y-4">
-                          {part.reviews.map((review) => (
-                            <div key={review.id} className="border-b border-border/50 pb-4 last:border-0">
-                              <div className="flex items-center space-x-2 mb-2">
-                                <span className="font-medium text-sm">{review.customer}</span>
-                                <div className="flex">
-                                  {[...Array(review.rating)].map((_, i) => (
-                                    <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                                  ))}
-                                </div>
-                                <span className="text-xs text-muted-foreground">{review.date}</span>
-                              </div>
-                              <p className="text-sm text-muted-foreground">{review.comment}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </TabsContent>
-                  </div>
-                </Tabs>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Seller Info Sidebar */}
-          <div className="space-y-4">
-            {/* Seller Card */}
-            <Card>
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg">Seller Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={part.seller.avatar} />
-                    <AvatarFallback className="bg-primary text-primary-foreground">
-                      {part.seller.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className="font-medium text-sm truncate">{part.seller.name}</span>
-                      {part.seller.verified && (
-                        <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
-                          <Shield className="h-3 w-3 mr-1" />
-                          Verified
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                      <span>{part.seller.rating}</span>
-                      <span>({part.seller.reviewCount} reviews)</span>
+              <div className="p-4 sm:p-6">
+                <TabsContent value="overview" className="mt-0">
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="font-semibold text-primary mb-2">Part Description</h3>
+                      <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
+                        {part.description}
+                      </p>
                     </div>
                   </div>
-                </div>
+                </TabsContent>
 
-                <div className="space-y-2 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Member Since</span>
-                    <span>{part.seller.memberSince}</span>
+                <TabsContent value="specs" className="mt-0">
+                  <div className="space-y-4">
+                    <h3 className="font-semibold text-primary">Specifications</h3>
+                    <div className="space-y-3">
+                      {Object.entries(part.specifications).map(([key, value]) => (
+                        <div key={key} className="flex justify-between items-center py-2 border-b border-border/50 last:border-0">
+                          <span className="text-muted-foreground capitalize text-sm">
+                            {key.replace(/([A-Z])/g, ' $1')}
+                          </span>
+                          <span className="font-medium text-sm text-right">{value}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Total Sales</span>
-                    <span>{part.seller.totalSales.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Response Time</span>
-                    <span>{part.seller.responseTime}</span>
-                  </div>
-                </div>
+                </TabsContent>
 
-                <div className="pt-2">
-                  <Button 
-                    className="w-full" 
-                    onClick={handleContactSeller}
-                  >
-                    <Phone className="h-4 w-4 mr-2" />
-                    Call Seller
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Shipping Info */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center">
-                  <Truck className="h-4 w-4 mr-2" />
-                  Shipping & Delivery
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Shipping Cost</span>
-                  <span className="font-medium">{formatPrice(part.shipping.cost)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Delivery Time</span>
-                  <span className="font-medium">{part.shipping.time}</span>
-                </div>
-                <div className="text-sm">
-                  <span className="text-muted-foreground">Available in:</span>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {part.shipping.locations.map((location, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {location}
-                      </Badge>
-                    ))}
+                <TabsContent value="compatibility" className="mt-0">
+                  <div className="space-y-4">
+                    <h3 className="font-semibold text-primary">Compatible Vehicles</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {part.compatibility.map((vehicle, index) => (
+                        <div key={index} className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
+                          <CheckCircle className="w-4 h-4 text-success flex-shrink-0" />
+                          <span className="text-sm font-medium">{vehicle}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </TabsContent>
 
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Mail className="h-4 w-4 mr-2" />
-                  Send Message
-                </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Share Part
-                </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Request Quote
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+                <TabsContent value="reviews" className="mt-0">
+                  <div className="space-y-4">
+                    <h3 className="font-semibold text-primary">Customer Reviews</h3>
+                    <div className="space-y-4">
+                      {part.reviews.map((review) => (
+                        <div key={review.id} className="border-b border-border/50 pb-4 last:border-0">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <span className="font-medium text-sm">{review.customer}</span>
+                            <div className="flex">
+                              {[...Array(review.rating)].map((_, i) => (
+                                <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                              ))}
+                            </div>
+                            <span className="text-xs text-muted-foreground">{review.date}</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{review.comment}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </TabsContent>
+              </div>
+            </Tabs>
+          </CardContent>
+        </Card>
+
+        {/* Shipping & Delivery - Moved from sidebar */}
+        <Card className="mb-4">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center">
+              <Truck className="h-4 w-4 mr-2" />
+              Shipping & Delivery
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Shipping Cost</span>
+              <span className="font-medium">{formatPrice(part.shipping.cost)}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Delivery Time</span>
+              <span className="font-medium">{part.shipping.time}</span>
+            </div>
+            <div className="text-sm">
+              <span className="text-muted-foreground">Available in:</span>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {part.shipping.locations.map((location, index) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {location}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Seller Information - Moved from sidebar */}
+        <Card className="mb-4">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">Seller Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <Avatar className="h-12 w-12">
+                <AvatarImage src={part.seller.avatar} />
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  APP
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center space-x-2 mb-1">
+                  <span className="font-medium text-sm truncate">{part.seller.name}</span>
+                  {part.seller.verified && (
+                    <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
+                      <Shield className="h-3 w-3 mr-1" />
+                      Verified
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                  <span>{part.seller.rating}</span>
+                  <span>({part.seller.reviewCount} reviews)</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Member Since</span>
+                <span>{part.seller.memberSince}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Total Sales</span>
+                <span>{part.seller.totalSales.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Response Time</span>
+                <span>{part.seller.responseTime}</span>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <Button 
+                className="w-full" 
+                onClick={handleContactSeller}
+              >
+                <Phone className="h-4 w-4 mr-2" />
+                Call Seller
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Mobile Sticky Bottom */}
