@@ -4,22 +4,14 @@ const router = express.Router();
 const { UserService } = require('../services/database');
 const { authenticateToken } = require('../middleware/auth');
 
-const userService = new UserService();
 
 // GET /api/users/profile - Get current user profile
 router.get('/profile', authenticateToken, async (req, res) => {
   try {
-    const result = await userService.findById(req.user.id);
+    // Use static method - no instance needed
+    const user = await UserService.getUserById(req.user.id);
     
-    if (!result.success) {
-      return res.status(500).json({
-        success: false,
-        message: 'Error fetching user profile',
-        error: result.error
-      });
-    }
-
-    if (!result.data) {
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: 'User not found'
@@ -27,13 +19,14 @@ router.get('/profile', authenticateToken, async (req, res) => {
     }
 
     // Remove password from response
-    const { password_hash, ...userWithoutPassword } = result.data;
+    const { password_hash, ...userWithoutPassword } = user;
 
     res.json({
       success: true,
       data: userWithoutPassword
     });
   } catch (error) {
+    console.error('Profile fetch error:', error);
     res.status(500).json({
       success: false,
       message: 'Server Error',
@@ -42,46 +35,28 @@ router.get('/profile', authenticateToken, async (req, res) => {
   }
 });
 
-// PUT /api/users/profile - Update user profile
-router.put('/profile', authenticateToken, async (req, res) => {
+// GET /api/users/profile - Get current user profile
+router.get('/profile', authenticateToken, async (req, res) => {
   try {
-    const allowedFields = [
-      'first_name', 'last_name', 'phone', 'bio', 'location', 'avatar_url'
-    ];
+    // Use static method instead of instance method
+    const user = await UserService.getUserById(req.user.id);
     
-    const updateData = {};
-    Object.keys(req.body).forEach(key => {
-      if (allowedFields.includes(key) && req.body[key] !== undefined) {
-        updateData[key] = req.body[key];
-      }
-    });
-
-    if (Object.keys(updateData).length === 0) {
-      return res.status(400).json({
+    if (!user) {
+      return res.status(404).json({
         success: false,
-        message: 'No valid fields to update'
-      });
-    }
-
-    const result = await userService.update(req.user.id, updateData);
-    
-    if (!result.success) {
-      return res.status(500).json({
-        success: false,
-        message: 'Error updating profile',
-        error: result.error
+        message: 'User not found'
       });
     }
 
     // Remove password from response
-    const { password_hash, ...userWithoutPassword } = result.data;
+    const { password_hash, ...userWithoutPassword } = user;
 
     res.json({
       success: true,
-      message: 'Profile updated successfully',
       data: userWithoutPassword
     });
   } catch (error) {
+    console.error('Profile fetch error:', error);
     res.status(500).json({
       success: false,
       message: 'Server Error',

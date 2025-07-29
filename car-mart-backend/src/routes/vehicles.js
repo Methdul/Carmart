@@ -1,155 +1,254 @@
 // car-mart-backend/src/routes/vehicles.js
-// Updated version with ratings included
+// Updated to use real database services
+
 const express = require('express');
 const router = express.Router();
-const { supabase } = require('../config/database');
+const { VehicleService } = require('../services/database');
+const { authenticateToken, optionalAuth } = require('../middleware/auth');
 
-// GET /api/vehicles - Get all vehicles with filtering
-router.get('/', async (req, res) => {
+// GET /api/vehicles - Get all vehicles with filtering (public)
+router.get('/', optionalAuth, async (req, res) => {
   try {
-    const { 
-      search, 
-      location, 
-      minPrice, 
-      maxPrice, 
-      make, 
-      fuelType, 
-      bodyType, 
-      transmission,
-      isActive = true 
-    } = req.query;
+    console.log('📋 Fetching vehicles with filters:', req.query);
     
-    let query = supabase
-      .from('vehicles')
-      .select(`
-        *,
-        users (
-          first_name,
-          last_name,
-          phone,
-          location,
-          is_verified
-        )
-      `)
-      .eq('is_active', isActive);
-    
-    // Apply filters
-    if (search) {
-      query = query.or(
-        `title.ilike.%${search}%,description.ilike.%${search}%,make.ilike.%${search}%,model.ilike.%${search}%`
-      );
-    }
-    
-    if (location) {
-      query = query.ilike('location', `%${location}%`);
-    }
-    
-    if (minPrice) {
-      query = query.gte('price', parseInt(minPrice));
-    }
-    
-    if (maxPrice) {
-      query = query.lte('price', parseInt(maxPrice));
-    }
-    
-    if (make && make !== 'all') {
-      query = query.eq('make', make);
-    }
-    
-    if (fuelType && fuelType !== 'all') {
-      query = query.eq('fuel_type', fuelType);
-    }
-    
-    if (bodyType && bodyType !== 'all') {
-      query = query.eq('body_type', bodyType);
-    }
-    
-    if (transmission && transmission !== 'all') {
-      query = query.eq('transmission', transmission);
-    }
-    
-    // Order by featured first, then by rating, then by creation date
-    query = query.order('is_featured', { ascending: false })
-                 .order('rating_average', { ascending: false })
-                 .order('created_at', { ascending: false });
+    // Extract and prepare filters
+    const filters = {
+      search: req.query.search || '',
+      location: req.query.location || '',
+      minPrice: req.query.minPrice ? parseInt(req.query.minPrice) : null,
+      maxPrice: req.query.maxPrice ? parseInt(req.query.maxPrice) : null,
+      make: req.query.make || '',
+      fuelType: req.query.fuelType || '',
+      bodyType: req.query.bodyType || '',
+      transmission: req.query.transmission || '',
+      yearFrom: req.query.yearFrom ? parseInt(req.query.yearFrom) : null,
+      yearTo: req.query.yearTo ? parseInt(req.query.yearTo) : null
+    };
 
-    const { data: vehicles, error } = await query;
+    // Remove empty filters
+    Object.keys(filters).forEach(key => {
+      if (filters[key] === '' || filters[key] === null) {
+        delete filters[key];
+      }
+    });
 
-    if (error) {
-      throw error;
-    }
+    console.log('🔍 Applied filters:', filters);
+
+    // Get vehicles from database
+    const vehicles = await VehicleService.getVehicles(filters);
+    
+    console.log(`✅ Found ${vehicles.length} vehicles`);
 
     res.json({
       success: true,
-      count: vehicles.length,
-      data: vehicles || []
+      data: vehicles,
+      total: vehicles.length,
+      filters: filters
     });
+
   } catch (error) {
-    console.error('Error fetching vehicles:', error);
+    console.error('❌ Error fetching vehicles:', error);
     res.status(500).json({
       success: false,
-      message: 'Server Error',
+      message: 'Failed to fetch vehicles',
       error: error.message
     });
   }
 });
 
-// GET /api/vehicles/:id - Get single vehicle
-router.get('/:id', async (req, res) => {
+// GET /api/vehicles/:id - Get single vehicle by ID (public)
+router.get('/:id', optionalAuth, async (req, res) => {
   try {
-    const { data: vehicle, error } = await supabase
-      .from('vehicles')
-      .select(`
-        *,
-        users (
-          first_name,
-          last_name,
-          phone,
-          location,
-          is_verified,
-          account_type
-        )
-      `)
-      .eq('id', req.params.id)
-      .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return res.status(404).json({
-          success: false,
-          message: 'Vehicle not found'
-        });
-      }
-      throw error;
+    console.log(`🚗 Fetching vehicle with ID: ${req.params.id}`);
+    
+    const vehicle = await VehicleService.getVehicleById(req.params.id);
+    
+    if (!vehicle) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vehicle not found'
+      });
     }
+
+    console.log(`✅ Found vehicle: ${vehicle.title}`);
     
     res.json({
       success: true,
       data: vehicle
     });
+
   } catch (error) {
-    console.error('Error fetching vehicle:', error);
+    console.error('❌ Error fetching vehicle:', error);
     res.status(500).json({
       success: false,
-      message: 'Server Error',
+      message: 'Failed to fetch vehicle',
       error: error.message
     });
   }
 });
 
-// POST /api/vehicles - Create new vehicle (protected route)
-router.post('/', async (req, res) => {
+// POST /api/vehicles - Create new vehicle (requires authentication)
+router.post('/', authenticateToken, async (req, res) => {
   try {
-    // For now, return placeholder - will add authentication later
-    res.json({
+    console.log(`🆕 Creating vehicle for user: ${req.user.id}`);
+    console.log('📝 Vehicle data:', req.body);
+
+    // Validate required fields
+    const requiredFields = ['title', 'make', 'model', 'year', 'price', 'fuel_type', 'transmission', 'body_type', 'location'];
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+    
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Missing required fields: ${missingFields.join(', ')}`
+      });
+    }
+
+    // Validate numeric fields
+    if (isNaN(req.body.year) || isNaN(req.body.price)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Year and price must be valid numbers'
+      });
+    }
+
+    // Prepare vehicle data
+    const vehicleData = {
+      title: req.body.title.trim(),
+      make: req.body.make.trim(),
+      model: req.body.model.trim(),
+      year: parseInt(req.body.year),
+      price: parseFloat(req.body.price),
+      fuel_type: req.body.fuel_type,
+      transmission: req.body.transmission,
+      body_type: req.body.body_type,
+      condition: req.body.condition || 'Used',
+      location: req.body.location.trim(),
+      description: req.body.description?.trim() || '',
+      mileage: req.body.mileage ? parseInt(req.body.mileage) : null,
+      color: req.body.color || null,
+      seats: req.body.seats ? parseInt(req.body.seats) : null,
+      doors: req.body.doors ? parseInt(req.body.doors) : null,
+      engine_capacity: req.body.engine_capacity ? parseFloat(req.body.engine_capacity) : null,
+      features: req.body.features || [],
+      images: req.body.images || [],
+      seller_notes: req.body.seller_notes?.trim() || null,
+      health_score: req.body.health_score ? parseInt(req.body.health_score) : 0,
+      is_featured: false // Only admins can set featured
+    };
+
+    // Create vehicle in database
+    const vehicle = await VehicleService.createVehicle(vehicleData, req.user.id);
+    
+    console.log(`✅ Created vehicle: ${vehicle.title} (ID: ${vehicle.id})`);
+
+    res.status(201).json({
       success: true,
-      message: 'Vehicle creation endpoint ready - authentication will be added next'
+      message: 'Vehicle created successfully',
+      data: vehicle
     });
+
   } catch (error) {
-    console.error('Error creating vehicle:', error);
+    console.error('❌ Error creating vehicle:', error);
     res.status(500).json({
       success: false,
-      message: 'Server Error',
+      message: 'Failed to create vehicle',
+      error: error.message
+    });
+  }
+});
+
+// PUT /api/vehicles/:id - Update vehicle (requires authentication + ownership)
+router.put('/:id', authenticateToken, async (req, res) => {
+  try {
+    console.log(`✏️ Updating vehicle ${req.params.id} for user: ${req.user.id}`);
+
+    // Prepare update data (only allow certain fields to be updated)
+    const allowedFields = [
+      'title', 'description', 'price', 'location', 'condition', 
+      'mileage', 'color', 'features', 'images', 'seller_notes'
+    ];
+    
+    const updateData = {};
+    allowedFields.forEach(field => {
+      if (req.body[field] !== undefined) {
+        updateData[field] = req.body[field];
+      }
+    });
+
+    // Validate price if provided
+    if (updateData.price && isNaN(updateData.price)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Price must be a valid number'
+      });
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No valid fields provided for update'
+      });
+    }
+
+    // Update vehicle in database
+    const vehicle = await VehicleService.updateVehicle(req.params.id, updateData, req.user.id);
+    
+    console.log(`✅ Updated vehicle: ${vehicle.title}`);
+
+    res.json({
+      success: true,
+      message: 'Vehicle updated successfully',
+      data: vehicle
+    });
+
+  } catch (error) {
+    console.error('❌ Error updating vehicle:', error);
+    
+    if (error.message.includes('Failed to update vehicle')) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vehicle not found or you do not have permission to update it'
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update vehicle',
+      error: error.message
+    });
+  }
+});
+
+// DELETE /api/vehicles/:id - Delete vehicle (requires authentication + ownership)
+router.delete('/:id', authenticateToken, async (req, res) => {
+  try {
+    console.log(`🗑️ Deleting vehicle ${req.params.id} for user: ${req.user.id}`);
+
+    // Soft delete vehicle (set is_active = false)
+    const vehicle = await VehicleService.deleteVehicle(req.params.id, req.user.id);
+    
+    console.log(`✅ Deleted vehicle: ${vehicle.title}`);
+
+    res.json({
+      success: true,
+      message: 'Vehicle deleted successfully',
+      data: vehicle
+    });
+
+  } catch (error) {
+    console.error('❌ Error deleting vehicle:', error);
+    
+    if (error.message.includes('Failed to delete vehicle')) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vehicle not found or you do not have permission to delete it'
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete vehicle',
       error: error.message
     });
   }

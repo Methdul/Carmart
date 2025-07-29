@@ -321,23 +321,23 @@ class UserService {
   }
 
   // Get user by ID
-  static async getUserById(id) {
+    // Get user by ID
+    static async getUserById(id) {
     const { data, error } = await supabase
-      .from('users')
-      .select('id, email, first_name, last_name, phone, location, account_type, is_verified, created_at')
-      .eq('id', id)
-      .eq('is_active', true)
-      .single();
+        .from('users')
+        .select('*')  // ✅ Select ALL fields including is_active
+        .eq('id', id)
+        .single();   // ✅ Remove .eq('is_active', true) - we check it in middleware
 
     if (error) {
-      if (error.code === 'PGRST116') {
+        if (error.code === 'PGRST116') {
         return null; // Not found
-      }
-      throw new Error(`Failed to fetch user: ${error.message}`);
+        }
+        throw new Error(`Failed to fetch user: ${error.message}`);
     }
 
     return data;
-  }
+    }
 
   // Update user profile
   static async updateUser(id, userData) {
