@@ -1,5 +1,5 @@
 // car-mart-backend/src/app.js
-// FIXED VERSION - Correct port 3001
+// UPDATED VERSION with Upload Route
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -9,7 +9,7 @@ const path = require('path');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001; // ← CHANGED FROM 5000 TO 3001
+const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors({
@@ -22,7 +22,7 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Static file serving for uploads
+// Static file serving for uploads - CRITICAL for serving uploaded images
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Request logging middleware
@@ -43,9 +43,12 @@ app.get('/', (req, res) => {
 // API Routes
 app.use('/api/vehicles', require('./routes/vehicles'));
 app.use('/api/parts', require('./routes/parts'));
-app.use('/api/services', require('./routes/services')); // ← MAKE SURE THIS IS INCLUDED
+app.use('/api/services', require('./routes/services'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
+
+// ✨ NEW: Upload route - ADD THIS LINE
+app.use('/api/upload', require('./routes/upload'));
 
 // Global error handling middleware
 app.use((error, req, res, next) => {
@@ -72,6 +75,7 @@ app.listen(PORT, () => {
 🚀 Car Mart API Server Started Successfully!
 📍 Port: ${PORT}
 🌍 Environment: ${process.env.NODE_ENV || 'development'}
+📁 Upload directory: uploads/
 🕐 Started at: ${new Date().toISOString()}
   `);
 });
