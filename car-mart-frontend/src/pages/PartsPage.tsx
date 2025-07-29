@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MobileFilterPanel from "@/components/MobileFilterPanel";
+import { apiService } from "@/services/api";
 
 interface Part {
   id: string;
@@ -17,30 +18,21 @@ interface Part {
   description: string;
   price: number;
   location: string;
-  image: string;
   brand: string;
-  partCategory: string;
+  category: string;                    // ← Changed from partCategory
   condition: string;
-  warranty: boolean;
+  warranty_period: string | null;      // ← Changed from warranty: boolean
   compatibility: string[];
-  sellerRating: number;
-  isVerified: boolean;
-  inStock: boolean;
-  // Enhanced properties
-  partType?: string;
-  vehicleMake?: string;
-  vehicleModel?: string;
-  yearCompatibility?: string;
-  oem?: boolean;
-  aftermarket?: boolean;
-  used?: boolean;
-  refurbished?: boolean;
-  returnPolicy?: boolean;
-  fastShipping?: boolean;
-  installation?: boolean;
-  partNumber?: string;
-  material?: string;
-  weight?: string;
+  rating_average?: number;             // ← Changed from sellerRating
+  reviews_count?: number;              // ← Added from API
+  is_oem: boolean;                     // ← Added from API
+  is_featured: boolean;                // ← Added from API
+  stock_quantity?: number;   
+  users?: {                           // ← Added from API
+    first_name: string;
+    last_name: string;
+    is_verified: boolean;
+  };
 }
 
 const PartsPage = () => {
@@ -82,189 +74,7 @@ const PartsPage = () => {
     inStock: false
   });
 
-  // Enhanced mock parts data
-  const mockParts: Part[] = [
-    {
-      id: "1",
-      title: "Original Toyota Prius Hybrid Battery Pack",
-      description: "Genuine Toyota hybrid battery with 2 year warranty. Fully tested and certified.",
-      price: 85000,
-      location: "Colombo 05",
-      image: "/api/placeholder/400/300",
-      brand: "Toyota",
-      partCategory: "Battery",
-      condition: "New",
-      warranty: true,
-      compatibility: ["Toyota Prius", "Toyota Aqua"],
-      sellerRating: 4.9,
-      isVerified: true,
-      inStock: true,
-      partType: "OEM",
-      vehicleMake: "Toyota",
-      vehicleModel: "Prius",
-      yearCompatibility: "2010-2020",
-      oem: true,
-      aftermarket: false,
-      used: false,
-      refurbished: false,
-      returnPolicy: true,
-      fastShipping: true,
-      installation: false,
-      partNumber: "G9280-47030",
-      material: "Lithium-ion",
-      weight: "45kg"
-    },
-    {
-      id: "2",
-      title: "BMW E90 Complete Headlight Assembly",
-      description: "Angel eyes LED headlight set for BMW 3 Series E90. Perfect fit and finish.",
-      price: 45000,
-      location: "Colombo 03",
-      image: "/api/placeholder/400/300",
-      brand: "BMW",
-      partCategory: "Lights",
-      condition: "New",
-      warranty: true,
-      compatibility: ["BMW E90", "BMW E91", "BMW E92"],
-      sellerRating: 4.7,
-      isVerified: true,
-      inStock: true,
-      partType: "OEM",
-      vehicleMake: "BMW",
-      vehicleModel: "3 Series",
-      yearCompatibility: "2005-2012",
-      oem: true,
-      aftermarket: false,
-      used: false,
-      refurbished: false,
-      returnPolicy: true,
-      fastShipping: false,
-      installation: true,
-      partNumber: "63117161670",
-      material: "ABS Plastic",
-      weight: "3.2kg"
-    },
-    {
-      id: "3",
-      title: "Honda Civic Type R Front Brake Pads",
-      description: "High performance brake pads for Honda Civic Type R. Racing grade compound.",
-      price: 12500,
-      location: "Kandy",
-      image: "/api/placeholder/400/300",
-      brand: "Brembo",
-      partCategory: "Brakes",
-      condition: "New",
-      warranty: true,
-      compatibility: ["Honda Civic Type R", "Honda Civic Si"],
-      sellerRating: 4.8,
-      isVerified: false,
-      inStock: true,
-      partType: "Performance",
-      vehicleMake: "Honda",
-      vehicleModel: "Civic",
-      yearCompatibility: "2017-2023",
-      oem: false,
-      aftermarket: true,
-      used: false,
-      refurbished: false,
-      returnPolicy: true,
-      fastShipping: true,
-      installation: true,
-      partNumber: "P28048",
-      material: "Ceramic",
-      weight: "2.1kg"
-    },
-    {
-      id: "4",
-      title: "Mercedes W204 Air Filter Set",
-      description: "OEM quality air filter for Mercedes C-Class W204. Improves engine performance.",
-      price: 3500,
-      location: "Galle",
-      image: "/api/placeholder/400/300",
-      brand: "Mann Filter",
-      partCategory: "Filters",
-      condition: "New",
-      warranty: false,
-      compatibility: ["Mercedes C200", "Mercedes C250", "Mercedes C300"],
-      sellerRating: 4.5,
-      isVerified: false,
-      inStock: true,
-      partType: "OEM",
-      vehicleMake: "Mercedes-Benz",
-      vehicleModel: "C-Class",
-      yearCompatibility: "2007-2014",
-      oem: true,
-      aftermarket: false,
-      used: false,
-      refurbished: false,
-      returnPolicy: false,
-      fastShipping: true,
-      installation: false,
-      partNumber: "C30130",
-      material: "Paper",
-      weight: "0.5kg"
-    },
-    {
-      id: "5",
-      title: "Nissan X-Trail CVT Transmission Oil Cooler",
-      description: "Used CVT oil cooler in good condition. Tested and working perfectly.",
-      price: 15000,
-      location: "Negombo",
-      image: "/api/placeholder/400/300",
-      brand: "Nissan",
-      partCategory: "Transmission",
-      condition: "Used",
-      warranty: false,
-      compatibility: ["Nissan X-Trail", "Nissan Qashqai"],
-      sellerRating: 4.2,
-      isVerified: false,
-      inStock: true,
-      partType: "OEM",
-      vehicleMake: "Nissan",
-      vehicleModel: "X-Trail",
-      yearCompatibility: "2014-2020",
-      oem: true,
-      aftermarket: false,
-      used: true,
-      refurbished: false,
-      returnPolicy: true,
-      fastShipping: false,
-      installation: false,
-      partNumber: "21606-1XF0A",
-      material: "Aluminum",
-      weight: "1.8kg"
-    },
-    {
-      id: "6",
-      title: "Audi A4 Turbocharger Refurbished",
-      description: "Professional refurbished turbocharger with 1 year warranty. Like new performance.",
-      price: 65000,
-      location: "Colombo 07",
-      image: "/api/placeholder/400/300",
-      brand: "Audi",
-      partCategory: "Engine",
-      condition: "Refurbished",
-      warranty: true,
-      compatibility: ["Audi A4 B8", "Audi A4 B9"],
-      sellerRating: 4.6,
-      isVerified: true,
-      inStock: false,
-      partType: "OEM",
-      vehicleMake: "Audi",
-      vehicleModel: "A4",
-      yearCompatibility: "2008-2020",
-      oem: true,
-      aftermarket: false,
-      used: false,
-      refurbished: true,
-      returnPolicy: true,
-      fastShipping: false,
-      installation: true,
-      partNumber: "06H145702S",
-      material: "Cast Iron",
-      weight: "12kg"
-    }
-  ];
+
 
   // Load mock data
   useEffect(() => {
@@ -272,15 +82,18 @@ const PartsPage = () => {
       setLoading(true);
       setError(null);
       
-      setTimeout(() => {
-        try {
-          setParts(mockParts);
-          setLoading(false);
-        } catch (err) {
-          setError("Failed to load parts");
-          setLoading(false);
+      try {
+        const response = await apiService.getParts();
+        if (response.success) {
+          setParts(response.data);
+        } else {
+          setError('Failed to load parts');
         }
-      }, 800);
+      } catch (err) {
+        setError("Failed to load parts");
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadParts();
@@ -297,10 +110,7 @@ const PartsPage = () => {
         part.title.toLowerCase().includes(searchTerm) ||
         part.description.toLowerCase().includes(searchTerm) ||
         part.brand.toLowerCase().includes(searchTerm) ||
-        part.partCategory.toLowerCase().includes(searchTerm) ||
-        (part.partNumber && part.partNumber.toLowerCase().includes(searchTerm)) ||
-        (part.vehicleMake && part.vehicleMake.toLowerCase().includes(searchTerm)) ||
-        (part.vehicleModel && part.vehicleModel.toLowerCase().includes(searchTerm))
+        part.category.toLowerCase().includes(searchTerm)
       );
     }
 
@@ -312,7 +122,7 @@ const PartsPage = () => {
 
     if (filters.partCategory && filters.partCategory !== "all") {
       filtered = filtered.filter(part => 
-        part.partCategory.toLowerCase() === filters.partCategory.toLowerCase()
+        part.category.toLowerCase() === filters.partCategory.toLowerCase()
       );
     }
 
@@ -333,12 +143,13 @@ const PartsPage = () => {
     );
 
     if (filters.warranty) {
-      filtered = filtered.filter(part => part.warranty);
+      filtered = filtered.filter(part => part.warranty_period !== null);
     }
 
     if (filters.inStock) {
-      filtered = filtered.filter(part => part.inStock);
+      filtered = filtered.filter(part => true); // Simplified - API doesn't have stock data
     }
+
 
     // Apply sorting
     switch (sortBy) {
@@ -349,7 +160,7 @@ const PartsPage = () => {
         filtered.sort((a, b) => b.price - a.price);
         break;
       case "rating":
-        filtered.sort((a, b) => b.sellerRating - a.sellerRating);
+        filtered.sort((a, b) => (b.rating_average || 0) - (a.rating_average || 0));
         break;
       case "brand":
         filtered.sort((a, b) => a.brand.localeCompare(b.brand));
@@ -357,8 +168,8 @@ const PartsPage = () => {
       default:
         // Keep relevance order, prioritize verified sellers
         filtered.sort((a, b) => {
-          if (a.isVerified && !b.isVerified) return -1;
-          if (!a.isVerified && b.isVerified) return 1;
+          if (a.users?.is_verified && !b.users?.is_verified) return -1;
+          if (!a.users?.is_verified && b.users?.is_verified) return 1;
           return 0;
         });
         break;
@@ -640,8 +451,8 @@ const PartsPage = () => {
                     const badges = [
                       part.brand,
                       part.condition,
-                      ...(part.warranty ? ["Warranty"] : []),
-                      ...(part.oem ? ["OEM"] : [])
+                      ...(part.warranty_period ? ["Warranty"] : []),
+                      ...(part.is_oem ? ["OEM"] : [])
                     ];
 
                     return (
@@ -653,11 +464,11 @@ const PartsPage = () => {
                         <div className="flex flex-row">
                           <div className="relative w-28 h-20 sm:w-48 sm:h-32 flex-shrink-0">
                             <img
-                              src={part.image}
+                              src={"/api/placeholder/400/300"}
                               alt={part.title}
                               className="w-full h-full object-cover"
                             />
-                            {part.isVerified && (
+                            {part.users?.is_verified && (
                               <div className="absolute top-1 right-1">
                                 <Badge className="bg-success text-white text-[10px] px-1 py-0.5">✓ Verified</Badge>
                               </div>
@@ -691,7 +502,7 @@ const PartsPage = () => {
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <Star className="w-3 h-3 text-yellow-500" />
-                                  <span>{part.sellerRating}</span>
+                                  <span>{part.rating_average || 'N/A'}</span>
                                 </div>
                               </div>
                               <div className="flex gap-1">

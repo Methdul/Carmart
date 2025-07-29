@@ -1,5 +1,5 @@
 // car-mart-backend/src/app.js
-// Final working version with the 404 handler fix
+// FIXED VERSION - Correct port 3001
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -9,13 +9,13 @@ const path = require('path');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3001; // ← CHANGED FROM 5000 TO 3001
 
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://your-frontend-domain.com'] 
-    : ['http://localhost:8080', 'http://localhost:3000', 'http://localhost:5173'], // ← ADDED 8080
+    : ['http://localhost:8080', 'http://localhost:3000', 'http://localhost:5173'],
   credentials: true
 }));
 
@@ -40,10 +40,12 @@ app.get('/', (req, res) => {
   });
 });
 
-// API Routes - Your existing working routes
+// API Routes
 app.use('/api/vehicles', require('./routes/vehicles'));
 app.use('/api/parts', require('./routes/parts'));
+app.use('/api/services', require('./routes/services')); // ← MAKE SURE THIS IS INCLUDED
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/users', require('./routes/users'));
 
 // Global error handling middleware
 app.use((error, req, res, next) => {
@@ -56,7 +58,7 @@ app.use((error, req, res, next) => {
   });
 });
 
-// FIXED: 404 handler without the problematic '*' pattern
+// 404 handler for undefined routes
 app.use((req, res) => {
   res.status(404).json({
     success: false,

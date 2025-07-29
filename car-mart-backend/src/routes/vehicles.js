@@ -1,29 +1,88 @@
+// car-mart-backend/src/routes/vehicles.js
+// Updated version with ratings included
 const express = require('express');
 const router = express.Router();
-const { VehicleService } = require('../services/database');
+const { supabase } = require('../config/database');
 
 // GET /api/vehicles - Get all vehicles with filtering
 router.get('/', async (req, res) => {
   try {
-    const { search, location, minPrice, maxPrice, make, fuelType, bodyType, transmission } = req.query;
+    const { 
+      search, 
+      location, 
+      minPrice, 
+      maxPrice, 
+      make, 
+      fuelType, 
+      bodyType, 
+      transmission,
+      isActive = true 
+    } = req.query;
     
-    // Build filters object
-    const filters = {};
-    if (search) filters.search = search;
-    if (location) filters.location = location;
-    if (minPrice) filters.minPrice = parseInt(minPrice);
-    if (maxPrice) filters.maxPrice = parseInt(maxPrice);
-    if (make) filters.make = make;
-    if (fuelType) filters.fuelType = fuelType;
-    if (bodyType) filters.bodyType = bodyType;
-    if (transmission) filters.transmission = transmission;
+    let query = supabase
+      .from('vehicles')
+      .select(`
+        *,
+        users (
+          first_name,
+          last_name,
+          phone,
+          location,
+          is_verified
+        )
+      `)
+      .eq('is_active', isActive);
+    
+    // Apply filters
+    if (search) {
+      query = query.or(
+        `title.ilike.%${search}%,description.ilike.%${search}%,make.ilike.%${search}%,model.ilike.%${search}%`
+      );
+    }
+    
+    if (location) {
+      query = query.ilike('location', `%${location}%`);
+    }
+    
+    if (minPrice) {
+      query = query.gte('price', parseInt(minPrice));
+    }
+    
+    if (maxPrice) {
+      query = query.lte('price', parseInt(maxPrice));
+    }
+    
+    if (make && make !== 'all') {
+      query = query.eq('make', make);
+    }
+    
+    if (fuelType && fuelType !== 'all') {
+      query = query.eq('fuel_type', fuelType);
+    }
+    
+    if (bodyType && bodyType !== 'all') {
+      query = query.eq('body_type', bodyType);
+    }
+    
+    if (transmission && transmission !== 'all') {
+      query = query.eq('transmission', transmission);
+    }
+    
+    // Order by featured first, then by rating, then by creation date
+    query = query.order('is_featured', { ascending: false })
+                 .order('rating_average', { ascending: false })
+                 .order('created_at', { ascending: false });
 
-    const vehicles = await VehicleService.getVehicles(filters);
+    const { data: vehicles, error } = await query;
+
+    if (error) {
+      throw error;
+    }
 
     res.json({
       success: true,
       count: vehicles.length,
-      data: vehicles
+      data: vehicles || []
     });
   } catch (error) {
     console.error('Error fetching vehicles:', error);
@@ -38,13 +97,30 @@ router.get('/', async (req, res) => {
 // GET /api/vehicles/:id - Get single vehicle
 router.get('/:id', async (req, res) => {
   try {
-    const vehicle = await VehicleService.getVehicleById(req.params.id);
-    
-    if (!vehicle) {
-      return res.status(404).json({
-        success: false,
-        message: 'Vehicle not found'
-      });
+    const { data: vehicle, error } = await supabase
+      .from('vehicles')
+      .select(`
+        *,
+        users (
+          first_name,
+          last_name,
+          phone,
+          location,
+          is_verified,
+          account_type
+        )
+      `)
+      .eq('id', req.params.id)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return res.status(404).json({
+          success: false,
+          message: 'Vehicle not found'
+        });
+      }
+      throw error;
     }
     
     res.json({
@@ -64,8 +140,7 @@ router.get('/:id', async (req, res) => {
 // POST /api/vehicles - Create new vehicle (protected route)
 router.post('/', async (req, res) => {
   try {
-    // For now, we'll return a placeholder
-    // In the future, we'll add authentication middleware
+    // For now, return placeholder - will add authentication later
     res.json({
       success: true,
       message: 'Vehicle creation endpoint ready - authentication will be added next'

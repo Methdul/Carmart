@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MobileFilterPanel from "@/components/MobileFilterPanel";
+import { apiService } from "@/services/api";
 
 interface Service {
   id: string;
@@ -17,26 +18,19 @@ interface Service {
   description: string;
   price: number;
   location: string;
-  image: string;
-  serviceType: string;
-  providerName: string;
-  providerRating: number;
-  responseTime: string;
-  certified: boolean;
-  warranty: boolean;
-  experience: number;
-  isVerified: boolean;
-  // Enhanced properties
-  providerType?: string;
-  availability?: string;
-  homeService?: boolean;
-  pickupDropoff?: boolean;
-  emergencyService?: boolean;
-  onlineBooking?: boolean;
-  paymentOptions?: string;
-  languages?: string;
-  specialization?: string;
-  equipmentType?: string;
+  service_type: string;               // ← Changed from serviceType
+  duration?: string;
+  warranty_period?: string;
+  features: string[];
+  is_featured: boolean;
+  home_service: boolean;
+  online_booking: boolean;
+  emergency_service: boolean;
+  users?: {                          // ← Added from API
+    first_name: string;
+    last_name: string;
+    is_verified: boolean;
+  };
 }
 
 const ServicesPage = () => {
@@ -77,191 +71,6 @@ const ServicesPage = () => {
     minRating: 0
   });
 
-  // Enhanced mock services data
-  const mockServices: Service[] = [
-    {
-      id: "1",
-      title: "Complete Vehicle Service & Oil Change",
-      description: "Full vehicle inspection, oil change, filter replacement, and basic maintenance check with computerized diagnosis.",
-      price: 8500,
-      location: "Colombo 05",
-      image: "/api/placeholder/400/300",
-      serviceType: "Maintenance",
-      providerName: "AutoCare Center",
-      providerRating: 4.8,
-      responseTime: "Same day",
-      certified: true,
-      warranty: true,
-      experience: 15,
-      isVerified: true,
-      providerType: "garage",
-      availability: "weekdays",
-      homeService: false,
-      pickupDropoff: true,
-      emergencyService: false,
-      onlineBooking: true,
-      paymentOptions: "card",
-      languages: "English, Sinhala",
-      specialization: "general",
-      equipmentType: "computerized"
-    },
-    {
-      id: "2",
-      title: "BMW Specialized Engine Repair",
-      description: "Expert BMW engine repair and maintenance by certified BMW technicians with genuine parts.",
-      price: 25000,
-      location: "Colombo 03",
-      image: "/api/placeholder/400/300",
-      serviceType: "Repair",
-      providerName: "BMW Service Center",
-      providerRating: 4.9,
-      responseTime: "Within 2 hours",
-      certified: true,
-      warranty: true,
-      experience: 20,
-      isVerified: true,
-      providerType: "dealership",
-      availability: "24-7",
-      homeService: false,
-      pickupDropoff: true,
-      emergencyService: true,
-      onlineBooking: true,
-      paymentOptions: "card",
-      languages: "English",
-      specialization: "bmw",
-      equipmentType: "computerized"
-    },
-    {
-      id: "3",
-      title: "Mobile Car Wash & Detailing",
-      description: "Professional car wash and detailing service at your location. Interior and exterior cleaning.",
-      price: 3500,
-      location: "Kandy",
-      image: "/api/placeholder/400/300",
-      serviceType: "Detailing",
-      providerName: "Mobile Wash Pro",
-      providerRating: 4.6,
-      responseTime: "Within 3 hours",
-      certified: false,
-      warranty: false,
-      experience: 5,
-      isVerified: false,
-      providerType: "mobile",
-      availability: "weekends",
-      homeService: true,
-      pickupDropoff: false,
-      emergencyService: false,
-      onlineBooking: true,
-      paymentOptions: "cash",
-      languages: "Sinhala, Tamil",
-      specialization: "detailing",
-      equipmentType: "manual"
-    },
-    {
-      id: "4",
-      title: "Brake System Repair & Replacement",
-      description: "Complete brake system inspection, pad replacement, disc machining, and brake fluid change.",
-      price: 6500,
-      location: "Negombo",
-      image: "/api/placeholder/400/300",
-      serviceType: "Repair",
-      providerName: "Brake Masters",
-      providerRating: 4.6,
-      responseTime: "Within 4 hours",
-      certified: true,
-      warranty: true,
-      experience: 10,
-      isVerified: true,
-      providerType: "specialist",
-      availability: "weekdays",
-      homeService: false,
-      pickupDropoff: false,
-      emergencyService: false,
-      onlineBooking: false,
-      paymentOptions: "cash",
-      languages: "English, Sinhala",
-      specialization: "brakes",
-      equipmentType: "hydraulic"
-    },
-    {
-      id: "5",
-      title: "AC System Repair & Gas Refill",
-      description: "Air conditioning system diagnosis, repair, and gas refill service with performance guarantee.",
-      price: 9500,
-      location: "Colombo 07",
-      image: "/api/placeholder/400/300",
-      serviceType: "Repair",
-      providerName: "Cool Air Solutions",
-      providerRating: 4.5,
-      responseTime: "Same day",
-      certified: false,
-      warranty: true,
-      experience: 6,
-      isVerified: false,
-      providerType: "garage",
-      availability: "weekdays",
-      homeService: false,
-      pickupDropoff: false,
-      emergencyService: false,
-      onlineBooking: true,
-      paymentOptions: "card",
-      languages: "English, Tamil",
-      specialization: "ac-service",
-      equipmentType: "computerized"
-    },
-    {
-      id: "6",
-      title: "Emergency Towing Service 24/7",
-      description: "24/7 emergency towing service for breakdowns, accidents, and vehicle recovery anywhere in Colombo.",
-      price: 2500,
-      location: "Colombo (Island-wide)",
-      image: "/api/placeholder/400/300",
-      serviceType: "Emergency",
-      providerName: "FastTow Emergency",
-      providerRating: 4.7,
-      responseTime: "Within 30 minutes",
-      certified: true,
-      warranty: false,
-      experience: 12,
-      isVerified: true,
-      providerType: "chain",
-      availability: "24-7",
-      homeService: true,
-      pickupDropoff: true,
-      emergencyService: true,
-      onlineBooking: true,
-      paymentOptions: "card",
-      languages: "English, Sinhala, Tamil",
-      specialization: "towing",
-      equipmentType: "hydraulic"
-    },
-    {
-      id: "7",
-      title: "Toyota Hybrid Specialist Service",
-      description: "Specialized service for Toyota hybrid vehicles including battery diagnostics and maintenance.",
-      price: 12000,
-      location: "Galle",
-      image: "/api/placeholder/400/300",
-      serviceType: "Maintenance",
-      providerName: "HybridTech Solutions",
-      providerRating: 4.8,
-      responseTime: "Next day",
-      certified: true,
-      warranty: true,
-      experience: 8,
-      isVerified: true,
-      providerType: "specialist",
-      availability: "weekdays",
-      homeService: false,
-      pickupDropoff: true,
-      emergencyService: false,
-      onlineBooking: false,
-      paymentOptions: "installments",
-      languages: "English, Sinhala",
-      specialization: "hybrid",
-      equipmentType: "computerized"
-    }
-  ];
 
   // Load mock data
   useEffect(() => {
@@ -269,15 +78,18 @@ const ServicesPage = () => {
       setLoading(true);
       setError(null);
       
-      setTimeout(() => {
-        try {
-          setServices(mockServices);
-          setLoading(false);
-        } catch (err) {
-          setError("Failed to load services");
-          setLoading(false);
+      try {
+        const response = await apiService.getServices();
+        if (response.success) {
+          setServices(response.data);
+        } else {
+          setError('Failed to load services');
         }
-      }, 800);
+      } catch (err) {
+        setError("Failed to load services");
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadServices();
@@ -292,16 +104,14 @@ const ServicesPage = () => {
       const searchTerm = filters.search.toLowerCase();
       filtered = filtered.filter(service =>
         service.title.toLowerCase().includes(searchTerm) ||
-        service.providerName.toLowerCase().includes(searchTerm) ||
         service.description.toLowerCase().includes(searchTerm) ||
-        service.serviceType.toLowerCase().includes(searchTerm) ||
-        (service.specialization && service.specialization.toLowerCase().includes(searchTerm))
+        service.service_type.toLowerCase().includes(searchTerm)
       );
     }
 
     if (filters.serviceType && filters.serviceType !== "all") {
       filtered = filtered.filter(service => 
-        service.serviceType.toLowerCase() === filters.serviceType.toLowerCase()
+        service.service_type.toLowerCase() === filters.serviceType.toLowerCase()
       );
     }
 
@@ -315,54 +125,8 @@ const ServicesPage = () => {
       service.price >= filters.minPrice && service.price <= filters.maxPrice
     );
 
-    if (filters.certified) {
-      filtered = filtered.filter(service => service.certified);
-    }
-
     if (filters.warranty) {
-      filtered = filtered.filter(service => service.warranty);
-    }
-
-    if (filters.minRating > 0) {
-      filtered = filtered.filter(service => service.providerRating >= filters.minRating);
-    }
-
-    // Apply sorting
-    switch (sortBy) {
-      case "price-low":
-        filtered.sort((a, b) => a.price - b.price);
-        break;
-      case "price-high":
-        filtered.sort((a, b) => b.price - a.price);
-        break;
-      case "rating":
-        filtered.sort((a, b) => b.providerRating - a.providerRating);
-        break;
-      case "experience":
-        filtered.sort((a, b) => b.experience - a.experience);
-        break;
-      case "response-time":
-        // Simple response time sorting (could be more sophisticated)
-        filtered.sort((a, b) => {
-          const aTime = a.responseTime.toLowerCase();
-          const bTime = b.responseTime.toLowerCase();
-          if (aTime.includes('30 minutes')) return -1;
-          if (bTime.includes('30 minutes')) return 1;
-          if (aTime.includes('same day')) return -1;
-          if (bTime.includes('same day')) return 1;
-          return 0;
-        });
-        break;
-      default:
-        // Keep relevance order, prioritize verified and certified providers
-        filtered.sort((a, b) => {
-          if (a.isVerified && !b.isVerified) return -1;
-          if (!a.isVerified && b.isVerified) return 1;
-          if (a.certified && !b.certified) return -1;
-          if (!a.certified && b.certified) return 1;
-          return 0;
-        });
-        break;
+      filtered = filtered.filter(service => service.warranty_period !== null);
     }
 
     setFilteredServices(filtered);
@@ -632,11 +396,10 @@ const ServicesPage = () => {
                   }>
                     {filteredServices.map((service) => {
                       const badges = [
-                        service.serviceType,
-                        ...(service.certified ? ["Certified"] : []),
-                        ...(service.warranty ? ["Warranty"] : []),
-                        ...(service.homeService ? ["Home Service"] : []),
-                        ...(service.onlineBooking ? ["Online Booking"] : [])
+                        service.service_type,
+                        ...(service.warranty_period ? ["Warranty"] : []),
+                        ...(service.home_service ? ["Home Service"] : []),
+                        ...(service.online_booking ? ["Online Booking"] : [])
                       ];
 
                       return (
@@ -648,16 +411,16 @@ const ServicesPage = () => {
                           <div className="flex flex-row">
                             <div className="relative w-28 h-20 sm:w-48 sm:h-32 flex-shrink-0">
                               <img
-                                src={service.image}
+                                src="/api/placeholder/400/300"
                                 alt={service.title}
                                 className="w-full h-full object-cover"
                               />
-                              {service.isVerified && (
+                              {service.users?.is_verified && (
                                 <div className="absolute top-1 right-1">
                                   <Badge className="bg-success text-white text-[10px] px-1 py-0.5">✓ Verified</Badge>
                                 </div>
                               )}
-                              {service.emergencyService && (
+                              {service.emergency_service && (
                                 <div className="absolute top-1 left-1">
                                   <Badge className="bg-red-100 text-red-800 text-[10px] px-1 py-0.5">Emergency</Badge>
                                 </div>
@@ -691,10 +454,10 @@ const ServicesPage = () => {
                                   </div>
                                   <div className="flex items-center gap-1">
                                     <Star className="w-3 h-3 text-yellow-500" />
-                                    <span>{service.providerRating}</span>
+                                    <span>N/A</span>
                                     <span className="mx-1">•</span>
                                     <Clock className="w-3 h-3" />
-                                    <span>{service.responseTime}</span>
+                                    <span>{service.duration || 'Contact for details'}</span>
                                   </div>
                                 </div>
                                 <div className="flex gap-1">

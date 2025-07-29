@@ -1,28 +1,83 @@
+// car-mart-backend/src/routes/parts.js
+// Updated version with ratings included
 const express = require('express');
 const router = express.Router();
-const { PartService } = require('../services/database');
+const { supabase } = require('../config/database');
 
 // GET /api/parts - Get all parts with filtering
 router.get('/', async (req, res) => {
   try {
-    const { search, location, minPrice, maxPrice, category, brand, condition } = req.query;
+    const { 
+      search, 
+      location, 
+      minPrice, 
+      maxPrice, 
+      category, 
+      brand, 
+      condition,
+      isActive = true 
+    } = req.query;
     
-    // Build filters object
-    const filters = {};
-    if (search) filters.search = search;
-    if (location) filters.location = location;
-    if (minPrice) filters.minPrice = parseInt(minPrice);
-    if (maxPrice) filters.maxPrice = parseInt(maxPrice);
-    if (category) filters.category = category;
-    if (brand) filters.brand = brand;
-    if (condition) filters.condition = condition;
+    let query = supabase
+      .from('parts')
+      .select(`
+        *,
+        users (
+          first_name,
+          last_name,
+          phone,
+          location,
+          is_verified
+        )
+      `)
+      .eq('is_active', isActive);
+    
+    // Apply filters
+    if (search) {
+      query = query.or(
+        `title.ilike.%${search}%,description.ilike.%${search}%,brand.ilike.%${search}%,category.ilike.%${search}%`
+      );
+    }
+    
+    if (location) {
+      query = query.ilike('location', `%${location}%`);
+    }
+    
+    if (minPrice) {
+      query = query.gte('price', parseInt(minPrice));
+    }
+    
+    if (maxPrice) {
+      query = query.lte('price', parseInt(maxPrice));
+    }
+    
+    if (category && category !== 'all') {
+      query = query.eq('category', category);
+    }
+    
+    if (brand && brand !== 'all') {
+      query = query.eq('brand', brand);
+    }
+    
+    if (condition && condition !== 'all') {
+      query = query.eq('condition', condition);
+    }
+    
+    // Order by featured first, then by rating, then by creation date
+    query = query.order('is_featured', { ascending: false })
+                 .order('rating_average', { ascending: false })
+                 .order('created_at', { ascending: false });
 
-    const parts = await PartService.getParts(filters);
+    const { data: parts, error } = await query;
+
+    if (error) {
+      throw error;
+    }
 
     res.json({
       success: true,
       count: parts.length,
-      data: parts
+      data: parts || []
     });
   } catch (error) {
     console.error('Error fetching parts:', error);
@@ -37,13 +92,30 @@ router.get('/', async (req, res) => {
 // GET /api/parts/:id - Get single part
 router.get('/:id', async (req, res) => {
   try {
-    const part = await PartService.getPartById(req.params.id);
-    
-    if (!part) {
-      return res.status(404).json({
-        success: false,
-        message: 'Part not found'
-      });
+    const { data: part, error } = await supabase
+      .from('parts')
+      .select(`
+        *,
+        users (
+          first_name,
+          last_name,
+          phone,
+          location,
+          is_verified,
+          account_type
+        )
+      `)
+      .eq('id', req.params.id)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return res.status(404).json({
+          success: false,
+          message: 'Part not found'
+        });
+      }
+      throw error;
     }
     
     res.json({
@@ -63,8 +135,7 @@ router.get('/:id', async (req, res) => {
 // POST /api/parts - Create new part (protected route)
 router.post('/', async (req, res) => {
   try {
-    // For now, we'll return a placeholder
-    // In the future, we'll add authentication middleware
+    // For now, return placeholder - will add authentication later
     res.json({
       success: true,
       message: 'Part creation endpoint ready - authentication will be added next'
