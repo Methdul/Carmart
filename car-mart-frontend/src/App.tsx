@@ -83,7 +83,7 @@ const App = () => {
                 <Route path="/auth" element={<SafeRoute element={AuthPage} />} />
                 <Route path="/list-vehicle" element={<SafeRoute element={ListVehiclePage} />} />
                 <Route path="/search" element={<SafeRoute element={SearchPage} />} />
-                <Route path="/vehicle/:id" element={<SafeRoute element={VehicleDetailPage} />} />
+                <Route path="/vehicles/:id" element={<SafeRoute element={VehicleDetailPage} />} />
                 <Route path="/dashboard" element={<SafeRoute element={DashboardPage} />} />
                 <Route path="/parts" element={<SafeRoute element={PartsPage} />} />
                 <Route path="/parts/:category" element={<SafeRoute element={PartsPage} />} />

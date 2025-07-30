@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
-  Heart, Share2, Phone, Mail, MapPin, Calendar, Shield, Star, ArrowLeft, BarChart3, MessageCircle
+  Heart, Share2, Phone, Mail, MapPin, Calendar, Shield, Star, ArrowLeft, BarChart3, MessageCircle, Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,68 +11,112 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import FavoriteButton from '@/components/FavoriteButton';
+import { apiService } from "@/services/api";
 
 const ServiceDetailPage = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const [selectedImage, setSelectedImage] = useState(0);
+  const [service, setService] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // FIXED: Updated to match backend database schema
-  const service = {
-    id: "test-service-1",
-    title: "Premium Full Car Service",
-    description: `Our Premium Full Car Service covers everything your car needs for optimal performance.
-    Backed by our certified technicians, we ensure a complete inspection and upgrade of critical systems.`,
-    service_type: "Maintenance",        // ← FIXED: Added from backend schema
-    price: 25000,
-    price_type: "fixed",               // ← FIXED: Added from backend schema
-    location: "Colombo",
-    service_areas: ["Colombo", "Gampaha", "Kalutara"], // ← FIXED: Added from backend schema
-    duration: "2-3 hours",             // ← FIXED: Match backend field
-    warranty_period: "6 months",       // ← FIXED: was warranty
-    features: [                        // ← FIXED: Match backend field name
-      "Engine Oil Change", "Brake Inspection", "Interior Vacuum", "AC Service",
-      "Tire Rotation", "Exterior Wash", "Battery Test", "Diagnostic Scan"
-    ],
-    requirements: [                    // ← FIXED: Added from backend schema
-      "Vehicle must be accessible",
-      "Customer must be present during service"
-    ],
-    images: [
+  useEffect(() => {
+    const fetchService = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await apiService.getServiceById(id);
+        if (response.success) {
+          setService(response.data);
+        } else {
+          setError('Service not found');
+        }
+      } catch (err) {
+        setError('Failed to load service details');
+        console.error('Error fetching service:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchService();
+    }
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <p>Loading service details...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error || !service) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-4">Service Not Found</h2>
+            <p className="text-muted-foreground mb-4">{error}</p>
+            <Button onClick={() => navigate('/services')}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Services
+            </Button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Transform real data to match component expectations
+  const serviceWithDefaults = {
+    ...service,
+    images: service.images && service.images.length > 0 ? service.images : [
       "https://via.placeholder.com/400x300?text=Service+1",
       "https://via.placeholder.com/400x300?text=Service+2", 
       "https://via.placeholder.com/400x300?text=Service+3"
     ],
-    availability: {                    // ← FIXED: Added from backend schema
-      monday: "9:00-17:00",
-      tuesday: "9:00-17:00",
-      wednesday: "9:00-17:00",
-      thursday: "9:00-17:00",
-      friday: "9:00-17:00",
-      saturday: "9:00-15:00",
+    features: service.features || [
+      "Professional Service", "Quality Guarantee", "Expert Technicians", "Modern Equipment"
+    ],
+    service_areas: service.service_areas || [service.location],
+    requirements: service.requirements || [
+      "Vehicle must be accessible",
+      "Customer must be present during service"
+    ],
+    availability: service.availability || {
+      monday: "9:00 AM - 6:00 PM",
+      tuesday: "9:00 AM - 6:00 PM",
+      wednesday: "9:00 AM - 6:00 PM",
+      thursday: "9:00 AM - 6:00 PM",
+      friday: "9:00 AM - 6:00 PM",
+      saturday: "9:00 AM - 2:00 PM",
       sunday: "closed"
     },
-    home_service: true,                // ← FIXED: Added from backend schema
-    pickup_dropoff: false,             // ← FIXED: Added from backend schema
-    emergency_service: true,           // ← FIXED: Added from backend schema
-    online_booking: true,              // ← FIXED: Added from backend schema
-    equipment_type: "Professional",   // ← FIXED: Added from backend schema
-    certifications: ["ASE Certified", "Toyota Certified"], // ← FIXED: Added from backend schema
-    languages: ["English", "Sinhala"], // ← FIXED: Added from backend schema
-    payment_options: ["Cash", "Card", "Bank Transfer"], // ← FIXED: Added from backend schema
-    is_featured: false,                // ← FIXED: Added from backend schema
-    is_active: true,                   // ← FIXED: Added from backend schema
-    views_count: 342,                  // ← FIXED: Added from backend schema
-    favorites_count: 23,               // ← FIXED: Added from backend schema
-    created_at: "2024-01-15T08:30:00Z",
-    updated_at: "2024-01-20T14:22:00Z",
-    // FIXED: Replace provider object with users object to match backend schema
-    users: {
-      first_name: "AutoPro",
-      last_name: "Services",
-      phone: "+94112345678",
-      location: "Colombo",
-      email: "info@autopro.lk"
-    }
+    languages: service.languages || ['English'],
+    certifications: service.certifications || ['Professional Certified'],
+    payment_options: service.payment_options || ['Cash', 'Card'],
+    home_service: service.home_service || false,
+    pickup_dropoff: service.pickup_dropoff || false,
+    emergency_service: service.emergency_service || false,
+    online_booking: service.online_booking || false,
+    equipment_type: service.equipment_type || 'Professional',
+    is_featured: service.is_featured || false,
+    is_active: service.is_active !== false,
+    views_count: service.views_count || 0,
+    favorites_count: service.favorites_count || 0,
+    price_type: service.price_type || 'fixed'
   };
 
   const formatPrice = (price: number) => `Rs. ${price.toLocaleString()}`;
@@ -89,22 +133,22 @@ const ServiceDetailPage = () => {
         <Card className="mb-4 overflow-hidden">
           <div className="relative">
             <div className="aspect-[16/10] sm:aspect-[16/9] overflow-hidden">
-              <img src={service.images[selectedImage]} alt={service.title} className="w-full h-full object-cover" />
+              <img src={serviceWithDefaults.images[selectedImage]} alt={serviceWithDefaults.title} className="w-full h-full object-cover" />
               <div className="absolute top-3 left-3 flex gap-2">
                 <Badge className="bg-success text-white text-xs">
                   <Shield className="h-3 w-3 mr-1" /> Verified
                 </Badge>
-                {service.is_featured && (
+                {serviceWithDefaults.is_featured && (
                   <Badge className="bg-accent text-xs">Featured</Badge>
                 )}
-                {service.emergency_service && (
+                {serviceWithDefaults.emergency_service && (
                   <Badge className="bg-destructive text-white text-xs">24/7 Emergency</Badge>
                 )}
               </div>
               <div className="absolute top-3 right-3 flex gap-2">
                 <FavoriteButton
                   itemType="service"
-                  itemId={service.id}
+                  itemId={serviceWithDefaults.id}
                   variant="secondary"
                   size="icon"
                   className="h-8 w-8 bg-background/80"
@@ -114,11 +158,11 @@ const ServiceDetailPage = () => {
                 </Button>
               </div>
               <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                {selectedImage + 1} / {service.images.length}
+                {selectedImage + 1} / {serviceWithDefaults.images.length}
               </div>
             </div>
             <div className="flex overflow-x-auto gap-2 p-3 bg-muted">
-              {service.images.map((img, idx) => (
+              {serviceWithDefaults.images.map((img, idx) => (
                 <button
                   key={idx}
                   onClick={() => setSelectedImage(idx)}
@@ -135,26 +179,25 @@ const ServiceDetailPage = () => {
 
         <Card className="mb-4">
           <CardContent className="p-4 sm:p-6">
-            <h1 className="text-xl sm:text-2xl font-bold text-primary mb-2 leading-tight">{service.title}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-primary mb-2 leading-tight">{serviceWithDefaults.title}</h1>
             <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-muted-foreground mb-2">
-              <span className="flex items-center"><MapPin className="w-4 h-4 mr-1" /> {service.location}</span>
-              <span className="flex items-center"><Calendar className="w-4 h-4 mr-1" /> {service.duration}</span>
-              <Badge variant="outline" className="text-xs">{service.service_type}</Badge>
-              {service.home_service && (
+              <span className="flex items-center"><MapPin className="w-4 h-4 mr-1" /> {serviceWithDefaults.location}</span>
+              <span className="flex items-center"><Calendar className="w-4 h-4 mr-1" /> {serviceWithDefaults.duration || 'Contact for duration'}</span>
+              <Badge variant="outline" className="text-xs">{serviceWithDefaults.service_type}</Badge>
+              {serviceWithDefaults.home_service && (
                 <Badge variant="outline" className="text-xs">Home Service</Badge>
               )}
-              {service.online_booking && (
+              {serviceWithDefaults.online_booking && (
                 <Badge variant="outline" className="text-xs">Online Booking</Badge>
               )}
             </div>
             <div className="text-xl sm:text-2xl font-bold text-primary mb-1">
-              {formatPrice(service.price)}
+              {formatPrice(serviceWithDefaults.price)}
               <span className="text-sm text-muted-foreground ml-2">
-                ({service.price_type === "fixed" ? "Fixed Price" : service.price_type})
+                ({serviceWithDefaults.price_type === "fixed" ? "Fixed Price" : serviceWithDefaults.price_type})
               </span>
             </div>
-            {/* FIXED: Use warranty_period */}
-            <div className="text-sm text-muted-foreground mb-4">Warranty: {service.warranty_period}</div>
+            <div className="text-sm text-muted-foreground mb-4">Warranty: {serviceWithDefaults.warranty_period || 'Contact for warranty details'}</div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="flex-1 sm:flex-none"><BarChart3 className="h-4 w-4 mr-2" /> Compare</Button>
               <Button variant="outline" size="sm" className="flex-1 sm:flex-none"><MessageCircle className="h-4 w-4 mr-2" /> Message</Button>
@@ -167,9 +210,12 @@ const ServiceDetailPage = () => {
           <CardContent className="p-4">
             <h3 className="font-semibold text-primary mb-2">Service Areas</h3>
             <div className="flex flex-wrap gap-2">
-              {service.service_areas.map((area, i) => (
-                <Badge key={i} variant="secondary">{area}</Badge>
-              ))}
+              {Array.isArray(serviceWithDefaults.service_areas) ? 
+                serviceWithDefaults.service_areas.map((area, i) => (
+                  <Badge key={i} variant="secondary">{String(area)}</Badge>
+                )) :
+                <Badge variant="secondary">{String(serviceWithDefaults.service_areas)}</Badge>
+              }
             </div>
           </CardContent>
         </Card>
@@ -188,23 +234,31 @@ const ServiceDetailPage = () => {
               <div className="p-4 sm:p-6">
                 <TabsContent value="overview" className="mt-0">
                   <h3 className="font-semibold text-primary mb-2">Description</h3>
-                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">{service.description}</p>
+                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                    {serviceWithDefaults.description || 'Professional service with experienced technicians.'}
+                  </p>
                   
                   <div className="mt-4">
                     <h4 className="font-semibold text-primary mb-2">Certifications</h4>
                     <div className="flex flex-wrap gap-2">
-                      {service.certifications.map((cert, i) => (
-                        <Badge key={i} variant="outline" className="text-xs">{cert}</Badge>
-                      ))}
+                      {Array.isArray(serviceWithDefaults.certifications) ? 
+                        serviceWithDefaults.certifications.map((cert, i) => (
+                          <Badge key={i} variant="outline" className="text-xs">{String(cert)}</Badge>
+                        )) :
+                        <Badge variant="outline" className="text-xs">{String(serviceWithDefaults.certifications)}</Badge>
+                      }
                     </div>
                   </div>
 
                   <div className="mt-4">
                     <h4 className="font-semibold text-primary mb-2">Payment Options</h4>
                     <div className="flex flex-wrap gap-2">
-                      {service.payment_options.map((option, i) => (
-                        <Badge key={i} variant="secondary" className="text-xs">{option}</Badge>
-                      ))}
+                      {Array.isArray(serviceWithDefaults.payment_options) ? 
+                        serviceWithDefaults.payment_options.map((option, i) => (
+                          <Badge key={i} variant="secondary" className="text-xs">{String(option)}</Badge>
+                        )) :
+                        <Badge variant="secondary" className="text-xs">{String(serviceWithDefaults.payment_options)}</Badge>
+                      }
                     </div>
                   </div>
                 </TabsContent>
@@ -212,35 +266,47 @@ const ServiceDetailPage = () => {
                 <TabsContent value="features" className="mt-0">
                   <h3 className="font-semibold text-primary mb-3">Included Features</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {service.features.map((f, i) => (
-                      <div key={i} className="flex items-center space-x-2 text-sm p-2 bg-muted/40 rounded">
+                    {Array.isArray(serviceWithDefaults.features) ? 
+                      serviceWithDefaults.features.map((f, i) => (
+                        <div key={i} className="flex items-center space-x-2 text-sm p-2 bg-muted/40 rounded">
+                          <div className="w-2 h-2 bg-success rounded-full" />
+                          <span>{String(f)}</span>
+                        </div>
+                      )) :
+                      <div className="flex items-center space-x-2 text-sm p-2 bg-muted/40 rounded">
                         <div className="w-2 h-2 bg-success rounded-full" />
-                        <span>{f}</span>
+                        <span>{String(serviceWithDefaults.features)}</span>
                       </div>
-                    ))}
+                    }
                   </div>
                 </TabsContent>
 
                 <TabsContent value="requirements" className="mt-0">
                   <h3 className="font-semibold text-primary mb-3">Requirements</h3>
                   <div className="space-y-2">
-                    {service.requirements.map((req, i) => (
-                      <div key={i} className="flex items-center space-x-2 text-sm p-2 bg-muted/40 rounded">
+                    {Array.isArray(serviceWithDefaults.requirements) ? 
+                      serviceWithDefaults.requirements.map((req, i) => (
+                        <div key={i} className="flex items-center space-x-2 text-sm p-2 bg-muted/40 rounded">
+                          <div className="w-2 h-2 bg-warning rounded-full" />
+                          <span>{String(req)}</span>
+                        </div>
+                      )) :
+                      <div className="flex items-center space-x-2 text-sm p-2 bg-muted/40 rounded">
                         <div className="w-2 h-2 bg-warning rounded-full" />
-                        <span>{req}</span>
+                        <span>{String(serviceWithDefaults.requirements)}</span>
                       </div>
-                    ))}
+                    }
                   </div>
                 </TabsContent>
 
                 <TabsContent value="availability" className="mt-0">
                   <h3 className="font-semibold text-primary mb-3">Service Hours</h3>
                   <div className="space-y-2">
-                    {Object.entries(service.availability).map(([day, hours]) => (
+                    {Object.entries(serviceWithDefaults.availability).map(([day, hours]) => (
                       <div key={day} className="flex justify-between items-center text-sm border-b border-border/50 py-2">
-                        <span className="capitalize font-medium">{day}</span>
-                        <span className={hours === "closed" ? "text-muted-foreground" : "text-success"}>
-                          {hours === "closed" ? "Closed" : hours}
+                        <span className="capitalize font-medium">{String(day)}</span>
+                        <span className={String(hours) === "closed" ? "text-muted-foreground" : "text-success"}>
+                          {String(hours) === "closed" ? "Closed" : String(hours)}
                         </span>
                       </div>
                     ))}
@@ -251,7 +317,7 @@ const ServiceDetailPage = () => {
           </CardContent>
         </Card>
 
-        {/* Service Provider Section - FIXED to use users object */}
+        {/* Service Provider Section */}
         <Card className="mb-4">
           <CardHeader>
             <CardTitle className="text-lg">Service Provider</CardTitle>
@@ -263,13 +329,16 @@ const ServiceDetailPage = () => {
                   <Avatar className="h-12 w-12">
                     <AvatarImage src="" />
                     <AvatarFallback className="bg-primary text-white">
-                      {/* FIXED: Use users object instead of provider */}
-                      {service.users?.first_name?.[0]}{service.users?.last_name?.[0]}
+                      {(serviceWithDefaults.users?.first_name?.[0] || 'S')}{(serviceWithDefaults.users?.last_name?.[0] || 'P')}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    {/* FIXED: Use users object instead of provider */}
-                    <p className="font-medium text-sm">{service.users?.first_name} {service.users?.last_name}</p>
+                    <p className="font-medium text-sm">
+                      {serviceWithDefaults.users ? 
+                        `${serviceWithDefaults.users.first_name || ''} ${serviceWithDefaults.users.last_name || ''}`.trim() || 'Service Provider' : 
+                        'Service Provider'
+                      }
+                    </p>
                     <div className="text-xs text-muted-foreground flex items-center gap-1">
                       <Star className="h-3 w-3 text-yellow-500" />
                       4.9 (89 reviews)
@@ -278,10 +347,9 @@ const ServiceDetailPage = () => {
                 </div>
                 <div className="text-xs text-muted-foreground space-y-1">
                   <p>Since 2020</p>
-                  {/* FIXED: Use users object location */}
-                  <p>Location: {service.users?.location}</p>
+                  <p>Location: {serviceWithDefaults.users?.location || serviceWithDefaults.location}</p>
                   <p>Response Time: Within 1 hour</p>
-                  <p>Languages: {service.languages.join(", ")}</p>
+                  <p>Languages: {Array.isArray(serviceWithDefaults.languages) ? serviceWithDefaults.languages.join(", ") : String(serviceWithDefaults.languages)}</p>
                 </div>
                 <Button className="w-full" onClick={handleContact}>
                   <Phone className="h-4 w-4 mr-2" /> Call Provider

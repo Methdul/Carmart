@@ -1,166 +1,174 @@
-import React from "react";
-import { Heart, BarChart3, MapPin, Calendar, Fuel, Settings, Star, Eye } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+// UPDATE: car-mart-frontend/src/components/VehicleCard.tsx
+// Add proper navigation to vehicle detail page
+
+import { useState } from "react";
+import { useNavigate } from "react-router-dom"; // ADD THIS IMPORT
+import { Heart, MapPin, Calendar, Fuel, Settings, BarChart3, Star, Eye, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-interface Vehicle {
-  id: string;
-  title: string;
-  price: number;
-  year: number;
-  mileage: number;
-  location: string;
-  fuelType: string;
-  transmission: string;
-  image: string;
-  sellerRating?: number;
-  isVerified?: boolean;
-  isFeatured?: boolean;
-  make?: string;
-  model?: string;
-  bodyType?: string;
-  condition?: string;
-  engineCapacity?: string;
-  color?: string;
-  doors?: number;
-  drivetrain?: string;
-  seatingCapacity?: number;
-}
-
 interface VehicleCardProps {
-  vehicle: Vehicle;
+  vehicle: {
+    id: string; // This will be the UUID from database
+    title: string;
+    price: number;
+    year: number;
+    mileage: number;
+    location: string;
+    fuelType: string;
+    transmission: string;
+    image: string;
+    healthScore: number;
+    sellerRating: number;
+    isVerified: boolean;
+    isFeatured: boolean;
+  };
   onSave?: (id: string) => void;
-  onCompare?: (vehicle: Vehicle) => void;
-  onContact?: (id: string) => void;
-  isSaved?: boolean;
-  isInComparison?: boolean;
+  onCompare?: (id: string) => void;
   className?: string;
 }
 
-const VehicleCard: React.FC<VehicleCardProps> = ({
-  vehicle,
-  onSave,
-  onCompare,
-  onContact,
-  isSaved = false,
-  isInComparison = false,
-  className = ""
-}) => {
+const VehicleCard = ({ vehicle, onSave, onCompare, className }: VehicleCardProps) => {
+  const navigate = useNavigate(); // ADD THIS
+  const [imageLoading, setImageLoading] = useState(true);
+  const [isSaved, setIsSaved] = useState(false);
+  const [isInComparison, setIsInComparison] = useState(false);
+
   const formatPrice = (price: number) => {
-    if (price >= 1000000) {
-      return `Rs. ${(price / 1000000).toFixed(1)}M`;
-    } else if (price >= 1000) {
-      return `Rs. ${(price / 1000).toFixed(0)}K`;
-    }
-    return `Rs. ${price.toLocaleString()}`;
+    return new Intl.NumberFormat('en-LK', {
+      style: 'currency',
+      currency: 'LKR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price);
   };
 
   const formatMileage = (mileage: number) => {
-    if (mileage >= 1000) {
-      return `${(mileage / 1000).toFixed(0)}K km`;
-    }
     return `${mileage.toLocaleString()} km`;
   };
 
-  const handleSaveClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onSave?.(vehicle.id);
+  const getHealthScoreColor = (score: number) => {
+    if (score >= 90) return "bg-green-500";
+    if (score >= 70) return "bg-yellow-500";
+    return "bg-red-500";
   };
 
-  const handleCompareClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onCompare?.(vehicle);
+  // ADD THIS HANDLER - Navigate to vehicle detail page
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on buttons
+    if ((e.target as HTMLElement).closest('button')) {
+      return;
+    }
+    
+    console.log('Navigating to vehicle detail:', vehicle.id);
+    navigate(`/vehicles/${vehicle.id}`); // Use the real UUID
   };
 
   const handleContactClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onContact?.(vehicle.id);
+    console.log('Contact seller for vehicle:', vehicle.id);
+  };
+
+  const handleSaveClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsSaved(!isSaved);
+    if (onSave) {
+      onSave(vehicle.id);
+    }
+  };
+
+  const handleCompareClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsInComparison(!isInComparison);
+    if (onCompare) {
+      onCompare(vehicle.id);
+    }
   };
 
   return (
-    <Card className={cn("group hover:shadow-lg transition-all duration-300 overflow-hidden", className)}>
+    <Card 
+      className={cn(
+        "group cursor-pointer hover:shadow-lg transition-all duration-200 overflow-hidden",
+        className
+      )}
+      onClick={handleCardClick} // ADD THIS - Make entire card clickable
+    >
       <div className="relative">
-        {/* Main Image */}
-        <div className="relative w-full h-48 overflow-hidden">
+        {/* Image */}
+        <div className="relative overflow-hidden">
+          {imageLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-muted">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+          )}
           <img
             src={vehicle.image}
             alt={vehicle.title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            loading="lazy"
+            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
+            onLoad={() => setImageLoading(false)}
+            onError={(e) => {
+              setImageLoading(false);
+              (e.target as HTMLImageElement).src = '/placeholder-car.jpg'; // Fallback image
+            }}
           />
           
-          {/* Featured Badge */}
-          {vehicle.isFeatured && (
-            <div className="absolute top-3 left-3">
-              <Badge className="bg-highlight text-white font-medium">
-                Featured
-              </Badge>
-            </div>
-          )}
+          {/* Badges */}
+          <div className="absolute top-3 left-3 flex flex-col gap-2">
+            {vehicle.isFeatured && (
+              <Badge className="bg-primary text-white text-xs">Featured</Badge>
+            )}
+            {vehicle.isVerified && (
+              <Badge className="bg-green-600 text-white text-xs">✓ Verified</Badge>
+            )}
+          </div>
+          
+          {/* Health Score */}
+          <div className="absolute top-3 right-3">
+            <Badge className={cn("text-white text-xs", getHealthScoreColor(vehicle.healthScore))}>
+              {vehicle.healthScore}
+            </Badge>
+          </div>
 
-          {/* Verified Badge */}
-          {vehicle.isVerified && (
-            <div className="absolute top-3 right-3">
-              <Badge className="bg-success text-white font-medium">
-                ✓ Verified
-              </Badge>
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="absolute top-3 right-3 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          {/* Action Buttons - Desktop Only */}
+          <div className="absolute bottom-3 right-3 hidden sm:flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
-              size="icon"
               variant="secondary"
-              className={cn(
-                "w-8 h-8 rounded-full bg-background/80 hover:bg-background",
-                isSaved && "bg-destructive/10 text-destructive"
-              )}
+              size="sm"
               onClick={handleSaveClick}
+              className={cn(
+                "h-8 w-8 p-0 bg-white/90 hover:bg-white",
+                isSaved && "text-destructive"
+              )}
             >
-              <Heart className={cn(
-                "w-4 h-4",
-                isSaved && "fill-destructive text-destructive"
-              )} />
+              <Heart className={cn("h-4 w-4", isSaved && "fill-destructive")} />
             </Button>
             <Button
-              size="icon"
-              variant="secondary" 
+              variant="secondary"
+              size="sm"
+              onClick={handleCompareClick}
               className={cn(
-                "w-8 h-8 rounded-full bg-background/80 hover:bg-background",
+                "h-8 w-8 p-0 bg-white/90 hover:bg-white",
                 isInComparison && "bg-accent text-accent-foreground"
               )}
-              onClick={handleCompareClick}
             >
-              <BarChart3 className="w-4 h-4" />
+              <BarChart3 className="h-4 w-4" />
             </Button>
           </div>
         </div>
 
-        {/* Card Content */}
         <CardContent className="p-4">
-          {/* Title and Price */}
-          <div className="space-y-2 mb-3">
-            <h3 className="font-semibold text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+          {/* Title & Price */}
+          <div className="mb-3">
+            <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors">
               {vehicle.title}
             </h3>
-            <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold text-primary">
-                {formatPrice(vehicle.price)}
-              </span>
-              {vehicle.sellerRating && (
-                <div className="flex items-center space-x-1">
-                  <Star className="w-4 h-4 fill-accent text-accent" />
-                  <span className="text-sm font-medium">{vehicle.sellerRating}</span>
-                </div>
-              )}
-            </div>
+            <p className="text-2xl font-bold text-primary">{formatPrice(vehicle.price)}</p>
           </div>
 
           {/* Vehicle Details */}
-          <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground mb-3">
+          <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground mb-3">
             <div className="flex items-center space-x-1">
               <Calendar className="w-4 h-4" />
               <span>{vehicle.year}</span>
@@ -179,10 +187,16 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
             </div>
           </div>
 
-          {/* Location */}
-          <div className="flex items-center space-x-1 text-sm text-muted-foreground mb-4">
-            <MapPin className="w-4 h-4" />
-            <span>{vehicle.location}</span>
+          {/* Location & Rating */}
+          <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+            <div className="flex items-center space-x-1">
+              <MapPin className="w-4 h-4" />
+              <span>{vehicle.location}</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <Star className="w-4 h-4 text-yellow-500" />
+              <span>{vehicle.sellerRating}</span>
+            </div>
           </div>
 
           {/* Action Buttons for Mobile */}

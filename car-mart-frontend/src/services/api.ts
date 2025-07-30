@@ -1,5 +1,4 @@
 const API_BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:3001/api';
-//                                                                    ^^^^ CHANGED FROM 5000 TO 3001
 
 class ApiService {
   private async request(endpoint: string, options: RequestInit = {}) {
@@ -78,7 +77,7 @@ class ApiService {
     });
   }
 
-  // Services API methods (for future use)
+  // Services API methods
   async getServices(filters?: any) {
     const params = new URLSearchParams();
     if (filters) {
@@ -90,6 +89,11 @@ class ApiService {
     }
     const endpoint = `/services${params.toString() ? `?${params.toString()}` : ''}`;
     return this.request(endpoint);
+  }
+
+  // ✅ ADD THIS MISSING METHOD
+  async getServiceById(id: string) {
+    return this.request(`/services/${id}`);
   }
 }
 
