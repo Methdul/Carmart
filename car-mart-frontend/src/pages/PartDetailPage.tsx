@@ -9,15 +9,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import FavoriteButton from '@/components/FavoriteButton';
 
 const PartDetailPage = () => {
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(0);
-  const [isSaved, setIsSaved] = useState(false);
   
   // Mock part data
   const part = {
-    id: "1",
+    id: "test-part-1",
     title: "Original Toyota Prius Hybrid Battery Pack",
     price: 85000,
     brand: "Toyota",
@@ -131,14 +131,13 @@ const PartDetailPage = () => {
               </div>
               
               <div className="absolute top-4 right-4 flex gap-2">
-                <Button
-                  size="icon"
+                <FavoriteButton
+                  itemType="part"
+                  itemId={part.id}
                   variant="secondary"
-                  className="h-8 w-8 rounded-full bg-background/80"
-                  onClick={() => setIsSaved(!isSaved)}
-                >
-                  <Heart className={`h-4 w-4 ${isSaved ? 'fill-destructive text-destructive' : ''}`} />
-                </Button>
+                  size="icon"
+                  className="h-8 w-8 bg-background/80"
+                />
                 <Button
                   size="icon"
                   variant="secondary"

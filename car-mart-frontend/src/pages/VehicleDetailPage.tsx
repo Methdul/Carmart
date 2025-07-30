@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Heart, Share2, Phone, Mail, MapPin, Calendar, Fuel, Settings,
-  Eye, Camera, Shield, Star, ArrowLeft, BarChart3, MessageCircle
+  Eye, Camera, Shield, Star, ArrowLeft, BarChart3, MessageCircle, Loader2
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -14,68 +14,98 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import vehicleSedan from "@/assets/vehicle-sedan.jpg";
+import FavoriteButton from '@/components/FavoriteButton';
+import { apiService } from "@/services/api";
 
 const VehicleDetailPage = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const [selectedImage, setSelectedImage] = useState(0);
-  const [isSaved, setIsSaved] = useState(false);
+  const [vehicle, setVehicle] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // FIXED: Updated to match backend database schema
-  const vehicle = {
-    id: "1",
-    title: "BMW 3 Series 320i Sport Line",
-    price: 12500000,
-    year: 2020,
-    mileage: 35000,
-    location: "Colombo",
-    fuel_type: "Petrol",        // ← FIXED: was fuelType
-    transmission: "Automatic",
-    body_type: "Sedan",         // ← FIXED: was bodyType  
-    color: "Alpine White",
-    engine_size: "1998cc",      // ← FIXED: was engineCapacity
-    condition: "Excellent",
-    healthScore: 92,
-    images: [vehicleSedan, vehicleSedan, vehicleSedan, vehicleSedan, vehicleSedan],
-    features: [
-      "Leather Seats", "Sunroof", "Navigation System", "Bluetooth",
-      "Reverse Camera", "Parking Sensors", "Alloy Wheels", "LED Headlights"
-    ],
-    description: `This pristine BMW 3 Series 320i Sport Line is a perfect combination of luxury and performance.
-    The vehicle has been meticulously maintained with full service history available. Features include premium leather interior,
-    advanced infotainment system, and exceptional fuel efficiency.`,
-    // FIXED: Replace seller object with users object to match backend schema
-    users: {
-      first_name: "John",
-      last_name: "Perera", 
-      phone: "+94771234567",
-      location: "Colombo",
-      email: "john@example.com"
+  useEffect(() => {
+    const fetchVehicle = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await apiService.getVehicleById(id);
+        if (response.success) {
+          setVehicle(response.data);
+        } else {
+          setError('Vehicle not found');
+        }
+      } catch (err) {
+        setError('Failed to load vehicle details');
+        console.error('Error fetching vehicle:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchVehicle();
+    }
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <p>Loading vehicle details...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error || !vehicle) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-4">Vehicle Not Found</h2>
+            <p className="text-muted-foreground mb-4">{error}</p>
+            <Button onClick={() => navigate('/vehicles')}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Vehicles
+            </Button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Mock fallback data for missing properties
+  const vehicleWithDefaults = {
+    ...vehicle,
+    images: vehicle.images && vehicle.images.length > 0 ? vehicle.images : [vehicleSedan],
+    specs: vehicle.specs || {
+      make: vehicle.make || 'Unknown',
+      model: vehicle.model || 'Unknown', 
+      year: vehicle.year,
+      mileage: vehicle.mileage ? `${vehicle.mileage.toLocaleString()} km` : 'Unknown',
+      fuel_type: vehicle.fuel_type,
+      transmission: vehicle.transmission,
+      engine_capacity: vehicle.engine_capacity || 'Unknown',
     },
-    views_count: 245,           // ← FIXED: Added from backend schema
-    favorites_count: 12,        // ← FIXED: Added from backend schema
-    is_featured: true,          // ← FIXED: Added from backend schema
-    created_at: "2024-01-20T10:30:00Z",
-    specs: {
-      make: "BMW",
-      model: "3 Series",
-      variant: "320i Sport Line",
-      year: 2020,
-      mileage: "35,000 km",
-      fuel_type: "Petrol",      // ← FIXED: was fuelType
-      transmission: "8-Speed Automatic",
-      drivetrain: "RWD",
-      engine: "2.0L Twin Turbo",
-      power: "184 HP",
-      torque: "300 Nm",
-      fuelConsumption: "6.8L/100km"
-    },
+    features: vehicle.features || [],
     history: {
-      accidents: "No reported accidents",
-      owners: "2 previous owners",
-      serviceHistory: "Full service history available",
-      lastService: "March 2024"
+      accidents: "Information not available",
+      owners: "Information not available", 
+      serviceHistory: "Information not available",
+      lastService: "Information not available"
     }
   };
+
+  const currentVehicle = vehicleWithDefaults;
 
   const formatPrice = (price: number) => `Rs. ${price.toLocaleString()}`;
   const handleContactSeller = () => alert("Contact seller functionality would be implemented here");
@@ -94,27 +124,26 @@ const VehicleDetailPage = () => {
           <div className="relative">
             <div className="aspect-[16/10] sm:aspect-[16/9] overflow-hidden">
               <img
-                src={vehicle.images[selectedImage]}
-                alt={vehicle.title}
+                src={currentVehicle.images[selectedImage]}
+                alt={currentVehicle.title}
                 className="w-full h-full object-cover"
               />
               <div className="absolute top-3 left-3 flex gap-2">
                 <Badge className="bg-success text-white text-xs">
                   <Shield className="h-3 w-3 mr-1" /> Verified
                 </Badge>
-                {vehicle.is_featured && (
+                {currentVehicle.is_featured && (
                   <Badge className="bg-accent text-xs">Featured</Badge>
                 )}
               </div>
               <div className="absolute top-3 right-3 flex gap-2">
-                <Button
-                  size="icon"
+                <FavoriteButton
+                  itemType="vehicle"
+                  itemId={currentVehicle.id}
                   variant="secondary"
+                  size="icon"
                   className="h-8 w-8 bg-background/80"
-                  onClick={() => setIsSaved(!isSaved)}
-                >
-                  <Heart className={`h-4 w-4 ${isSaved ? "fill-destructive text-destructive" : ""}`} />
-                </Button>
+                />
                 <Button
                   size="icon"
                   variant="secondary"
@@ -124,13 +153,13 @@ const VehicleDetailPage = () => {
                 </Button>
               </div>
               <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                {selectedImage + 1} / {vehicle.images.length}
+                {selectedImage + 1} / {currentVehicle.images.length}
               </div>
             </div>
 
             {/* Thumbnails */}
             <div className="flex overflow-x-auto gap-2 p-3 sm:p-4 bg-muted/30 rounded-b-md">
-              {vehicle.images.map((img, i) => (
+              {currentVehicle.images.map((img, i) => (
                 <button
                   key={i}
                   onClick={() => setSelectedImage(i)}
@@ -146,14 +175,14 @@ const VehicleDetailPage = () => {
         {/* Title & Price */}
         <Card className="mb-4">
           <CardContent className="p-4 sm:p-6">
-            <h1 className="text-xl sm:text-2xl font-bold text-primary mb-2 leading-tight">{vehicle.title}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-primary mb-2 leading-tight">{currentVehicle.title}</h1>
             <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-muted-foreground mb-2">
-              <span className="flex items-center"><Calendar className="w-4 h-4 mr-1" /> {vehicle.year}</span>
-              <span className="flex items-center"><Eye className="w-4 h-4 mr-1" /> {vehicle.mileage.toLocaleString()} km</span>
-              <span className="flex items-center"><MapPin className="w-4 h-4 mr-1" /> {vehicle.location}</span>
-              <span className="flex items-center"><Eye className="w-4 h-4 mr-1" /> {vehicle.views_count} views</span>
+              <span className="flex items-center"><Calendar className="w-4 h-4 mr-1" /> {currentVehicle.year}</span>
+              <span className="flex items-center"><Eye className="w-4 h-4 mr-1" /> {currentVehicle.mileage ? `${currentVehicle.mileage.toLocaleString()} km` : 'Unknown'}</span>
+              <span className="flex items-center"><MapPin className="w-4 h-4 mr-1" /> {currentVehicle.location}</span>
+              <span className="flex items-center"><Eye className="w-4 w-4 mr-1" /> {currentVehicle.views_count} views</span>
             </div>
-            <div className="text-xl sm:text-2xl font-bold text-primary mb-1">{formatPrice(vehicle.price)}</div>
+            <div className="text-xl sm:text-2xl font-bold text-primary mb-1">{formatPrice(currentVehicle.price)}</div>
             <div className="text-sm text-muted-foreground mb-4">Negotiable</div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="flex-1 sm:flex-none"><BarChart3 className="h-4 w-4 mr-2" /> Compare</Button>
@@ -167,10 +196,10 @@ const VehicleDetailPage = () => {
           <CardContent className="p-4">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
-                ["Year", vehicle.year],
-                ["Kilometers", vehicle.mileage.toLocaleString()],
-                ["Fuel Type", vehicle.fuel_type],          // ← FIXED: was vehicle.fuelType
-                ["Transmission", vehicle.transmission]
+                ["Year", currentVehicle.year?.toString() || 'Unknown'],
+                ["Kilometers", currentVehicle.mileage ? `${currentVehicle.mileage.toLocaleString()} km` : 'Unknown'],
+                ["Fuel Type", currentVehicle.fuel_type || 'Unknown'],
+                ["Transmission", currentVehicle.transmission || 'Unknown']
               ].map(([label, value], i) => (
                 <div key={i} className="text-center p-2 sm:p-3 bg-muted/50 rounded-lg">
                   <div className="text-sm sm:text-lg font-bold text-primary">{value}</div>
@@ -196,15 +225,15 @@ const VehicleDetailPage = () => {
               <div className="p-4 sm:p-6">
                 <TabsContent value="overview" className="mt-0">
                   <h3 className="font-semibold text-primary mb-2">Description</h3>
-                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">{vehicle.description}</p>
+                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">{currentVehicle.description}</p>
                 </TabsContent>
                 <TabsContent value="specs" className="mt-0">
                   <h3 className="font-semibold text-primary mb-3">Specifications</h3>
                   <div className="space-y-2">
-                    {Object.entries(vehicle.specs).map(([key, value]) => (
+                    {Object.entries(currentVehicle.specs).map(([key, value]) => (
                       <div key={key} className="flex justify-between border-b border-border/50 py-1 text-sm">
                         <span className="capitalize text-muted-foreground">{key.replace(/([A-Z])/g, ' $1')}</span>
-                        <span className="text-right font-medium">{value}</span>
+                        <span className="text-right font-medium">{String(value || 'Unknown')}</span>
                       </div>
                     ))}
                   </div>
@@ -212,7 +241,7 @@ const VehicleDetailPage = () => {
                 <TabsContent value="features" className="mt-0">
                   <h3 className="font-semibold text-primary mb-3">Features</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {vehicle.features.map((f, i) => (
+                    {currentVehicle.features.map((f, i) => (
                       <div key={i} className="flex items-center space-x-2 text-sm p-2 bg-muted/40 rounded">
                         <div className="w-2 h-2 bg-success rounded-full" />
                         <span>{f}</span>
@@ -223,10 +252,10 @@ const VehicleDetailPage = () => {
                 <TabsContent value="history" className="mt-0">
                   <h3 className="font-semibold text-primary mb-3">Vehicle History</h3>
                   <div className="space-y-2">
-                    {Object.entries(vehicle.history).map(([key, value]) => (
+                    {Object.entries(currentVehicle.history).map(([key, value]) => (
                       <div key={key} className="flex flex-col sm:flex-row justify-between text-sm border-b border-border/50 pb-2">
                         <span className="capitalize text-muted-foreground">{key.replace(/([A-Z])/g, ' $1')}</span>
-                        <span>{value}</span>
+                        <span>{String(value || 'Information not available')}</span>
                       </div>
                     ))}
                   </div>
@@ -246,13 +275,11 @@ const VehicleDetailPage = () => {
               <Avatar className="h-12 w-12">
                 <AvatarImage src="" />
                 <AvatarFallback className="bg-primary text-white">
-                  {/* FIXED: Use users object instead of seller */}
-                  {vehicle.users?.first_name?.[0]}{vehicle.users?.last_name?.[0]}
+                  {currentVehicle.users?.first_name?.[0]}{currentVehicle.users?.last_name?.[0]}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                {/* FIXED: Use users object instead of seller */}
-                <p className="font-medium text-sm">{vehicle.users?.first_name} {vehicle.users?.last_name}</p>
+                <p className="font-medium text-sm">{currentVehicle.users?.first_name} {currentVehicle.users?.last_name}</p>
                 <div className="text-xs text-muted-foreground flex items-center gap-1">
                   <Star className="h-3 w-3 text-yellow-500" /> 4.8 (127 reviews)
                 </div>
@@ -260,8 +287,7 @@ const VehicleDetailPage = () => {
             </div>
             <div className="text-xs text-muted-foreground space-y-1">
               <p>Since 2019</p>
-              {/* FIXED: Use users object location */}
-              <p>Location: {vehicle.users?.location}</p>
+              <p>Location: {currentVehicle.users?.location}</p>
               <p>Response Time: Within 2 hours</p>
             </div>
             <div className="pt-2">

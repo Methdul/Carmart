@@ -18,6 +18,9 @@ import { authService } from "@/services/authService";
 import { useNavigate } from "react-router-dom";
 import vehicleSedan from "@/assets/vehicle-sedan.jpg";
 import vehicleSuv from "@/assets/vehicle-suv.jpg";
+import { useFavorites } from '@/hooks/useFavorites';
+import FavoriteButton from '@/components/FavoriteButton';
+import { MapPin } from 'lucide-react'; 
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -25,6 +28,7 @@ const DashboardPage = () => {
   const [editingProfile, setEditingProfile] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { favorites, stats, loading: favoritesLoading, error: favoritesError } = useFavorites();
   
   // New state for listing modal
   const [showListingModal, setShowListingModal] = useState(false);
@@ -665,20 +669,138 @@ const DashboardPage = () => {
             {/* Favorites Tab */}
             {activeTab === "favorites" && (
               <div className="space-y-6">
-                <div>
-                  <h1 className="text-3xl font-bold text-primary mb-2">Favorites</h1>
-                  <p className="text-muted-foreground">Your saved vehicles, parts, and services</p>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h1 className="text-3xl font-bold text-primary mb-2">Favorites</h1>
+                    <p className="text-muted-foreground">Your saved vehicles, parts, and services</p>
+                  </div>
+                  {stats.total > 0 && (
+                    <div className="flex gap-4 text-sm text-muted-foreground">
+                      <span>{stats.vehicles} Vehicles</span>
+                      <span>{stats.parts} Parts</span>
+                      <span>{stats.services} Services</span>
+                    </div>
+                  )}
                 </div>
-                <Card>
-                  <CardContent className="text-center py-12">
-                    <Heart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">No favorites yet</h3>
-                    <p className="text-muted-foreground mb-6">Save items you're interested in to view them here</p>
-                    <Button onClick={() => navigate('/search')}>
-                      Browse Listings
-                    </Button>
-                  </CardContent>
-                </Card>
+
+                {favoritesLoading ? (
+                  <div className="text-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+                    <p>Loading your favorites...</p>
+                  </div>
+                ) : favoritesError ? (
+                  <Card>
+                    <CardContent className="text-center py-12">
+                      <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold mb-2">Error loading favorites</h3>
+                      <p className="text-muted-foreground">{favoritesError}</p>
+                    </CardContent>
+                  </Card>
+                ) : favorites.length === 0 ? (
+                  <Card>
+                    <CardContent className="text-center py-12">
+                      <Heart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold mb-2">No favorites yet</h3>
+                      <p className="text-muted-foreground mb-6">
+                        Start browsing and save items you're interested in
+                      </p>
+                      <div className="flex gap-4 justify-center">
+                        <Button onClick={() => navigate('/vehicles')}>
+                          <Car className="h-4 w-4 mr-2" />
+                          Browse Vehicles
+                        </Button>
+                        <Button variant="outline" onClick={() => navigate('/parts')}>
+                          <Wrench className="h-4 w-4 mr-2" />
+                          Browse Parts
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {favorites.map((favorite) => (
+                      favorite.item_details && (
+                        <Card key={favorite.id} className="group hover:shadow-lg transition-shadow">
+                          <CardContent className="p-4">
+                            <div className="relative">
+                              {favorite.item_details.images?.length > 0 && (
+                                <img
+                                  src={favorite.item_details.images[0]}
+                                  alt={favorite.item_details.title}
+                                  className="w-full h-48 object-cover rounded-lg mb-3"
+                                />
+                              )}
+                              <div className="absolute top-2 right-2">
+                                <FavoriteButton
+                                  itemType={favorite.item_type}
+                                  itemId={favorite.item_id}
+                                  variant="ghost"
+                                  className="bg-white/80 hover:bg-white"
+                                />
+                              </div>
+                              <Badge 
+                                className="absolute top-2 left-2 capitalize"
+                                variant={favorite.item_type === 'vehicle' ? 'default' : 
+                                        favorite.item_type === 'part' ? 'secondary' : 'outline'}
+                              >
+                                {favorite.item_type}
+                              </Badge>
+                            </div>
+                            
+                            <h3 className="font-semibold text-lg mb-2 line-clamp-2">
+                              {favorite.item_details.title}
+                            </h3>
+                            
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-xl font-bold text-primary">
+                                Rs. {favorite.item_details.price.toLocaleString()}
+                              </span>
+                              {favorite.item_type === 'vehicle' && favorite.item_details.year && (
+                                <span className="text-sm text-muted-foreground">
+                                  {favorite.item_details.year}
+                                </span>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center text-sm text-muted-foreground mb-3">
+                              <MapPin className="h-4 w-4 mr-1" />
+                              {favorite.item_details.location}
+                            </div>
+                            
+                            {favorite.item_type === 'vehicle' && (
+                              <div className="text-sm text-muted-foreground mb-3">
+                                {favorite.item_details.make} {favorite.item_details.model}
+                              </div>
+                            )}
+                            
+                            {favorite.item_type === 'part' && (
+                              <div className="text-sm text-muted-foreground mb-3">
+                                {favorite.item_details.brand} • {favorite.item_details.category}
+                              </div>
+                            )}
+                            
+                            <div className="flex gap-2">
+                              <Button 
+                                size="sm" 
+                                className="flex-1"
+                                onClick={() => navigate(`/${favorite.item_type}s/${favorite.item_id}`)}
+                              >
+                                View Details
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => {/* Handle contact seller - implement later */}}
+                              >
+                                Contact
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

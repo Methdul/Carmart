@@ -10,15 +10,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import FavoriteButton from '@/components/FavoriteButton';
 
 const ServiceDetailPage = () => {
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(0);
-  const [isSaved, setIsSaved] = useState(false);
 
   // FIXED: Updated to match backend database schema
   const service = {
-    id: "s1",
+    id: "test-service-1",
     title: "Premium Full Car Service",
     description: `Our Premium Full Car Service covers everything your car needs for optimal performance.
     Backed by our certified technicians, we ensure a complete inspection and upgrade of critical systems.`,
@@ -102,9 +102,13 @@ const ServiceDetailPage = () => {
                 )}
               </div>
               <div className="absolute top-3 right-3 flex gap-2">
-                <Button size="icon" variant="secondary" className="h-8 w-8 bg-background/80" onClick={() => setIsSaved(!isSaved)}>
-                  <Heart className={`h-4 w-4 ${isSaved ? 'fill-destructive text-destructive' : ''}`} />
-                </Button>
+                <FavoriteButton
+                  itemType="service"
+                  itemId={service.id}
+                  variant="secondary"
+                  size="icon"
+                  className="h-8 w-8 bg-background/80"
+                />
                 <Button size="icon" variant="secondary" className="h-8 w-8 bg-background/80">
                   <Share2 className="h-4 w-4" />
                 </Button>

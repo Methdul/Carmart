@@ -469,9 +469,237 @@ class ServiceService {
   }
 }
 
+class FavoritesService {
+  // Get all favorites for a user with item details
+  static async getUserFavorites(userId) {
+    const { data, error } = await supabase
+      .from('favorites')
+      .select(`
+        id,
+        item_type,
+        item_id,
+        created_at
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw new Error(`Failed to fetch favorites: ${error.message}`);
+    }
+
+    // Get detailed information for each favorite item
+    const favoritesWithDetails = await Promise.all(
+      data.map(async (favorite) => {
+        let itemDetails = null;
+        
+        try {
+          switch (favorite.item_type) {
+            case 'vehicle':
+              const { data: vehicle } = await supabase
+                .from('vehicles')
+                .select('id, title, make, model, year, price, images, location, is_active')
+                .eq('id', favorite.item_id)
+                .single();
+              itemDetails = vehicle;
+              break;
+              
+            case 'part':
+              const { data: part } = await supabase
+                .from('parts')
+                .select('id, title, brand, category, price, images, location, is_active')
+                .eq('id', favorite.item_id)
+                .single();
+              itemDetails = part;
+              break;
+              
+            case 'service':
+              const { data: service } = await supabase
+                .from('services')
+                .select('id, title, service_type, price, images, location, is_active')
+                .eq('id', favorite.item_id)
+                .single();
+              itemDetails = service;
+              break;
+          }
+        } catch (err) {
+          console.log(`Item ${favorite.item_id} may have been deleted`);
+        }
+
+        return {
+          ...favorite,
+          item_details: itemDetails
+        };
+      })
+    );
+
+    // Filter out favorites where the item no longer exists or is inactive
+    return favoritesWithDetails.filter(fav => 
+      fav.item_details !== null && fav.item_details.is_active !== false
+    );
+  }
+
+  // Check if an item is favorited by user
+  static async isFavorited(userId, itemType, itemId) {
+    const { data, error } = await supabase
+      .from('favorites')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('item_type', itemType)
+      .eq('item_id', itemId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      throw new Error(`Failed to check favorite status: ${error.message}`);
+    }
+
+    return !!data;
+  }
+
+  // Add item to favorites
+  static async addFavorite(userId, itemType, itemId) {
+    // First check if item exists and is active
+    let itemExists = false;
+    try {
+      switch (itemType) {
+        case 'vehicle':
+          const { data: vehicle } = await supabase
+            .from('vehicles')
+            .select('id')
+            .eq('id', itemId)
+            .eq('is_active', true)
+            .single();
+          itemExists = !!vehicle;
+          break;
+          
+        case 'part':
+          const { data: part } = await supabase
+            .from('parts')
+            .select('id')
+            .eq('id', itemId)
+            .eq('is_active', true)
+            .single();
+          itemExists = !!part;
+          break;
+          
+        case 'service':
+          const { data: service } = await supabase
+            .from('services')
+            .select('id')
+            .eq('id', itemId)
+            .eq('is_active', true)
+            .single();
+          itemExists = !!service;
+          break;
+      }
+    } catch (err) {
+      throw new Error(`${itemType} not found or inactive`);
+    }
+
+    if (!itemExists) {
+      throw new Error(`${itemType} not found or inactive`);
+    }
+
+    // Check if already favorited
+    const alreadyFavorited = await this.isFavorited(userId, itemType, itemId);
+    if (alreadyFavorited) {
+      throw new Error('Item already in favorites');
+    }
+
+    // Add to favorites
+    const { data, error } = await supabase
+      .from('favorites')
+      .insert([{
+        user_id: userId,
+        item_type: itemType,
+        item_id: itemId
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to add favorite: ${error.message}`);
+    }
+
+    // Update favorites count on the item
+    await this.updateFavoritesCount(itemType, itemId);
+
+    return data;
+  }
+
+  // Remove item from favorites
+  static async removeFavorite(userId, itemType, itemId) {
+    const { data, error } = await supabase
+      .from('favorites')
+      .delete()
+      .eq('user_id', userId)
+      .eq('item_type', itemType)
+      .eq('item_id', itemId)
+      .select();
+
+    if (error) {
+      throw new Error(`Failed to remove favorite: ${error.message}`);
+    }
+
+    if (data.length === 0) {
+      throw new Error('Favorite not found');
+    }
+
+    // Update favorites count on the item
+    await this.updateFavoritesCount(itemType, itemId);
+
+    return data[0];
+  }
+
+  // Update favorites count on item
+  static async updateFavoritesCount(itemType, itemId) {
+    try {
+      // Count favorites for this item
+      const { count, error: countError } = await supabase
+        .from('favorites')
+        .select('*', { count: 'exact', head: true })
+        .eq('item_type', itemType)
+        .eq('item_id', itemId);
+
+      if (countError) return;
+
+      // Update the count on the item
+      const tableName = itemType === 'part' ? 'parts' : `${itemType}s`;
+      await supabase
+        .from(tableName)
+        .update({ favorites_count: count || 0 })
+        .eq('id', itemId);
+    } catch (err) {
+      console.log('Error updating favorites count:', err.message);
+    }
+  }
+
+  // Get favorites statistics for a user
+  static async getFavoritesStats(userId) {
+    const { data, error } = await supabase
+      .from('favorites')
+      .select('item_type')
+      .eq('user_id', userId);
+
+    if (error) {
+      throw new Error(`Failed to get favorites stats: ${error.message}`);
+    }
+
+    const stats = {
+      total: data.length,
+      vehicles: data.filter(f => f.item_type === 'vehicle').length,
+      parts: data.filter(f => f.item_type === 'part').length,
+      services: data.filter(f => f.item_type === 'service').length
+    };
+
+    return stats;
+  }
+}
+
+
 module.exports = {
   VehicleService,
   PartService,
   UserService,
-  ServiceService
+  ServiceService,
+  FavoritesService
 };
