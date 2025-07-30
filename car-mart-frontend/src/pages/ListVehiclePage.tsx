@@ -231,6 +231,15 @@ const ListVehiclePage = () => {
     }
   };
 
+  // Add this function with your other functions
+  const handleUploadClick = () => {
+    console.log('🧪 Upload button clicked!');
+    const fileInput = document.getElementById('photo-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
+  };
+
   const removeImage = async (index: number) => {
     const fileToRemove = uploadedFiles[index];
     
@@ -766,17 +775,16 @@ const ListVehiclePage = () => {
                           id="photo-upload"
                           disabled={isUploading}
                         />
-                        <Label htmlFor="photo-upload">
-                          <Button 
-                            variant="outline" 
-                            className="mt-4 h-12 px-6 cursor-pointer"
-                            type="button"
-                            disabled={isUploading}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            {isUploading ? 'Uploading...' : 'Choose Photos'}
-                          </Button>
-                        </Label>
+                        <Button 
+                          variant="outline" 
+                          className="mt-4 h-12 px-6"
+                          type="button"
+                          disabled={isUploading}
+                          onClick={handleUploadClick}
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          {isUploading ? 'Uploading...' : 'Choose Photos'}
+                        </Button>
                       </div>
                     </div>
 
