@@ -46,9 +46,9 @@ app.use('/api/parts', require('./routes/parts'));
 app.use('/api/services', require('./routes/services'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
-
-// ✨ NEW: Upload route - ADD THIS LINE
 app.use('/api/upload', require('./routes/upload'));
+app.use('/api/favorites', require('./routes/favorites'));
+app.use('/api/search', require('./routes/search'));
 
 // Global error handling middleware
 app.use((error, req, res, next) => {

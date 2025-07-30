@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { User, Settings, Heart, Eye, MessageSquare, PlusCircle, Edit, Trash2, BarChart3, Star, Car, Wrench, ArrowLeft, ChevronRight, X, Building2, Crown, Shield, Zap, CheckCircle, Upload, CreditCard } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, Settings, Heart, Eye, MessageSquare, PlusCircle, Edit, Trash2, BarChart3, Star, Car, Wrench, ArrowLeft, ChevronRight, X, Building2, Crown, Shield, Zap, CheckCircle, Upload, CreditCard, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,15 +10,21 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import Header from "@/components/Header";
 import VehicleCard from "@/components/VehicleCard";
 import MessagingSystem from "@/components/MessagingSystem";
+import { authService } from "@/services/authService";
+import { useNavigate } from "react-router-dom";
 import vehicleSedan from "@/assets/vehicle-sedan.jpg";
 import vehicleSuv from "@/assets/vehicle-suv.jpg";
 
 const DashboardPage = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [editingProfile, setEditingProfile] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   
   // New state for listing modal
   const [showListingModal, setShowListingModal] = useState(false);
@@ -38,242 +44,196 @@ const DashboardPage = () => {
     selectedPlan: ""
   });
   
-  // Mock user data with account type
-  const [user, setUser] = useState({
-    id: "user1",
-    name: "John Perera",
-    email: "john@example.com",
-    phone: "+94 77 123 4567",
-    location: "Colombo",
-    memberSince: "January 2022",
-    rating: 4.8,
-    reviewCount: 23,
-    verified: true,
-    avatar: "",
-    bio: "Car enthusiast and collector. Specializing in premium German and Japanese vehicles.",
-    accountType: "personal" // "personal" or "business"
-  });
+  // Real user state (replacing mock data)
+  const [user, setUser] = useState<any>(null);
+  
+  // Load real user data
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        setLoading(true);
+        setError("");
 
-  // NEW Mock user's listings with updated data
+        // Check if user is logged in
+        if (!authService.isLoggedIn()) {
+          navigate('/auth');
+          return;
+        }
+
+        // Get user from localStorage
+        const currentUser = authService.getCurrentUser();
+        if (currentUser) {
+          setUser({
+            id: currentUser.id,
+            name: `${currentUser.first_name} ${currentUser.last_name}`,
+            email: currentUser.email,
+            phone: currentUser.phone || "+94 77 123 4567",
+            location: currentUser.location || "Colombo",
+            memberSince: currentUser.created_at ? 
+              new Date(currentUser.created_at).toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long' 
+              }) : "January 2024",
+            rating: 4.8, // Default values until we implement reviews
+            reviewCount: 0,
+            verified: currentUser.is_verified || false,
+            avatar: "",
+            bio: "Car enthusiast and marketplace member",
+            accountType: currentUser.account_type || "personal",
+            totalListings: 0,
+            totalViews: 0,
+            totalInquiries: 0
+          });
+        } else {
+          throw new Error("User data not found");
+        }
+
+      } catch (error) {
+        console.error("Failed to load user data:", error);
+        setError("Failed to load profile data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserData();
+  }, [navigate]);
+
+  // Mock listings data (will be replaced with real API calls later)
   const userListings = [
     {
       id: "1",
-      title: "Lexus ES 350 F Sport",
-      price: 18500000,
-      year: 2022,
-      mileage: 15000,
-      location: "Colombo",
-      fuelType: "Petrol",
-      transmission: "Automatic",
-      image: "https://images.unsplash.com/photo-1563720223185-11003d516935?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
-      healthScore: 94,
-      sellerRating: 4.9,
-      isVerified: true,
-      isFeatured: true,
-      views: 2156,
-      inquiries: 67,
-      status: "active"
-    },
-    {
-      id: "2",
-      title: "Infiniti QX60 Premium",
-      price: 21800000,
-      year: 2023,
-      mileage: 8000,
-      location: "Kandy",
-      fuelType: "Petrol",
-      transmission: "CVT",
-      image: "https://images.unsplash.com/photo-1570611178717-4c68f8ffe4b1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
-      healthScore: 91,
-      sellerRating: 4.7,
-      isVerified: true,
-      isFeatured: false,
-      views: 1384,
-      inquiries: 34,
-      status: "active"
-    }
-  ];
-
-  // NEW Saved vehicles with updated data
-  const savedVehicles = [
-    {
-      id: "3",
-      title: "Ford Mustang GT Premium",
-      price: 24500000,
-      year: 2022,
-      mileage: 12000,
-      location: "Galle",
-      fuelType: "Petrol",
-      transmission: "Manual",
-      image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
-      healthScore: 89,
-      sellerRating: 4.8,
-      isVerified: true,
-      isFeatured: true
-    }
-  ];
-
-  // NEW Messages with updated data
-  const messages = [
-    {
-      id: "1",
-      from: "Ravi Perera",
-      subject: "Inquiry about Lexus ES 350",
-      preview: "Hi, I'm very interested in your Lexus. Is the F Sport package included?",
-      time: "3 hours ago",
-      unread: true,
-      avatar: "",
-      messages: [
-        {
-          id: "1",
-          text: "Hi, I'm very interested in your Lexus. Is the F Sport package included?",
-          sender: "other" as const,
-          timestamp: "3 hours ago",
-          status: "read" as const,
-          type: "text" as const
-        }
-      ]
+      title: "BMW 3 Series 320i",
+      price: 4500000,
+      year: 2020,
+      image: vehicleSedan,
+      status: "active",
+      views: 245,
+      inquiries: 12,
+      type: "vehicle"
     },
     {
       id: "2", 
-      from: "Priya Silva",
-      subject: "QX60 Test Drive Request",
-      preview: "Can we schedule a test drive for the Infiniti QX60 this weekend?",
-      time: "1 day ago",
-      unread: false,
-      avatar: "",
-      messages: [
-        {
-          id: "1",
-          text: "Can we schedule a test drive for the Infiniti QX60 this weekend?",
-          sender: "other" as const,
-          timestamp: "1 day ago", 
-          status: "read" as const,
-          type: "text" as const
-        }
-      ]
+      title: "Toyota RAV4 Hybrid",
+      price: 8500000,
+      year: 2022,
+      image: vehicleSuv,
+      status: "active",
+      views: 189,
+      inquiries: 8,
+      type: "vehicle"
     }
   ];
 
-  // Business plans
-  const businessPlans = [
-    {
-      id: "basic",
-      name: "Business Basic",
-      price: "Free",
-      features: [
-        "Unlimited listings",
-        "Dealer verification badge",
-        "Basic analytics",
-        "Business contact display",
-        "Standard support"
-      ]
-    },
-    {
-      id: "pro",
-      name: "Business Pro", 
-      price: "Rs. 2,500/month",
-      features: [
-        "Everything in Basic",
-        "Featured listing discounts",
-        "Priority customer support", 
-        "Bulk listing tools",
-        "Advanced business profile",
-        "Premium placement"
-      ],
-      popular: true
-    }
-  ];
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
+              <p className="text-muted-foreground">Loading your dashboard...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  // Listing options for the modal
-  const listingOptions = [
-    {
-      type: "vehicle",
-      title: "Vehicle",
-      description: "List cars, bikes, trucks, and other vehicles",
-      icon: Car,
-      color: "bg-blue-500",
-      route: "/list-vehicle"
-    },
-    {
-      type: "parts",
-      title: "Parts",
-      description: "Sell automotive parts and accessories", 
-      icon: Wrench,
-      color: "bg-green-500",
-      route: "/list-parts"
-    },
-    {
-      type: "services",
-      title: "Services",
-      description: "Offer automotive services and repairs",
-      icon: Settings,
-      color: "bg-purple-500",
-      route: "/list-services"
-    }
-  ];
+  // Show error state
+  if (error || !user) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+              <p className="text-destructive mb-4">{error || "User not found"}</p>
+              <Button onClick={() => window.location.reload()}>
+                Try Again
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const handleListingOptionClick = (option: any) => {
-    setShowListingModal(false);
-    window.location.href = option.route;
-  };
-
-  // Business conversion handlers
   const handleBusinessConversion = () => {
     setShowBusinessModal(true);
     setBusinessConversionStep(1);
   };
 
-  const handleNextStep = () => {
-    if (businessConversionStep < 3) {
-      setBusinessConversionStep(businessConversionStep + 1);
+  const nextBusinessStep = () => {
+    if (businessConversionStep === 1) {
+      setBusinessConversionStep(2);
+    } else if (businessConversionStep === 2) {
+      setBusinessConversionStep(3);
+    } else {
+      // Complete conversion
+      setUser({ ...user, accountType: "business" });
+      setShowBusinessModal(false);
+      setBusinessConversionStep(1);
     }
   };
 
-  const handlePrevStep = () => {
-    if (businessConversionStep > 1) {
-      setBusinessConversionStep(businessConversionStep - 1);
+  const handleListingTypeSelect = (type: string) => {
+    setSelectedListingType(type);
+    setShowListingModal(false);
+    
+    // Navigate to appropriate listing page
+    switch (type) {
+      case 'vehicle':
+        navigate('/list-vehicle');
+        break;
+      case 'part':
+        navigate('/list-parts');
+        break;
+      case 'service':
+        navigate('/list-services');
+        break;
     }
   };
-
-  const handleCompleteConversion = () => {
-    // Convert account to business
-    setUser(prev => ({ ...prev, accountType: "business" }));
-    setShowBusinessModal(false);
-    setBusinessConversionStep(1);
-    // Reset form data
-    setBusinessFormData({
-      companyName: "",
-      businessType: "",
-      registrationNumber: "",
-      taxId: "",
-      businessPhone: "",
-      businessEmail: "",
-      businessAddress: "",
-      selectedPlan: ""
-    });
-  };
-
-  const getBusinessBenefits = () => [
-    { icon: Crown, text: "Dealer verification badge" },
-    { icon: Zap, text: "Unlimited listings" },
-    { icon: BarChart3, text: "Basic analytics dashboard" },
-    { icon: Shield, text: "Priority customer support" },
-    { icon: Star, text: "Featured listing discounts" },
-    { icon: Building2, text: "Business contact display" }
-  ];
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar */}
-          <div className="lg:w-64">
+          <div className="w-full lg:w-80 space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Dashboard</CardTitle>
+                <div className="flex items-center space-x-4">
+                  <Avatar className="w-16 h-16">
+                    <AvatarImage src={user.avatar} />
+                    <AvatarFallback className="bg-primary text-white text-lg">
+                      {user.name.split(' ').map((n: string) => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <h2 className="text-xl font-bold text-primary">{user.name}</h2>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <div className="flex items-center space-x-1">
+                        <Star className="h-4 w-4 text-yellow-500" />
+                        <span className="text-sm font-medium">{user.rating}</span>
+                        <span className="text-sm text-muted-foreground">({user.reviewCount} reviews)</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2 mt-2">
+                      {user.verified && (
+                        <Badge className="bg-success text-xs">Verified</Badge>
+                      )}
+                      {user.accountType === "business" && (
+                        <Badge className="bg-blue-100 text-blue-800 text-xs">Business</Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <nav className="space-y-2">
@@ -290,16 +250,16 @@ const DashboardPage = () => {
                     className="w-full justify-start"
                     onClick={() => setActiveTab("listings")}
                   >
-                    <PlusCircle className="h-4 w-4 mr-2" />
+                    <Car className="h-4 w-4 mr-2" />
                     My Listings
                   </Button>
                   <Button
-                    variant={activeTab === "saved" ? "default" : "ghost"}
+                    variant={activeTab === "favorites" ? "default" : "ghost"}
                     className="w-full justify-start"
-                    onClick={() => setActiveTab("saved")}
+                    onClick={() => setActiveTab("favorites")}
                   >
                     <Heart className="h-4 w-4 mr-2" />
-                    Saved Vehicles
+                    Favorites
                   </Button>
                   <Button
                     variant={activeTab === "messages" ? "default" : "ghost"}
@@ -345,7 +305,7 @@ const DashboardPage = () => {
                   <Card>
                     <CardContent className="p-6 text-center">
                       <div className="text-2xl font-bold text-primary mb-2">
-                        {userListings.reduce((total, vehicle) => total + vehicle.views, 0)}
+                        {userListings.reduce((total, item) => total + item.views, 0)}
                       </div>
                       <div className="text-sm text-muted-foreground">Total Views</div>
                     </CardContent>
@@ -353,17 +313,17 @@ const DashboardPage = () => {
                   <Card>
                     <CardContent className="p-6 text-center">
                       <div className="text-2xl font-bold text-primary mb-2">
-                        {userListings.reduce((total, vehicle) => total + vehicle.inquiries, 0)}
+                        {userListings.reduce((total, item) => total + item.inquiries, 0)}
                       </div>
-                      <div className="text-sm text-muted-foreground">Total Inquiries</div>
+                      <div className="text-sm text-muted-foreground">Inquiries</div>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="p-6 text-center">
                       <div className="text-2xl font-bold text-primary mb-2">
-                        {savedVehicles.length}
+                        {user.rating}
                       </div>
-                      <div className="text-sm text-muted-foreground">Saved Vehicles</div>
+                      <div className="text-sm text-muted-foreground">Rating</div>
                     </CardContent>
                   </Card>
                 </div>
@@ -374,26 +334,26 @@ const DashboardPage = () => {
                     <CardTitle>Quick Actions</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <Button
-                        onClick={() => setShowListingModal(true)}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <Button 
                         className="h-20 flex flex-col items-center justify-center space-y-2"
+                        onClick={() => setShowListingModal(true)}
                       >
                         <PlusCircle className="h-6 w-6" />
-                        <span>New Listing</span>
+                        <span>Create Listing</span>
                       </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => setActiveTab("messages")}
+                      <Button 
+                        variant="outline" 
                         className="h-20 flex flex-col items-center justify-center space-y-2"
+                        onClick={() => setActiveTab("messages")}
                       >
                         <MessageSquare className="h-6 w-6" />
-                        <span>View Messages</span>
+                        <span>Messages</span>
                       </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => setActiveTab("profile")}
+                      <Button 
+                        variant="outline" 
                         className="h-20 flex flex-col items-center justify-center space-y-2"
+                        onClick={() => setActiveTab("profile")}
                       >
                         <Settings className="h-6 w-6" />
                         <span>Settings</span>
@@ -402,41 +362,91 @@ const DashboardPage = () => {
                   </CardContent>
                 </Card>
 
-                {/* Recent Activity */}
+                {/* Recent Listings */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Recent Activity</CardTitle>
+                    <div className="flex items-center justify-between">
+                      <CardTitle>Recent Listings</CardTitle>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => setActiveTab("listings")}
+                      >
+                        View All <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-primary rounded-full"></div>
-                        <span className="text-sm">New inquiry received for Lexus ES 350</span>
-                        <span className="text-xs text-muted-foreground ml-auto">3 hours ago</span>
+                    {userListings.length > 0 ? (
+                      <div className="space-y-4">
+                        {userListings.slice(0, 3).map((listing) => (
+                          <div key={listing.id} className="flex items-center space-x-4 p-4 border rounded-lg">
+                            <img 
+                              src={listing.image} 
+                              alt={listing.title}
+                              className="w-16 h-16 object-cover rounded-lg"
+                            />
+                            <div className="flex-1">
+                              <h4 className="font-semibold">{listing.title}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                Rs. {listing.price.toLocaleString()}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm font-medium">{listing.views} views</div>
+                              <div className="text-sm text-muted-foreground">{listing.inquiries} inquiries</div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      <div className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-sm">Your Infiniti QX60 listing received 15 new views</span>
-                        <span className="text-xs text-muted-foreground ml-auto">1 day ago</span>
+                    ) : (
+                      <div className="text-center py-8">
+                        <Car className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <p className="text-muted-foreground mb-4">No listings yet</p>
+                        <Button onClick={() => setShowListingModal(true)}>
+                          Create Your First Listing
+                        </Button>
                       </div>
-                      <div className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <span className="text-sm">Profile updated successfully</span>
-                        <span className="text-xs text-muted-foreground ml-auto">2 days ago</span>
-                      </div>
-                    </div>
+                    )}
                   </CardContent>
                 </Card>
+
+                {/* Business Account Upgrade */}
+                {user.accountType === "personal" && (
+                  <Card className="border-primary/20 bg-primary/5">
+                    <CardHeader>
+                      <div className="flex items-center space-x-2">
+                        <Building2 className="h-5 w-5 text-primary" />
+                        <CardTitle className="text-primary">Upgrade to Business Account</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground mb-4">
+                        Unlock premium features for your automotive business
+                      </p>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        <Badge variant="outline">Priority Support</Badge>
+                        <Badge variant="outline">Advanced Analytics</Badge>
+                        <Badge variant="outline">Bulk Listings</Badge>
+                        <Badge variant="outline">Featured Placement</Badge>
+                      </div>
+                      <Button onClick={handleBusinessConversion}>
+                        <Crown className="h-4 w-4 mr-2" />
+                        Upgrade Now
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             )}
 
             {/* My Listings Tab */}
             {activeTab === "listings" && (
               <div className="space-y-6">
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <div>
                     <h1 className="text-3xl font-bold text-primary mb-2">My Listings</h1>
-                    <p className="text-muted-foreground">Manage your vehicle listings</p>
+                    <p className="text-muted-foreground">Manage your vehicles, parts, and services</p>
                   </div>
                   <Button onClick={() => setShowListingModal(true)}>
                     <PlusCircle className="h-4 w-4 mr-2" />
@@ -444,159 +454,95 @@ const DashboardPage = () => {
                   </Button>
                 </div>
 
-                <div className="grid grid-cols-1 gap-6">
-                  {userListings.map((vehicle) => (
-                    <div key={vehicle.id} className="flex flex-col md:flex-row bg-card rounded-lg border p-6 space-y-4 md:space-y-0 md:space-x-6">
-                      <div className="md:w-48 h-32 bg-muted rounded-lg overflow-hidden flex-shrink-0">
-                        <img 
-                          src={vehicle.image} 
-                          alt={vehicle.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-semibold text-lg">{vehicle.title}</h3>
-                          <div className="flex space-x-2">
-                            <Button variant="ghost" size="sm">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                {userListings.length > 0 ? (
+                  <div className="space-y-4">
+                    {userListings.map((listing) => (
+                      <Card key={listing.id}>
+                        <CardContent className="p-6">
+                          <div className="flex items-center space-x-4">
+                            <img 
+                              src={listing.image} 
+                              alt={listing.title}
+                              className="w-24 h-24 object-cover rounded-lg"
+                            />
+                            <div className="flex-1">
+                              <h3 className="text-lg font-semibold mb-2">{listing.title}</h3>
+                              <p className="text-xl font-bold text-primary mb-2">
+                                Rs. {listing.price.toLocaleString()}
+                              </p>
+                              <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                                <span className="flex items-center">
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  {listing.views} views
+                                </span>
+                                <span className="flex items-center">
+                                  <MessageSquare className="h-4 w-4 mr-1" />
+                                  {listing.inquiries} inquiries
+                                </span>
+                                <Badge 
+                                  variant={listing.status === "active" ? "default" : "secondary"}
+                                  className="capitalize"
+                                >
+                                  {listing.status}
+                                </Badge>
+                              </div>
+                            </div>
+                            <div className="flex flex-col space-y-2">
+                              <Button variant="outline" size="sm">
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit
+                              </Button>
+                              <Button variant="destructive" size="sm">
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-muted-foreground mb-4">
-                          <span>{vehicle.year}</span>
-                          <span>{vehicle.mileage.toLocaleString()} km</span>
-                          <span>{vehicle.location}</span>
-                          <span>{vehicle.fuelType}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <p className="text-xl font-bold text-primary">
-                            Rs. {vehicle.price.toLocaleString()}
-                          </p>
-                          <div className="flex justify-between text-sm text-muted-foreground mb-2">
-                            <span>{vehicle.views} views</span>
-                            <span>{vehicle.inquiries} inquiries</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <Badge className={vehicle.status === "active" ? 'bg-success' : 'bg-muted'}>
-                              {vehicle.status}
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Saved Vehicles Tab */}
-            {activeTab === "saved" && (
-              <div className="space-y-6">
-                <div>
-                  <h1 className="text-3xl font-bold text-primary mb-2">Saved Vehicles</h1>
-                  <p className="text-muted-foreground">Keep track of vehicles you're interested in</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {savedVehicles.map((vehicle) => (
-                    <VehicleCard
-                      key={vehicle.id}
-                      vehicle={vehicle}
-                      onSave={() => {}}
-                      onCompare={() => {}}
-                      isSaved={true}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Messages Tab */}
-            {activeTab === "messages" && (
-              <div className="space-y-6">
-                <MessagingSystem 
-                  conversations={messages} 
-                  onBack={() => setActiveTab("overview")}
-                />
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <Card>
+                    <CardContent className="text-center py-12">
+                      <Car className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold mb-2">No listings yet</h3>
+                      <p className="text-muted-foreground mb-6">Start selling by creating your first listing</p>
+                      <Button onClick={() => setShowListingModal(true)}>
+                        <PlusCircle className="h-4 w-4 mr-2" />
+                        Create Your First Listing
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             )}
 
             {/* Profile Settings Tab */}
             {activeTab === "profile" && (
               <div className="space-y-6">
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <div>
                     <h1 className="text-3xl font-bold text-primary mb-2">Profile Settings</h1>
                     <p className="text-muted-foreground">Manage your account information</p>
                   </div>
-                  <Button
-                    variant="outline"
+                  <Button 
+                    variant={editingProfile ? "default" : "outline"}
                     onClick={() => setEditingProfile(!editingProfile)}
                   >
-                    <Edit className="h-4 w-4 mr-2" />
-                    {editingProfile ? "Cancel" : "Edit Profile"}
+                    {editingProfile ? (
+                      <>
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Save Changes
+                      </>
+                    ) : (
+                      <>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit Profile
+                      </>
+                    )}
                   </Button>
                 </div>
-
-                {/* Account Type Section */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      {user.accountType === "business" ? <Building2 className="h-5 w-5 mr-2" /> : <User className="h-5 w-5 mr-2" />}
-                      Account Type: {user.accountType === "business" ? "Business" : "Personal"}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {user.accountType === "personal" ? (
-                      <div className="space-y-4">
-                        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6">
-                          <div className="flex items-start space-x-4">
-                            <div className="bg-blue-100 p-3 rounded-full">
-                              <Building2 className="h-6 w-6 text-blue-600" />
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-lg mb-2">Upgrade to Business Account</h3>
-                              <p className="text-muted-foreground mb-4">
-                                Get verified dealer status, unlimited listings, and premium features to boost your sales.
-                              </p>
-                              
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-                                {getBusinessBenefits().map((benefit, index) => {
-                                  const IconComponent = benefit.icon;
-                                  return (
-                                    <div key={index} className="flex items-center space-x-2">
-                                      <IconComponent className="h-4 w-4 text-primary" />
-                                      <span className="text-sm">{benefit.text}</span>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                              
-                              <Button onClick={handleBusinessConversion} className="w-full sm:w-auto">
-                                <Crown className="h-4 w-4 mr-2" />
-                                Upgrade to Business
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center space-x-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                        <div className="bg-blue-100 p-2 rounded-full">
-                          <CheckCircle className="h-5 w-5 text-blue-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium">Business Account Active</p>
-                          <p className="text-sm text-muted-foreground">Enjoy all premium business features</p>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
 
                 {/* Profile Information */}
                 <Card>
@@ -609,7 +555,7 @@ const DashboardPage = () => {
                         <Avatar className="w-20 h-20 sm:w-24 sm:h-24">
                           <AvatarImage src={user.avatar} />
                           <AvatarFallback className="text-lg">
-                            {user.name.split(' ').map(n => n[0]).join('')}
+                            {user.name.split(' ').map((n: string) => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
                         {editingProfile && (
@@ -630,7 +576,7 @@ const DashboardPage = () => {
                               <Badge className="bg-success text-xs">Verified</Badge>
                             )}
                             {user.accountType === "business" && (
-                              <Badge className="bg-blue-100 text-blue-800 text-xs">Dealer</Badge>
+                              <Badge className="bg-blue-100 text-blue-800 text-xs">Business</Badge>
                             )}
                           </div>
                         </div>
@@ -688,18 +634,49 @@ const DashboardPage = () => {
                         value={user.bio}
                         disabled={!editingProfile}
                         className="min-h-[100px] text-sm sm:text-base"
-                        placeholder="Tell us about yourself..."
                       />
                     </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
-                    {editingProfile && (
-                      <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-                        <Button className="w-full sm:w-auto">Save Changes</Button>
-                        <Button variant="outline" onClick={() => setEditingProfile(false)} className="w-full sm:w-auto">
-                          Cancel
-                        </Button>
-                      </div>
-                    )}
+            {/* Messages Tab */}
+            {activeTab === "messages" && (
+              <div className="space-y-6">
+                <div>
+                  <h1 className="text-3xl font-bold text-primary mb-2">Messages</h1>
+                  <p className="text-muted-foreground">Communicate with buyers and sellers</p>
+                </div>
+                  <Card>
+                    <CardContent className="text-center py-12">
+                      <MessageSquare className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold mb-2">Messages Coming Soon</h3>
+                      <p className="text-muted-foreground mb-6">Real-time messaging will be available in the next update</p>
+                      <Button variant="outline" disabled>
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Messaging System
+                      </Button>
+                    </CardContent>
+                  </Card>
+              </div>
+            )}
+
+            {/* Favorites Tab */}
+            {activeTab === "favorites" && (
+              <div className="space-y-6">
+                <div>
+                  <h1 className="text-3xl font-bold text-primary mb-2">Favorites</h1>
+                  <p className="text-muted-foreground">Your saved vehicles, parts, and services</p>
+                </div>
+                <Card>
+                  <CardContent className="text-center py-12">
+                    <Heart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">No favorites yet</h3>
+                    <p className="text-muted-foreground mb-6">Save items you're interested in to view them here</p>
+                    <Button onClick={() => navigate('/search')}>
+                      Browse Listings
+                    </Button>
                   </CardContent>
                 </Card>
               </div>
@@ -714,273 +691,88 @@ const DashboardPage = () => {
           <DialogHeader>
             <DialogTitle>What would you like to list?</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            {listingOptions.map((option) => {
-              const IconComponent = option.icon;
-              return (
-                <button
-                  key={option.type}
-                  onClick={() => handleListingOptionClick(option)}
-                  className="flex items-center p-4 border rounded-lg hover:bg-accent transition-colors text-left"
-                >
-                  <div className={`${option.color} p-3 rounded-lg mr-4`}>
-                    <IconComponent className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">{option.title}</h3>
-                    <p className="text-sm text-muted-foreground">{option.description}</p>
-                  </div>
-                </button>
-              );
-            })}
+          <div className="grid grid-cols-1 gap-4 py-4">
+            <Button
+              variant="outline"
+              className="h-20 flex flex-col items-center justify-center space-y-2"
+              onClick={() => handleListingTypeSelect('vehicle')}
+            >
+              <Car className="h-8 w-8" />
+              <span>Vehicle</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-20 flex flex-col items-center justify-center space-y-2"
+              onClick={() => handleListingTypeSelect('part')}
+            >
+              <Settings className="h-8 w-8" />
+              <span>Auto Part</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-20 flex flex-col items-center justify-center space-y-2"
+              onClick={() => handleListingTypeSelect('service')}
+            >
+              <Wrench className="h-8 w-8" />
+              <span>Service</span>
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Business Account Conversion Modal */}
-      <Dialog open={showBusinessModal} onOpenChange={() => setShowBusinessModal(false)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      {/* Business Conversion Modal */}
+      <Dialog open={showBusinessModal} onOpenChange={setShowBusinessModal}>
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center text-xl sm:text-2xl">
-              <Crown className="h-5 w-5 sm:h-6 sm:w-6 mr-2 text-primary" />
-              Upgrade to Business Account
+            <DialogTitle className="flex items-center space-x-2">
+              <Building2 className="h-5 w-5" />
+              <span>Upgrade to Business Account</span>
             </DialogTitle>
           </DialogHeader>
           
-          <div className="py-4 sm:py-6">
-            {/* Step Indicator */}
-            <div className="flex items-center justify-center mb-6 sm:mb-8">
-              {[1, 2, 3].map((step) => (
-                <div key={step} className="flex items-center">
-                  <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm sm:text-base font-medium ${
-                    step <= businessConversionStep ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'
-                  }`}>
-                    {step < businessConversionStep ? <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" /> : step}
-                  </div>
-                  {step < 3 && (
-                    <div className={`w-8 sm:w-12 h-1 mx-2 ${
-                      step < businessConversionStep ? 'bg-primary' : 'bg-muted'
-                    }`} />
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Step 1: Business Information */}
-            {businessConversionStep === 1 && (
-              <div className="space-y-4 sm:space-y-6">
-                <div>
-                  <h3 className="text-lg sm:text-xl font-semibold mb-2">Business Information</h3>
-                  <p className="text-sm sm:text-base text-muted-foreground">Tell us about your business</p>
-                </div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="companyName" className="text-sm sm:text-base">Company Name *</Label>
-                    <Input
-                      id="companyName"
-                      value={businessFormData.companyName}
-                      onChange={(e) => setBusinessFormData(prev => ({ ...prev, companyName: e.target.value }))}
-                      placeholder="Your Business Name"
-                      className="h-10 sm:h-12"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="businessType" className="text-sm sm:text-base">Business Type *</Label>
-                    <Select value={businessFormData.businessType} onValueChange={(value) => setBusinessFormData(prev => ({ ...prev, businessType: value }))}>
-                      <SelectTrigger className="h-10 sm:h-12">
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="dealer">Car Dealer</SelectItem>
-                        <SelectItem value="garage">Auto Garage</SelectItem>
-                        <SelectItem value="parts">Parts Supplier</SelectItem>
-                        <SelectItem value="rental">Car Rental</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="registrationNumber" className="text-sm sm:text-base">Registration Number</Label>
-                    <Input
-                      id="registrationNumber"
-                      value={businessFormData.registrationNumber}
-                      onChange={(e) => setBusinessFormData(prev => ({ ...prev, registrationNumber: e.target.value }))}
-                      placeholder="BR/PV/12345"
-                      className="h-10 sm:h-12"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="taxId" className="text-sm sm:text-base">Tax ID</Label>
-                    <Input
-                      id="taxId"
-                      value={businessFormData.taxId}
-                      onChange={(e) => setBusinessFormData(prev => ({ ...prev, taxId: e.target.value }))}
-                      placeholder="123456789V"
-                      className="h-10 sm:h-12"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="businessPhone" className="text-sm sm:text-base">Business Phone *</Label>
-                    <Input
-                      id="businessPhone"
-                      value={businessFormData.businessPhone}
-                      onChange={(e) => setBusinessFormData(prev => ({ ...prev, businessPhone: e.target.value }))}
-                      placeholder="+94 11 123 4567"
-                      className="h-10 sm:h-12"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="businessEmail" className="text-sm sm:text-base">Business Email *</Label>
-                    <Input
-                      id="businessEmail"
-                      type="email"
-                      value={businessFormData.businessEmail}
-                      onChange={(e) => setBusinessFormData(prev => ({ ...prev, businessEmail: e.target.value }))}
-                      placeholder="info@yourbusiness.com"
-                      className="h-10 sm:h-12"
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="businessAddress" className="text-sm sm:text-base">Business Address *</Label>
-                  <Textarea
-                    id="businessAddress"
-                    value={businessFormData.businessAddress}
-                    onChange={(e) => setBusinessFormData(prev => ({ ...prev, businessAddress: e.target.value }))}
-                    placeholder="Full business address"
-                    className="min-h-[80px]"
-                  />
-                </div>
+          {businessConversionStep === 1 && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <Crown className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Unlock Business Features</h3>
+                <p className="text-muted-foreground">
+                  Get access to advanced tools and priority support for your automotive business
+                </p>
               </div>
-            )}
-
-            {/* Step 2: Choose Plan */}
-            {businessConversionStep === 2 && (
-              <div className="space-y-4 sm:space-y-6">
-                <div>
-                  <h3 className="text-lg sm:text-xl font-semibold mb-2">Choose Your Plan</h3>
-                  <p className="text-sm sm:text-base text-muted-foreground">Select the plan that best fits your needs</p>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                  {businessPlans.map((plan) => (
-                    <div
-                      key={plan.id}
-                      className={`relative border rounded-lg p-4 sm:p-6 cursor-pointer transition-all ${
-                        businessFormData.selectedPlan === plan.id ? 'border-primary bg-primary/5' : 'border-muted hover:border-primary/50'
-                      } ${plan.popular ? 'border-primary' : ''}`}
-                      onClick={() => setBusinessFormData(prev => ({ ...prev, selectedPlan: plan.id }))}
-                    >
-                      {plan.popular && (
-                        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                          <Badge className="bg-primary text-white px-3 py-1 text-xs">Popular</Badge>
-                        </div>
-                      )}
-                      
-                      <div className="text-center mb-4">
-                        <h4 className="text-lg sm:text-xl font-semibold">{plan.name}</h4>
-                        <div className="text-2xl sm:text-3xl font-bold text-primary mt-2">
-                          {plan.price}
-                        </div>
-                      </div>
-                      
-                      <ul className="space-y-2 sm:space-y-3">
-                        {plan.features.map((feature, index) => (
-                          <li key={index} className="flex items-center text-sm sm:text-base">
-                            <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary mr-2 sm:mr-3 flex-shrink-0" />
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      
-                      {businessFormData.selectedPlan === plan.id && (
-                        <div className="absolute top-4 right-4">
-                          <div className="w-4 h-4 sm:w-5 sm:h-5 bg-primary rounded-full flex items-center justify-center">
-                            <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Step 3: Confirmation */}
-            {businessConversionStep === 3 && (
-              <div className="space-y-4 sm:space-y-6">
-                <div>
-                  <h3 className="text-lg sm:text-xl font-semibold mb-2">Confirm Your Upgrade</h3>
-                  <p className="text-sm sm:text-base text-muted-foreground">Review your information before completing the upgrade</p>
-                </div>
-                
-                <div className="bg-muted/50 rounded-lg p-4 sm:p-6 space-y-4">
-                  <div>
-                    <h4 className="font-semibold text-sm sm:text-base">Business Information</h4>
-                    <div className="mt-2 space-y-1 text-sm">
-                      <p><span className="text-muted-foreground">Company:</span> {businessFormData.companyName}</p>
-                      <p><span className="text-muted-foreground">Type:</span> {businessFormData.businessType}</p>
-                      <p><span className="text-muted-foreground">Phone:</span> {businessFormData.businessPhone}</p>
-                      <p><span className="text-muted-foreground">Email:</span> {businessFormData.businessEmail}</p>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-semibold text-sm sm:text-base">Selected Plan</h4>
-                    <div className="mt-2">
-                      {businessPlans.find(plan => plan.id === businessFormData.selectedPlan) && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">{businessPlans.find(plan => plan.id === businessFormData.selectedPlan)?.name}</span>
-                          <span className="font-semibold text-primary text-sm">{businessPlans.find(plan => plan.id === businessFormData.selectedPlan)?.price}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-6">
-                  <div className="flex items-start space-x-3">
-                    <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="font-semibold text-blue-900 text-sm sm:text-base">You're almost there!</h4>
-                      <p className="text-blue-700 text-xs sm:text-sm mt-1">
-                        After upgrading, you'll get immediate access to all business features including dealer verification badge, unlimited listings, and priority support.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Modal Actions */}
-            <div className="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-4 mt-6 sm:mt-8 pt-4 sm:pt-6 border-t">
-              <Button 
-                variant="outline" 
-                onClick={businessConversionStep === 1 ? () => setShowBusinessModal(false) : handlePrevStep}
-                className="w-full sm:w-auto h-10 sm:h-12 text-sm sm:text-base"
-              >
-                {businessConversionStep === 1 ? "Cancel" : "Previous"}
-              </Button>
               
-              <Button 
-                className="bg-primary hover:bg-primary/90 w-full sm:w-auto h-10 sm:h-12 text-sm sm:text-base"
-                onClick={businessConversionStep === 3 ? handleCompleteConversion : handleNextStep}
-                disabled={
-                  (businessConversionStep === 1 && (!businessFormData.companyName || !businessFormData.businessType || !businessFormData.businessPhone || !businessFormData.businessEmail || !businessFormData.businessAddress)) ||
-                  (businessConversionStep === 2 && !businessFormData.selectedPlan)
-                }
-              >
-                {businessConversionStep === 3 ? "Complete Upgrade" : "Next"}
-              </Button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Shield className="h-6 w-6 text-primary" />
+                  <h4 className="font-semibold">Priority Support</h4>
+                  <p className="text-sm text-muted-foreground">Get faster response times and dedicated assistance</p>
+                </div>
+                <div className="space-y-2">
+                  <BarChart3 className="h-6 w-6 text-primary" />
+                  <h4 className="font-semibold">Advanced Analytics</h4>
+                  <p className="text-sm text-muted-foreground">Detailed insights on your listings performance</p>
+                </div>
+                <div className="space-y-2">
+                  <Zap className="h-6 w-6 text-primary" />
+                  <h4 className="font-semibold">Bulk Operations</h4>
+                  <p className="text-sm text-muted-foreground">Upload and manage multiple listings at once</p>
+                </div>
+                <div className="space-y-2">
+                  <Star className="h-6 w-6 text-primary" />
+                  <h4 className="font-semibold">Featured Placement</h4>
+                  <p className="text-sm text-muted-foreground">Get your listings seen by more customers</p>
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setShowBusinessModal(false)}>
+                  Maybe Later
+                </Button>
+                <Button onClick={nextBusinessStep}>
+                  Continue
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

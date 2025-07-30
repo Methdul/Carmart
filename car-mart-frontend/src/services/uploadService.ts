@@ -40,8 +40,10 @@ class UploadService {
 
       const token = localStorage.getItem('token');
       if (!token) {
-        throw new Error('Authentication token not found');
+        throw new Error('Please log in to upload images');
       }
+
+      console.log('🔄 Uploading', fileArray.length, 'files...');
 
       const response = await fetch(`${API_BASE_URL}/upload/images`, {
         method: 'POST',
@@ -56,9 +58,11 @@ class UploadService {
         throw new Error(errorData.message || 'Upload failed');
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log('✅ Upload successful:', result);
+      return result;
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error('❌ Upload error:', error);
       throw error;
     }
   }
@@ -71,7 +75,7 @@ class UploadService {
 
       const token = localStorage.getItem('token');
       if (!token) {
-        throw new Error('Authentication token not found');
+        throw new Error('Please log in to upload images');
       }
 
       const response = await fetch(`${API_BASE_URL}/upload/single`, {
@@ -89,7 +93,7 @@ class UploadService {
 
       return await response.json();
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error('Single upload error:', error);
       throw error;
     }
   }
@@ -99,7 +103,7 @@ class UploadService {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        throw new Error('Authentication token not found');
+        throw new Error('Authentication required');
       }
 
       const response = await fetch(`${API_BASE_URL}/upload/${filename}`, {
@@ -113,64 +117,56 @@ class UploadService {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Delete failed');
       }
+
+      console.log('✅ File deleted:', filename);
     } catch (error) {
       console.error('Delete error:', error);
       throw error;
     }
   }
 
-  // Validate file before upload
-  validateFile(file: File): { isValid: boolean; error?: string } {
-    // Check file size (5MB limit)
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
-      return {
-        isValid: false,
-        error: 'File size must be less than 5MB'
-      };
-    }
-
-    // Check file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      return {
-        isValid: false,
-        error: 'Only JPEG, PNG, and WebP images are allowed'
-      };
-    }
-
-    return { isValid: true };
-  }
-
-  // Validate multiple files
+  // Validate files before upload
   validateFiles(files: FileList | File[]): { isValid: boolean; error?: string } {
     const fileArray = Array.from(files);
-
-    // Check file count (15 max)
+    
+    // Check file count
+    if (fileArray.length === 0) {
+      return { isValid: false, error: 'No files selected' };
+    }
+    
     if (fileArray.length > 15) {
-      return {
-        isValid: false,
-        error: 'Maximum 15 files allowed'
-      };
+      return { isValid: false, error: 'Maximum 15 files allowed' };
     }
 
-    // Validate each file
+    // Check each file
     for (const file of fileArray) {
-      const validation = this.validateFile(file);
-      if (!validation.isValid) {
-        return validation;
+      // Check file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        return { isValid: false, error: `File "${file.name}" is too large. Maximum 5MB per file.` };
+      }
+
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        return { isValid: false, error: `File "${file.name}" is not an image.` };
+      }
+
+      // Check specific image types
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        return { isValid: false, error: `File "${file.name}" must be JPEG, PNG, or WebP.` };
       }
     }
 
     return { isValid: true };
   }
 
-  // Helper function to create preview URLs for files
+  // Create preview URLs for immediate display
   createPreviewUrls(files: FileList | File[]): string[] {
-    return Array.from(files).map(file => URL.createObjectURL(file));
+    const fileArray = Array.from(files);
+    return fileArray.map(file => URL.createObjectURL(file));
   }
 
-  // Helper function to clean up preview URLs
+  // Cleanup preview URLs to prevent memory leaks
   cleanupPreviewUrls(urls: string[]): void {
     urls.forEach(url => URL.revokeObjectURL(url));
   }

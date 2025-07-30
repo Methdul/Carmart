@@ -1,15 +1,32 @@
-import { Menu, User, Heart, BarChart3, UserCheck, X, Search } from "lucide-react";
+import { Menu, User, Heart, BarChart3, UserCheck, X, Search, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { authService } from "@/services/authService";
 
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSignedIn, setIsSignedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  
+  // Check authentication state on component mount and when location changes
+  useEffect(() => {
+    const checkAuthState = () => {
+      const isLoggedIn = authService.isLoggedIn();
+      const user = authService.getCurrentUser();
+      
+      setIsSignedIn(isLoggedIn);
+      setCurrentUser(user);
+      
+      console.log('🔐 Auth state check:', { isLoggedIn, user: user?.email });
+    };
+
+    checkAuthState();
+  }, [location.pathname]); // Re-check when navigating
   
   const handleListVehicleClick = (e: React.MouseEvent) => {
     if (!isSignedIn) {
@@ -18,8 +35,31 @@ const Header = () => {
     }
   };
 
+  const handleLogout = () => {
+    authService.logout();
+    setIsSignedIn(false);
+    setCurrentUser(null);
+    setIsMobileMenuOpen(false);
+    navigate('/');
+    console.log('🚪 User logged out');
+  };
+
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
+  };
+
+  const getUserDisplayName = () => {
+    if (currentUser) {
+      return `${currentUser.first_name} ${currentUser.last_name}`;
+    }
+    return "User";
+  };
+
+  const getUserInitials = () => {
+    if (currentUser) {
+      return `${currentUser.first_name?.[0] || ''}${currentUser.last_name?.[0] || ''}`;
+    }
+    return "U";
   };
 
   return (
@@ -71,33 +111,29 @@ const Header = () => {
                 <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full"></div>
               )}
             </Link>
-            <Link to="/compare" className="relative">
-              <Button 
-                variant="ghost" 
-                className="text-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 font-medium flex items-center gap-2"
-              >
-                <BarChart3 className="h-4 w-4" />
-                Compare
-              </Button>
-              {location.pathname === '/compare' && (
-                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full"></div>
-              )}
-            </Link>
           </nav>
 
-          {/* Desktop User Actions */}
-          <div className="hidden lg:flex items-center space-x-3">
-            {/* Favorites */}
-            <Link to="/dashboard">
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="hover:bg-primary/10 hover:text-primary transition-all duration-200"
-              >
-                <Heart className="h-5 w-5" />
-              </Button>
-            </Link>
+          {/* Desktop Search Bar */}
+          <div className="hidden lg:flex flex-1 max-w-md mx-8">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search vehicles, parts, or services..."
+                className="pl-10 bg-muted/30 border-0 focus:bg-background transition-all duration-200"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const query = e.currentTarget.value;
+                    if (query.trim()) {
+                      navigate(`/search?q=${encodeURIComponent(query)}`);
+                    }
+                  }
+                }}
+              />
+            </div>
+          </div>
 
+          {/* Desktop Actions */}
+          <div className="hidden lg:flex items-center">
             {isSignedIn ? (
               <div className="flex items-center space-x-2">
                 <Link to="/list-vehicle" onClick={handleListVehicleClick}>
@@ -108,15 +144,33 @@ const Header = () => {
                     List Vehicle
                   </Button>
                 </Link>
-                <Link to="/dashboard?tab=profile">
+                
+                {/* User Menu */}
+                <div className="flex items-center space-x-2">
+                  <Link to="/dashboard?tab=profile">
+                    <Button 
+                      variant="ghost" 
+                      className="hover:bg-primary/10 hover:text-primary transition-all duration-200 flex items-center space-x-2"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium">
+                        {getUserInitials()}
+                      </div>
+                      <span className="hidden xl:block text-sm font-medium">
+                        {getUserDisplayName()}
+                      </span>
+                    </Button>
+                  </Link>
+                  
                   <Button 
                     variant="ghost" 
                     size="icon"
-                    className="hover:bg-primary/10 hover:text-primary transition-all duration-200"
+                    onClick={handleLogout}
+                    className="hover:bg-destructive/10 hover:text-destructive transition-all duration-200"
+                    title="Logout"
                   >
-                    <UserCheck className="h-5 w-5" />
+                    <LogOut className="h-4 w-4" />
                   </Button>
-                </Link>
+                </div>
               </div>
             ) : (
               <div className="flex items-center space-x-2">
@@ -177,71 +231,71 @@ const Header = () => {
 
         {/* Mobile Search Bar */}
         {isMobileSearchOpen && (
-          <div className="lg:hidden py-3 border-t">
+          <div className="lg:hidden pb-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search vehicles..."
-                className="pl-10 pr-4"
-                autoFocus
+                placeholder="Search vehicles, parts, or services..."
+                className="pl-10 bg-muted/30 border-0 focus:bg-background"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const query = e.currentTarget.value;
+                    if (query.trim()) {
+                      navigate(`/search?q=${encodeURIComponent(query)}`);
+                      setIsMobileSearchOpen(false);
+                    }
+                  }
+                }}
               />
             </div>
           </div>
         )}
 
-        {/* Mobile Navigation Menu */}
+        {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <div className="lg:hidden border-t bg-card/95 backdrop-blur">
-            <nav className="py-4 space-y-2">
-              {/* Navigation Links */}
-              <Link to="/search" onClick={closeMobileMenu}>
-                <Button variant="ghost" className="w-full justify-start text-left">
-                  Buy Vehicles
-                </Button>
-              </Link>
-              <Link to="/parts" onClick={closeMobileMenu}>
-                <Button variant="ghost" className="w-full justify-start text-left">
-                  Auto Parts
-                </Button>
-              </Link>
-              <Link to="/services" onClick={closeMobileMenu}>
-                <Button variant="ghost" className="w-full justify-start text-left">
-                  Services
-                </Button>
-              </Link>
-              <Link to="/compare" onClick={closeMobileMenu}>
-                <Button variant="ghost" className="w-full justify-start text-left flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4" />
-                  Compare
-                </Button>
-              </Link>
-              <Link to="/dashboard" onClick={closeMobileMenu}>
-                <Button variant="ghost" className="w-full justify-start text-left flex items-center gap-2">
-                  <Heart className="h-4 w-4" />
-                  Saved Vehicles
-                </Button>
-              </Link>
+            <div className="p-4 space-y-4">
+              <nav className="space-y-2">
+                <Link to="/search" onClick={closeMobileMenu}>
+                  <Button variant="ghost" className="w-full justify-start">
+                    Buy Vehicles
+                  </Button>
+                </Link>
+                <Link to="/parts" onClick={closeMobileMenu}>
+                  <Button variant="ghost" className="w-full justify-start">
+                    Auto Parts
+                  </Button>
+                </Link>
+                <Link to="/services" onClick={closeMobileMenu}>
+                  <Button variant="ghost" className="w-full justify-start">
+                    Services
+                  </Button>
+                </Link>
+              </nav>
 
-              {/* Divider */}
-              <div className="border-t my-3"></div>
-
-              {/* User Actions */}
               {isSignedIn ? (
-                <div className="space-y-2">
+                <div className="space-y-2 pt-2 border-t">
+                  <div className="flex items-center space-x-3 px-3 py-2">
+                    <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-medium">
+                      {getUserInitials()}
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">{getUserDisplayName()}</p>
+                      <p className="text-xs text-muted-foreground">{currentUser?.email}</p>
+                    </div>
+                  </div>
                   <Link to="/dashboard?tab=profile" onClick={closeMobileMenu}>
                     <Button variant="ghost" className="w-full justify-start text-left flex items-center gap-2">
                       <UserCheck className="h-4 w-4" />
-                      Profile
+                      Dashboard
                     </Button>
                   </Link>
                   <Button 
                     variant="outline" 
-                    className="w-full"
-                    onClick={() => {
-                      setIsSignedIn(false);
-                      closeMobileMenu();
-                    }}
+                    className="w-full justify-start flex items-center gap-2"
+                    onClick={handleLogout}
                   >
+                    <LogOut className="h-4 w-4" />
                     Sign Out
                   </Button>
                 </div>
@@ -256,7 +310,7 @@ const Header = () => {
                   </Button>
                 </Link>
               )}
-            </nav>
+            </div>
           </div>
         )}
       </div>
