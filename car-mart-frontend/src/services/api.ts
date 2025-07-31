@@ -95,6 +95,17 @@ class ApiService {
   async getServiceById(id: string) {
     return this.request(`/services/${id}`);
   }
+
+  // Add this method to ApiService class
+  async getUserListings(userId: string, type: string = 'all') {
+    const token = localStorage.getItem('token');
+    return this.request(`/users/${userId}/listings?type=${type}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+  }
 }
+
 
 export const apiService = new ApiService();
