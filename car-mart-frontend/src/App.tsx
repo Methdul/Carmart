@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ErrorBoundary, { DefaultErrorFallback } from "@/components/ErrorBoundary";
 import { Suspense, lazy } from "react";
 import { LoadingSpinner } from "@/components/ErrorBoundary";
+import StaffLoginPage from './pages/staff/StaffLoginPage';
+import StaffDashboardPage from './pages/staff/StaffDashboardPage';
 
 // Lazy load components to prevent initial load crashes
 const Index = lazy(() => import("./pages/Index"));
@@ -94,6 +96,8 @@ const App = () => {
                 <Route path="/list-parts" element={<SafeRoute element={ListPartsPage} />} />
                 <Route path="/list-services" element={<SafeRoute element={ListServicesPage} />} /> {/* ADDED THIS LINE */}
                 <Route path="/compare" element={<SafeRoute element={ComparisonPage} />} />
+                <Route path="/staff/login" element={<StaffLoginPage />} />
+                <Route path="/staff/dashboard" element={<StaffDashboardPage />} />
                 <Route path="*" element={<SafeRoute element={NotFound} />} />
               </Routes>
             </BrowserRouter>
