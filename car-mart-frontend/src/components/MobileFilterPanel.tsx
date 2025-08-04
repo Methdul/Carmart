@@ -14,7 +14,7 @@ interface MobileFilterPanelProps {
   onClose: () => void;
   onApplyFilters: (filters: any) => void;
   resultCount: number;
-  category: "vehicles" | "parts" | "services";
+  category: "vehicles" | "parts" | "services" | "rentals"; 
 }
 
 interface FilterSectionProps {

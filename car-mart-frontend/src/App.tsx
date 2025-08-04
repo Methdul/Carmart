@@ -1,3 +1,6 @@
+// car-mart-frontend/src/App.tsx
+// ✅ FIXED - ADD BOTH /auth AND /login ROUTES
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,37 +11,37 @@ import { Suspense, lazy } from "react";
 import { LoadingSpinner } from "@/components/ErrorBoundary";
 import StaffLoginPage from './pages/staff/StaffLoginPage';
 import StaffDashboardPage from './pages/staff/StaffDashboardPage';
-import RentalsPage from '@/pages/RentalsPage';
 
-// Lazy load components to prevent initial load crashes
+// Lazy load components
 const Index = lazy(() => import("./pages/Index"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const ListVehiclePage = lazy(() => import("./pages/ListVehiclePage"));
+const ListRentalPage = lazy(() => import("./pages/ListRentalPage")); // ✅ NEW
 const SearchPage = lazy(() => import("./pages/SearchPage"));
 const VehicleDetailPage = lazy(() => import("./pages/VehicleDetailPage"));
+const RentalDetailPage = lazy(() => import("./pages/RentalDetailPage")); // ✅ NEW
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const PartsPage = lazy(() => import("./pages/PartsPage"));
 const PartDetailPage = lazy(() => import("./pages/PartDetailPage"));
 const ServicesPage = lazy(() => import("./pages/ServicesPage"));
 const ServiceDetailPage = lazy(() => import("./pages/ServiceDetailPage"));
 const ListPartsPage = lazy(() => import("./pages/ListPartsPage"));
-const ListServicesPage = lazy(() => import("./pages/ListServicesPage")); // ADDED THIS LINE
+const ListServicesPage = lazy(() => import("./pages/ListServicesPage"));
 const ComparisonPage = lazy(() => import("./pages/ComparisonPage"));
+const RentalsPage = lazy(() => import("./pages/RentalsPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// Create query client with error handling
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 3,
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000,
       refetchOnWindowFocus: false,
     },
   },
 });
 
-// Safe Route component with individual error boundaries
 const SafeRoute = ({ element }: { element: React.LazyExoticComponent<any> }) => {
   const Component = element;
   return (
@@ -61,13 +64,9 @@ const App = () => {
   return (
     <ErrorBoundary
       onError={(error, errorInfo) => {
-        // Log to console in development
         if (process.env.NODE_ENV === 'development') {
           console.error('App-level error:', error, errorInfo);
         }
-        
-        // In production, you might want to send to an error reporting service
-        // Example: Sentry.captureException(error);
       }}
     >
       <QueryClientProvider client={queryClient}>
@@ -83,23 +82,43 @@ const App = () => {
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<SafeRoute element={Index} />} />
+                
+                {/* ✅ AUTHENTICATION ROUTES - BOTH /auth AND /login */}
                 <Route path="/auth" element={<SafeRoute element={AuthPage} />} />
+                <Route path="/login" element={<SafeRoute element={AuthPage} />} /> 
+                <Route path="/register" element={<SafeRoute element={AuthPage} />} />
+                
+                {/* VEHICLE ROUTES */}
                 <Route path="/list-vehicle" element={<SafeRoute element={ListVehiclePage} />} />
                 <Route path="/search" element={<SafeRoute element={SearchPage} />} />
                 <Route path="/vehicles/:id" element={<SafeRoute element={VehicleDetailPage} />} />
-                <Route path="/dashboard" element={<SafeRoute element={DashboardPage} />} />
+                
+                {/* RENTAL ROUTES ✅ */}
+                <Route path="/rentals" element={<SafeRoute element={RentalsPage} />} />
+                <Route path="/rentals/:id" element={<SafeRoute element={RentalDetailPage} />} />
+                <Route path="/list-rental" element={<SafeRoute element={ListRentalPage} />} />
+                
+                {/* PARTS ROUTES */}
                 <Route path="/parts" element={<SafeRoute element={PartsPage} />} />
                 <Route path="/parts/:category" element={<SafeRoute element={PartsPage} />} />
                 <Route path="/part/:id" element={<SafeRoute element={PartDetailPage} />} />
+                <Route path="/list-parts" element={<SafeRoute element={ListPartsPage} />} />
+                
+                {/* SERVICES ROUTES */}
                 <Route path="/services" element={<SafeRoute element={ServicesPage} />} />
                 <Route path="/services/:category" element={<SafeRoute element={ServicesPage} />} />
                 <Route path="/service/:id" element={<SafeRoute element={ServiceDetailPage} />} />
-                <Route path="/list-parts" element={<SafeRoute element={ListPartsPage} />} />
-                <Route path="/list-services" element={<SafeRoute element={ListServicesPage} />} /> {/* ADDED THIS LINE */}
+                <Route path="/list-services" element={<SafeRoute element={ListServicesPage} />} />
+                
+                {/* USER ROUTES */}
+                <Route path="/dashboard" element={<SafeRoute element={DashboardPage} />} />
                 <Route path="/compare" element={<SafeRoute element={ComparisonPage} />} />
+                
+                {/* STAFF ROUTES */}
                 <Route path="/staff/login" element={<StaffLoginPage />} />
                 <Route path="/staff/dashboard" element={<StaffDashboardPage />} />
-                <Route path="/rentals" element={<RentalsPage />} />
+                
+                {/* 404 */}
                 <Route path="*" element={<SafeRoute element={NotFound} />} />
               </Routes>
             </BrowserRouter>

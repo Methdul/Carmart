@@ -1,28 +1,25 @@
 // car-mart-frontend/src/pages/RentalsPage.tsx
-// Complete rentals page following your exact layout pattern
+// ✅ FINAL VERSION - Using VehicleCard & Real Database Data
 
-import React, { useState, useEffect } from 'react';
-import { 
-  Search, Filter, MapPin, Calendar, Clock, Shield, 
-  Heart, Eye, Star, Phone, Mail, Car, Fuel, 
-  Users, Settings, SlidersHorizontal, ChevronDown,
-  CheckCircle, Truck, CalendarDays, CreditCard
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Slider } from '@/components/ui/slider';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import MobileFilterPanel from '@/components/MobileFilterPanel';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Search, Filter, Grid3x3, List, ArrowUpDown, Loader2, Car, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card } from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import MobileFilterPanel from "@/components/MobileFilterPanel";
+import VehicleCard from "@/components/VehicleCard"; // ✅ USING VEHICLECARD FOR CONSISTENCY
+import { apiService } from "@/services/api";
 
 interface Rental {
   id: string;
   title: string;
+  description: string;
   make: string;
   model: string;
   year: number;
@@ -42,15 +39,13 @@ interface Rental {
   minimum_rental_days: number;
   maximum_rental_days: number;
   security_deposit: number;
-  fuel_policy: string;
-  mileage_limit_per_day: number;
   features: string[];
   included_items: string[];
   pickup_locations: string[];
   delivery_available: boolean;
   delivery_fee: number;
   insurance_included: boolean;
-  images: string[];
+  images?: string[];
   is_featured: boolean;
   is_verified: boolean;
   views_count: number;
@@ -61,81 +56,118 @@ interface Rental {
   available_from: string;
   available_until?: string;
   created_at: string;
-  users: {
+  users?: {
     first_name: string;
     last_name: string;
     phone: string;
-    avatar_url?: string;
     is_verified: boolean;
   };
 }
 
-interface Filters {
-  search: string;
-  location: string;
-  minPrice: number;
-  maxPrice: number;
-  make: string;
-  bodyType: string;
-  fuelType: string;
-  transmission: string;
-  seats: number;
-  rentalType: string;
-  minDays: number;
-  maxDays: number;
-  deliveryAvailable: boolean;
-  insuranceIncluded: boolean;
-}
+// ✅ TRANSFORM RENTAL TO VEHICLECARD FORMAT
+const transformRentalToVehicleCard = (rental: Rental) => {
+  // Calculate health score based on condition, booking count, and rating
+  const getHealthScore = () => {
+    let score = 75; // Base score
+    
+    // Condition bonus
+    if (rental.condition === 'Excellent') score += 20;
+    else if (rental.condition === 'Good') score += 10;
+    else if (rental.condition === 'Fair') score += 0;
+    else score -= 10;
+    
+    // Booking history bonus (popular rentals)
+    if (rental.booking_count > 20) score += 10;
+    else if (rental.booking_count > 10) score += 5;
+    
+    // Rating bonus
+    if (rental.average_rating >= 4.5) score += 10;
+    else if (rental.average_rating >= 4.0) score += 5;
+    
+    return Math.min(Math.max(score, 0), 100); // Keep between 0-100
+  };
 
-const DesktopFilterSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div className="space-y-3">
-    <h4 className="font-medium text-primary">{title}</h4>
-    {children}
-  </div>
-);
+  return {
+    id: rental.id,
+    title: `${rental.year} ${rental.make} ${rental.model} - Rental`,
+    price: rental.daily_rate, // Use daily rate as main price
+    year: rental.year,
+    mileage: rental.mileage,
+    location: rental.location,
+    fuelType: rental.fuel_type,
+    transmission: rental.transmission,
+    image: rental.images && rental.images.length > 0 
+      ? rental.images[0] 
+      : '/api/placeholder/400/300',
+    healthScore: getHealthScore(),
+    sellerRating: rental.average_rating || 0,
+    isVerified: rental.is_verified,
+    isFeatured: rental.is_featured,
+  };
+};
 
 const RentalsPage = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(false);
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [filteredRentals, setFilteredRentals] = useState<Rental[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [sortBy, setSortBy] = useState("relevance");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const [filters, setFilters] = useState<Filters>({
-    search: '',
-    location: '',
+  // Check if mobile and set default view mode
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  const [filters, setFilters] = useState({
+    search: "",
+    make: "all",
+    bodyType: "any",
+    fuelType: "any",
+    transmission: "any",
+    location: "",
     minPrice: 0,
     maxPrice: 20000,
-    make: 'all',
-    bodyType: 'any',
-    fuelType: 'any',
-    transmission: 'any',
     seats: 0,
-    rentalType: 'any',
-    minDays: 1,
-    maxDays: 30,
+    rentalType: "any",
     deliveryAvailable: false,
     insuranceIncluded: false,
   });
 
-  const [sortBy, setSortBy] = useState('created_at');
-
-  // Load rentals from API
+  // ✅ LOAD REAL DATA FROM API (NO MOCK DATA)
   useEffect(() => {
     const loadRentals = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:3001/api/rentals');
-        const result = await response.json();
+        setError(null);
         
-        if (result.success) {
-          setRentals(result.data || []);
+        console.log('🚗 Loading rentals from database via API...');
+        
+        const response = await apiService.getRentals();
+        
+        if (response.success && response.data) {
+          console.log(`✅ Loaded ${response.data.length} rentals from database`);
+          setRentals(response.data);
+          setFilteredRentals(response.data);
         } else {
-          setError('Failed to load rentals');
+          throw new Error(response.message || 'Failed to load rentals from database');
         }
-      } catch (err) {
-        console.error('Error loading rentals:', err);
-        setError('Failed to load rentals');
+        
+      } catch (err: any) {
+        console.error("❌ Error loading rentals from database:", err);
+        setError(err.message || 'Failed to connect to database');setRentals([]);
+        setFilteredRentals([]);
       } finally {
         setLoading(false);
       }
@@ -144,140 +176,181 @@ const RentalsPage = () => {
     loadRentals();
   }, []);
 
-  // Filter and sort rentals
+  // ✅ FILTER AND SORT RENTALS
   useEffect(() => {
     let filtered = [...rentals];
 
-    // Search filter
+    // Apply search filter
     if (filters.search) {
       const searchTerm = filters.search.toLowerCase();
       filtered = filtered.filter(rental =>
         rental.title.toLowerCase().includes(searchTerm) ||
         rental.make.toLowerCase().includes(searchTerm) ||
         rental.model.toLowerCase().includes(searchTerm) ||
-        rental.location.toLowerCase().includes(searchTerm)
+        rental.location.toLowerCase().includes(searchTerm) ||
+        rental.description.toLowerCase().includes(searchTerm)
       );
     }
 
-    // Location filter
+    // Apply location filter
     if (filters.location) {
-      filtered = filtered.filter(rental => 
+      filtered = filtered.filter(rental =>
         rental.location.toLowerCase().includes(filters.location.toLowerCase())
       );
     }
 
-    // Price filter
-    filtered = filtered.filter(rental => 
-      rental.daily_rate >= filters.minPrice && rental.daily_rate <= filters.maxPrice
-    );
-
-    // Make filter
-    if (filters.make && filters.make !== 'all') {
-      filtered = filtered.filter(rental => 
+    // Apply make filter
+    if (filters.make && filters.make !== "all") {
+      filtered = filtered.filter(rental =>
         rental.make.toLowerCase() === filters.make.toLowerCase()
       );
     }
 
-    // Body type filter
-    if (filters.bodyType && filters.bodyType !== 'any') {
-      filtered = filtered.filter(rental => 
+    // Apply body type filter
+    if (filters.bodyType && filters.bodyType !== "any") {
+      filtered = filtered.filter(rental =>
         rental.body_type.toLowerCase() === filters.bodyType.toLowerCase()
       );
     }
 
-    // Fuel type filter
-    if (filters.fuelType && filters.fuelType !== 'any') {
-      filtered = filtered.filter(rental => 
+    // Apply fuel type filter
+    if (filters.fuelType && filters.fuelType !== "any") {
+      filtered = filtered.filter(rental =>
         rental.fuel_type.toLowerCase() === filters.fuelType.toLowerCase()
       );
     }
 
-    // Transmission filter
-    if (filters.transmission && filters.transmission !== 'any') {
-      filtered = filtered.filter(rental => 
+    // Apply transmission filter
+    if (filters.transmission && filters.transmission !== "any") {
+      filtered = filtered.filter(rental =>
         rental.transmission.toLowerCase() === filters.transmission.toLowerCase()
       );
     }
 
-    // Seats filter
+    // Apply seats filter
     if (filters.seats > 0) {
       filtered = filtered.filter(rental => rental.seats >= filters.seats);
     }
 
-    // Rental type filter
-    if (filters.rentalType && filters.rentalType !== 'any') {
-      filtered = filtered.filter(rental => 
+    // Apply rental type filter
+    if (filters.rentalType && filters.rentalType !== "any") {
+      filtered = filtered.filter(rental =>
         rental.rental_type === filters.rentalType
       );
     }
 
-    // Rental duration filter
-    filtered = filtered.filter(rental => 
-      rental.minimum_rental_days <= filters.maxDays && 
-      rental.maximum_rental_days >= filters.minDays
-    );
-
-    // Delivery available filter
+    // Apply delivery filter
     if (filters.deliveryAvailable) {
       filtered = filtered.filter(rental => rental.delivery_available);
     }
 
-    // Insurance included filter
+    // Apply insurance filter
     if (filters.insuranceIncluded) {
       filtered = filtered.filter(rental => rental.insurance_included);
     }
 
-    // Sort rentals
+    // Apply price filter (daily rate)
+    filtered = filtered.filter(rental =>
+      rental.daily_rate >= filters.minPrice && rental.daily_rate <= filters.maxPrice
+    );
+
+    // ✅ APPLY SORTING
     switch (sortBy) {
-      case 'price_low':
+      case "price-low":
         filtered.sort((a, b) => a.daily_rate - b.daily_rate);
         break;
-      case 'price_high':
+      case "price-high":
         filtered.sort((a, b) => b.daily_rate - a.daily_rate);
         break;
-      case 'rating':
-        filtered.sort((a, b) => b.average_rating - a.average_rating);
+      case "rating":
+        filtered.sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0));
         break;
-      case 'popular':
+      case "make":
+        filtered.sort((a, b) => a.make.localeCompare(b.make));
+        break;
+      case "bookings":
         filtered.sort((a, b) => b.booking_count - a.booking_count);
         break;
       default:
-        filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        // Relevance: Featured first, then verified, then by rating
+        filtered.sort((a, b) => {
+          if (a.is_featured && !b.is_featured) return -1;
+          if (!a.is_featured && b.is_featured) return 1;
+          if (a.is_verified && !b.is_verified) return -1;
+          if (!a.is_verified && b.is_verified) return 1;
+          return (b.average_rating || 0) - (a.average_rating || 0);
+        });
+        break;
     }
 
     setFilteredRentals(filtered);
   }, [rentals, filters, sortBy]);
 
-  const handleFilterChange = (key: keyof Filters, value: any) => {
+  const handleFilterChange = (key: string, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
-  const handlePriceRangeChange = (values: number[]) => {
-    setFilters(prev => ({ ...prev, minPrice: values[0], maxPrice: values[1] }));
-  };
+  // ✅ HANDLE FILTER APPLICATION WITH API INTEGRATION
+  const handleApplyFilters = async (newFilters: any) => {
+    console.log("🔧 Applying rental filters:", newFilters);
+    
+    try {
+      setLoading(true);
+      
+      // Create API-compatible filter object
+      const apiFilters: any = {};
+      
+      if (newFilters.search) apiFilters.search = newFilters.search;
+      if (newFilters.location) apiFilters.location = newFilters.location;
+      if (newFilters.make && newFilters.make !== "all") apiFilters.make = newFilters.make;
+      if (newFilters.bodyType && newFilters.bodyType !== "any") apiFilters.bodyType = newFilters.bodyType;
+      if (newFilters.fuelType && newFilters.fuelType !== "any") apiFilters.fuelType = newFilters.fuelType;
+      if (newFilters.transmission && newFilters.transmission !== "any") apiFilters.transmission = newFilters.transmission;
+      if (newFilters.rentalType && newFilters.rentalType !== "any") apiFilters.rentalType = newFilters.rentalType;
+      if (newFilters.minPrice !== undefined) apiFilters.minPrice = newFilters.minPrice;
+      if (newFilters.maxPrice !== undefined) apiFilters.maxPrice = newFilters.maxPrice;
+      if (newFilters.seats > 0) apiFilters.seats = newFilters.seats;
+      if (newFilters.deliveryAvailable) apiFilters.deliveryAvailable = true;
+      if (newFilters.insuranceIncluded) apiFilters.insuranceIncluded = true;
 
-  const clearAllFilters = () => {
-    setFilters({
-      search: '',
-      location: '',
-      minPrice: 0,
-      maxPrice: 20000,
-      make: 'all',
-      bodyType: 'any',
-      fuelType: 'any',
-      transmission: 'any',
-      seats: 0,
-      rentalType: 'any',
-      minDays: 1,
-      maxDays: 30,
-      deliveryAvailable: false,
-      insuranceIncluded: false,
-    });
-  };
+      // Try to fetch filtered results from API
+      try {
+        const response = await apiService.getRentals(apiFilters);
+        if (response.success && response.data) {
+          console.log(`✅ API filter returned ${response.data.length} rentals`);
+          setRentals(response.data);
+          setFilteredRentals(response.data);
+        }
+      } catch (apiError) {
+        console.log('🔄 API filter failed, using client-side filtering');
+      }
+      
+      // Update local filter state
+      const updatedFilters = { ...filters };
+      
+      if (newFilters.search !== undefined) updatedFilters.search = newFilters.search;
+      if (newFilters.make !== undefined) updatedFilters.make = newFilters.make === "" ? "all" : newFilters.make;
+      if (newFilters.bodyType !== undefined) updatedFilters.bodyType = newFilters.bodyType === "" ? "any" : newFilters.bodyType;
+      if (newFilters.fuelType !== undefined) updatedFilters.fuelType = newFilters.fuelType === "" ? "any" : newFilters.fuelType;
+      if (newFilters.transmission !== undefined) updatedFilters.transmission = newFilters.transmission === "" ? "any" : newFilters.transmission;
+      if (newFilters.location !== undefined) updatedFilters.location = newFilters.location;
+      if (newFilters.minPrice !== undefined) updatedFilters.minPrice = typeof newFilters.minPrice === 'number' ? newFilters.minPrice : parseInt(newFilters.minPrice) || 0;
+      if (newFilters.maxPrice !== undefined) updatedFilters.maxPrice = typeof newFilters.maxPrice === 'number' ? newFilters.maxPrice : parseInt(newFilters.maxPrice) || 20000;
+      if (newFilters.seats !== undefined) updatedFilters.seats = typeof newFilters.seats === 'number' ? newFilters.seats : parseInt(newFilters.seats) || 0;
+      if (newFilters.rentalType !== undefined) updatedFilters.rentalType = newFilters.rentalType === "" ? "any" : newFilters.rentalType;
+      if (newFilters.deliveryAvailable !== undefined) updatedFilters.deliveryAvailable = Boolean(newFilters.deliveryAvailable);
+      if (newFilters.insuranceIncluded !== undefined) updatedFilters.insuranceIncluded = Boolean(newFilters.insuranceIncluded);
 
-  const handleApplyFilters = (newFilters: any) => {
-    setFilters(newFilters);
-    setFiltersOpen(false);
+      console.log("✅ Updated rental filters:", updatedFilters);
+      setFilters(updatedFilters);
+      
+    } catch (error) {
+      console.error("❌ Filter application error:", error);
+      setError("Failed to apply filters");
+    } finally {
+      setLoading(false);
+      setFiltersOpen(false);
+    }
   };
 
   const formatPrice = (price: number) => {
@@ -289,120 +362,105 @@ const RentalsPage = () => {
   };
 
   const uniqueMakes = [...new Set(rentals.map(r => r.make))].sort();
+  const uniqueBodyTypes = [...new Set(rentals.map(r => r.body_type))].sort();
+  const uniqueFuelTypes = [...new Set(rentals.map(r => r.fuel_type))].sort();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-lg text-muted-foreground">Loading rentals...</p>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
+  // Handle save/compare actions
+  const handleSaveRental = (rentalId: string) => {
+    console.log('Save rental:', rentalId);
+    // Implement save functionality
+  };
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <p className="text-lg text-red-600 mb-4">{error}</p>
-            <Button onClick={() => window.location.reload()}>Try Again</Button>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
+  const handleCompareRental = (rentalId: string) => {
+    console.log('Compare rental:', rentalId);
+    // Implement compare functionality
+  };
+
+  // Individual rental detail view
+  if (id) {
+    useEffect(() => {
+      navigate('/rentals');
+    }, [id, navigate]);
   }
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <Header />
-
-      {/* Search Header */}
-      <div className="bg-white border-b sticky top-16 z-30">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search Bar */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search rentals by make, model, or location..."
-                value={filters.search}
-                onChange={(e) => handleFilterChange('search', e.target.value)}
-                className="pl-10 h-12"
-              />
-            </div>
-
-            {/* Location Filter */}
-            <div className="lg:w-64 relative">
-              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Enter location..."
-                value={filters.location}
-                onChange={(e) => handleFilterChange('location', e.target.value)}
-                className="pl-10 h-12"
-              />
-            </div>
-
-            {/* Sort */}
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="lg:w-48 h-12">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="created_at">Newest First</SelectItem>
-                <SelectItem value="price_low">Price: Low to High</SelectItem>
-                <SelectItem value="price_high">Price: High to Low</SelectItem>
-                <SelectItem value="rating">Highest Rated</SelectItem>
-                <SelectItem value="popular">Most Popular</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
 
       <div className="container mx-auto px-4 py-6">
         <div className="flex gap-6">
-          {/* Desktop Sidebar Filters */}
+          {/* ✅ DESKTOP SIDEBAR FILTERS (Same pattern as other pages) */}
           <div className="hidden lg:block w-80">
             <div className="sticky top-24">
               <Card>
                 <div className="p-6 space-y-6">
+                  {/* Header */}
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-primary">Filters</h3>
-                    <Button variant="ghost" size="sm" onClick={clearAllFilters}>
+                    <h3 className="text-lg font-semibold text-primary">Rental Filters</h3>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setFilters({
+                        search: "",
+                        make: "all",
+                        bodyType: "any",
+                        fuelType: "any",
+                        transmission: "any",
+                        location: "",
+                        minPrice: 0,
+                        maxPrice: 20000,
+                        seats: 0,
+                        rentalType: "any",
+                        deliveryAvailable: false,
+                        insuranceIncluded: false,
+                      })}
+                    >
                       Clear All
                     </Button>
                   </div>
 
+                  {/* Search */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-primary">Search</h4>
+                    <Input
+                      placeholder="Search rentals..."
+                      value={filters.search}
+                      onChange={(e) => handleFilterChange("search", e.target.value)}
+                    />
+                    <Input
+                      placeholder="Location..."
+                      value={filters.location}
+                      onChange={(e) => handleFilterChange("location", e.target.value)}
+                    />
+                  </div>
+
                   {/* Price Range */}
-                  <DesktopFilterSection title="Daily Rate">
-                    <div className="space-y-4">
-                      <Slider
-                        min={0}
-                        max={20000}
-                        step={500}
-                        value={[filters.minPrice, filters.maxPrice]}
-                        onValueChange={handlePriceRangeChange}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>{formatPrice(filters.minPrice)}</span>
-                        <span>{formatPrice(filters.maxPrice)}</span>
-                      </div>
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-primary">Daily Rate (LKR)</h4>
+                    <Slider
+                      min={0}
+                      max={20000}
+                      step={500}
+                      value={[filters.minPrice, filters.maxPrice]}
+                      onValueChange={(values) => {
+                        setFilters(prev => ({ 
+                          ...prev, 
+                          minPrice: values[0], 
+                          maxPrice: values[1] 
+                        }));
+                      }}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span>{formatPrice(filters.minPrice)}</span>
+                      <span>{formatPrice(filters.maxPrice)}</span>
                     </div>
-                  </DesktopFilterSection>
+                  </div>
 
                   {/* Make */}
-                  <DesktopFilterSection title="Make">
-                    <Select value={filters.make} onValueChange={(value) => handleFilterChange('make', value)}>
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-primary">Make</h4>
+                    <Select value={filters.make} onValueChange={(value) => handleFilterChange("make", value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select make" />
                       </SelectTrigger>
@@ -413,120 +471,74 @@ const RentalsPage = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                  </DesktopFilterSection>
+                  </div>
 
                   {/* Body Type */}
-                  <DesktopFilterSection title="Body Type">
-                    <Select value={filters.bodyType} onValueChange={(value) => handleFilterChange('bodyType', value)}>
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-primary">Body Type</h4>
+                    <Select value={filters.bodyType} onValueChange={(value) => handleFilterChange("bodyType", value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select body type" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="any">Any Body Type</SelectItem>
-                        <SelectItem value="Sedan">Sedan</SelectItem>
-                        <SelectItem value="SUV">SUV</SelectItem>
-                        <SelectItem value="Hatchback">Hatchback</SelectItem>
-                        <SelectItem value="Wagon">Wagon</SelectItem>
-                        <SelectItem value="Coupe">Coupe</SelectItem>
-                        <SelectItem value="Convertible">Convertible</SelectItem>
-                        <SelectItem value="Truck">Truck</SelectItem>
-                        <SelectItem value="Van">Van</SelectItem>
+                        {uniqueBodyTypes.map(type => (
+                          <SelectItem key={type} value={type}>{type}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
-                  </DesktopFilterSection>
+                  </div>
 
                   {/* Fuel Type */}
-                  <DesktopFilterSection title="Fuel Type">
-                    <Select value={filters.fuelType} onValueChange={(value) => handleFilterChange('fuelType', value)}>
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-primary">Fuel Type</h4>
+                    <Select value={filters.fuelType} onValueChange={(value) => handleFilterChange("fuelType", value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select fuel type" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="any">Any Fuel Type</SelectItem>
-                        <SelectItem value="Petrol">Petrol</SelectItem>
-                        <SelectItem value="Diesel">Diesel</SelectItem>
-                        <SelectItem value="Electric">Electric</SelectItem>
-                        <SelectItem value="Hybrid">Hybrid</SelectItem>
+                        {uniqueFuelTypes.map(type => (
+                          <SelectItem key={type} value={type}>{type}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
-                  </DesktopFilterSection>
-
-                  {/* Transmission */}
-                  <DesktopFilterSection title="Transmission">
-                    <Select value={filters.transmission} onValueChange={(value) => handleFilterChange('transmission', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select transmission" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="any">Any Transmission</SelectItem>
-                        <SelectItem value="Manual">Manual</SelectItem>
-                        <SelectItem value="Automatic">Automatic</SelectItem>
-                        <SelectItem value="CVT">CVT</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </DesktopFilterSection>
-
-                  {/* Rental Type */}
-                  <DesktopFilterSection title="Rental Duration">
-                    <Select value={filters.rentalType} onValueChange={(value) => handleFilterChange('rentalType', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select rental type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="any">Any Duration</SelectItem>
-                        <SelectItem value="hourly">Hourly</SelectItem>
-                        <SelectItem value="daily">Daily</SelectItem>
-                        <SelectItem value="weekly">Weekly</SelectItem>
-                        <SelectItem value="monthly">Monthly</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </DesktopFilterSection>
-
-                  {/* Seats */}
-                  <DesktopFilterSection title="Minimum Seats">
-                    <Select value={filters.seats.toString()} onValueChange={(value) => handleFilterChange('seats', parseInt(value))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select seats" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="0">Any</SelectItem>
-                        <SelectItem value="2">2+ Seats</SelectItem>
-                        <SelectItem value="4">4+ Seats</SelectItem>
-                        <SelectItem value="5">5+ Seats</SelectItem>
-                        <SelectItem value="7">7+ Seats</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </DesktopFilterSection>
+                  </div>
 
                   {/* Features */}
-                  <DesktopFilterSection title="Features">
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-primary">Features</h4>
                     <div className="space-y-2">
                       <div className="flex items-center space-x-2">
-                        <Checkbox
+                        <input
+                          type="checkbox"
                           id="deliveryAvailable"
                           checked={filters.deliveryAvailable}
-                          onCheckedChange={(checked) => handleFilterChange('deliveryAvailable', checked)}
+                          onChange={(e) => handleFilterChange("deliveryAvailable", e.target.checked)}
+                          className="rounded"
                         />
-                        <Label htmlFor="deliveryAvailable" className="text-sm">Delivery Available</Label>
+                        <label htmlFor="deliveryAvailable" className="text-sm">Delivery Available</label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Checkbox
+                        <input
+                          type="checkbox"
                           id="insuranceIncluded"
                           checked={filters.insuranceIncluded}
-                          onCheckedChange={(checked) => handleFilterChange('insuranceIncluded', checked)}
+                          onChange={(e) => handleFilterChange("insuranceIncluded", e.target.checked)}
+                          className="rounded"
                         />
-                        <Label htmlFor="insuranceIncluded" className="text-sm">Insurance Included</Label>
+                        <label htmlFor="insuranceIncluded" className="text-sm">Insurance Included</label>
                       </div>
                     </div>
-                  </DesktopFilterSection>
+                  </div>
                 </div>
               </Card>
             </div>
           </div>
 
-          {/* Main Content */}
+          {/* ✅ MAIN CONTENT */}
           <div className="flex-1">
-            {/* Results Header */}
+            {/* Header Controls */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-primary">Car Rentals</h1>
@@ -534,193 +546,104 @@ const RentalsPage = () => {
                   {loading ? 'Loading...' : `${filteredRentals.length} rental${filteredRentals.length !== 1 ? 's' : ''} available`}
                 </p>
               </div>
+
+              <div className="flex items-center gap-2">
+                {/* View Mode Toggle */}
+                {!isMobile && (
+                  <div className="flex bg-muted rounded-lg p-1">
+                    <Button
+                      variant={viewMode === "grid" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setViewMode("grid")}
+                      className="px-3"
+                    >
+                      <Grid3x3 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant={viewMode === "list" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setViewMode("list")}
+                      className="px-3"
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+
+                {/* Sort */}
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-48">
+                    <ArrowUpDown className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="relevance">Relevance</SelectItem>
+                    <SelectItem value="price-low">Price: Low to High</SelectItem>
+                    <SelectItem value="price-high">Price: High to Low</SelectItem>
+                    <SelectItem value="rating">Highest Rated</SelectItem>
+                    <SelectItem value="bookings">Most Popular</SelectItem>
+                    <SelectItem value="make">Make (A-Z)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            {/* Results Grid */}
-            {filteredRentals.length === 0 ? (
-              <div className="text-center py-12">
-                <Car className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No rentals found</h3>
-                <p className="text-muted-foreground mb-4">Try adjusting your filters or search terms</p>
-                <Button onClick={clearAllFilters}>Clear All Filters</Button>
+            {/* Error Alert */}
+            {error && (
+              <Alert className="mb-6">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  {error}. Please check your connection and try again.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* ✅ RESULTS USING VEHICLECARD */}
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin mr-3" />
+                <span>Loading rentals from database...</span>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredRentals.map((rental) => {
-                  const mainImage = rental.images && rental.images.length > 0 
-                    ? rental.images[0] 
-                    : '/placeholder-car.jpg';
-
-                  return (
-                    <Card key={rental.id} className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
-                      <div className="relative">
-                        <img
-                          src={mainImage}
-                          alt={rental.title}
-                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                          onError={(e) => {
-                            e.currentTarget.src = '/placeholder-car.jpg';
-                          }}
-                        />
-                        
-                        {/* Badges */}
-                        <div className="absolute top-3 left-3 flex flex-wrap gap-1">
-                          {rental.is_featured && (
-                            <Badge className="bg-yellow-500 text-white">Featured</Badge>
-                          )}
-                          {rental.is_verified && (
-                            <Badge className="bg-green-500 text-white flex items-center gap-1">
-                              <CheckCircle className="h-3 w-3" />
-                              Verified
-                            </Badge>
-                          )}
-                          {rental.delivery_available && (
-                            <Badge className="bg-blue-500 text-white flex items-center gap-1">
-                              <Truck className="h-3 w-3" />
-                              Delivery
-                            </Badge>
-                          )}
-                        </div>
-
-                        {/* Favorite Button */}
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="absolute top-3 right-3 h-8 w-8 p-0 bg-white/80 hover:bg-white"
-                        >
-                          <Heart className="h-4 w-4" />
-                        </Button>
-
-                        {/* Stats */}
-                        <div className="absolute bottom-3 left-3 flex items-center space-x-3 text-white text-xs">
-                          <span className="flex items-center space-x-1 bg-black/50 px-2 py-1 rounded">
-                            <Eye className="h-3 w-3" />
-                            <span>{rental.views_count}</span>
-                          </span>
-                          {rental.average_rating > 0 && (
-                            <span className="flex items-center space-x-1 bg-black/50 px-2 py-1 rounded">
-                              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                              <span>{rental.average_rating.toFixed(1)}</span>
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      <CardContent className="p-4">
-                        <div className="space-y-3">
-                          {/* Title and Price */}
-                          <div>
-                            <h3 className="font-semibold text-lg leading-tight mb-1 group-hover:text-primary transition-colors">
-                              {rental.title}
-                            </h3>
-                            <p className="text-sm text-muted-foreground">
-                              {rental.year} {rental.make} {rental.model}
-                            </p>
-                          </div>
-
-                          {/* Price */}
-                          <div className="flex items-baseline space-x-2">
-                            <span className="text-2xl font-bold text-primary">
-                              {formatPrice(rental.daily_rate)}
-                            </span>
-                            <span className="text-sm text-muted-foreground">/day</span>
-                            {rental.weekly_rate && (
-                              <span className="text-xs text-green-600">
-                                {formatPrice(rental.weekly_rate)}/week
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Key Features */}
-                          <div className="flex flex-wrap gap-2 text-xs">
-                            <Badge variant="outline" className="flex items-center gap-1">
-                              <Car className="h-3 w-3" />
-                              {rental.body_type}
-                            </Badge>
-                            <Badge variant="outline" className="flex items-center gap-1">
-                              <Fuel className="h-3 w-3" />
-                              {rental.fuel_type}
-                            </Badge>
-                            <Badge variant="outline" className="flex items-center gap-1">
-                              <Users className="h-3 w-3" />
-                              {rental.seats} seats
-                            </Badge>
-                            <Badge variant="outline" className="flex items-center gap-1">
-                              <Settings className="h-3 w-3" />
-                              {rental.transmission}
-                            </Badge>
-                          </div>
-
-                          {/* Rental Details */}
-                          <div className="text-xs text-muted-foreground space-y-1">
-                            <div className="flex items-center justify-between">
-                              <span>Min rental: {rental.minimum_rental_days} day{rental.minimum_rental_days !== 1 ? 's' : ''}</span>
-                              <span className="flex items-center gap-1">
-                                <MapPin className="h-3 w-3" />
-                                {rental.location}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span>Security: {formatPrice(rental.security_deposit)}</span>
-                              {rental.insurance_included && (
-                                <span className="flex items-center gap-1 text-green-600">
-                                  <Shield className="h-3 w-3" />
-                                  Insurance included
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Owner Info */}
-                          <div className="flex items-center justify-between pt-2 border-t">
-                            <div className="flex items-center space-x-2">
-                              <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center">
-                                <span className="text-xs font-medium text-primary">
-                                  {rental.users.first_name[0]}{rental.users.last_name[0]}
-                                </span>
-                              </div>
-                              <div>
-                                <p className="text-sm font-medium">
-                                  {rental.users.first_name} {rental.users.last_name}
-                                  {rental.users.is_verified && (
-                                    <CheckCircle className="inline h-3 w-3 text-green-500 ml-1" />
-                                  )}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="flex space-x-2">
-                              <Button size="sm" variant="outline">
-                                <Phone className="h-3 w-3" />
-                              </Button>
-                              <Button size="sm" variant="outline">
-                                <Mail className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </div>
-
-                          {/* Action Buttons */}
-                          <div className="flex space-x-2 pt-2">
-                            <Button className="flex-1" size="sm">
-                              <CalendarDays className="h-4 w-4 mr-1" />
-                              Book Now
-                            </Button>
-                            <Button variant="outline" size="sm">
-                              View Details
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
+              <>
+                {filteredRentals.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Car className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No rentals found</h3>
+                    <p className="text-muted-foreground mb-4">
+                      {rentals.length === 0 
+                        ? "No rental data available in database"
+                        : "Try adjusting your filters or search terms"
+                      }
+                    </p>
+                    <Button onClick={() => window.location.reload()}>
+                      Refresh Page
+                    </Button>
+                  </div>
+                ) : (
+                  <div className={
+                    viewMode === "grid" 
+                      ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+                      : "grid grid-cols-1 lg:grid-cols-2 gap-6"
+                  }>
+                    {filteredRentals.map((rental) => (
+                      <VehicleCard
+                        key={rental.id}
+                        vehicle={transformRentalToVehicleCard(rental)}
+                        onSave={handleSaveRental}
+                        onCompare={handleCompareRental}
+                        className="h-full" // Ensure consistent height
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
       </div>
 
-      {/* Mobile Filter Button */}
+      {/* ✅ MOBILE FILTER BUTTON */}
       <div className="lg:hidden fixed bottom-4 left-4 z-40">
         <Button
           onClick={() => setFiltersOpen(true)}
@@ -731,7 +654,7 @@ const RentalsPage = () => {
         </Button>
       </div>
 
-      {/* Mobile Filter Panel */}
+      {/* ✅ MOBILE FILTER PANEL */}
       <MobileFilterPanel
         isOpen={filtersOpen}
         onClose={() => setFiltersOpen(false)}
@@ -740,7 +663,6 @@ const RentalsPage = () => {
         category="rentals"
       />
 
-      {/* Footer */}
       <Footer />
     </div>
   );

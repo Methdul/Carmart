@@ -1,5 +1,5 @@
 // car-mart-backend/src/routes/rentals.js
-// Rentals API following your existing database pattern
+// ✅ UPDATED - No Database Functions, All Logic in Backend
 
 const express = require('express');
 const router = express.Router();
@@ -32,7 +32,7 @@ router.get('/', async (req, res) => {
       limit = 12
     } = req.query;
 
-    // Build the query - same pattern as your vehicles route
+    // Build the query
     let query = supabase
       .from('rentals')
       .select(`
@@ -48,7 +48,7 @@ router.get('/', async (req, res) => {
       .eq('is_active', true)
       .eq('is_available', true);
 
-    // Apply filters - following your existing pattern
+    // Apply filters
     const filters = {};
 
     if (search) {
@@ -121,7 +121,7 @@ router.get('/', async (req, res) => {
       query = query.eq('insurance_included', true);
     }
 
-    // Apply sorting - same pattern as your existing routes
+    // Apply sorting
     const validSortFields = ['created_at', 'daily_rate', 'average_rating', 'booking_count', 'views_count'];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'created_at';
     const order = sortOrder === 'asc' ? { ascending: true } : { ascending: false };
@@ -141,11 +141,49 @@ router.get('/', async (req, res) => {
       throw error;
     }
 
-    console.log(`✅ Found ${rentals?.length || 0} rentals`);
+    // ✅ Process rental data (parse JSON fields, add computed properties)
+    const processedRentals = rentals?.map(rental => {
+      try {
+        // Parse JSON fields safely
+        const features = rental.features ? 
+          (typeof rental.features === 'string' ? JSON.parse(rental.features) : rental.features) : [];
+        
+        const included_items = rental.included_items ? 
+          (typeof rental.included_items === 'string' ? JSON.parse(rental.included_items) : rental.included_items) : [];
+        
+        const pickup_locations = rental.pickup_locations ? 
+          (typeof rental.pickup_locations === 'string' ? JSON.parse(rental.pickup_locations) : rental.pickup_locations) : [];
+
+        const images = rental.images ? 
+          (typeof rental.images === 'string' ? JSON.parse(rental.images) : rental.images) : ['/api/placeholder/400/300'];
+
+        return {
+          ...rental,
+          features,
+          included_items,
+          pickup_locations,
+          images,
+          // Computed properties
+          is_available: new Date(rental.available_from) <= new Date() && 
+                       (!rental.available_until || new Date(rental.available_until) >= new Date())
+        };
+      } catch (parseError) {
+        console.error('❌ Error parsing rental data:', parseError);
+        return {
+          ...rental,
+          features: [],
+          included_items: [],
+          pickup_locations: [],
+          images: ['/api/placeholder/400/300']
+        };
+      }
+    }) || [];
+
+    console.log(`✅ Found ${processedRentals.length} rentals`);
 
     res.json({
       success: true,
-      data: rentals || [],
+      data: processedRentals,
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
@@ -201,14 +239,46 @@ router.get('/:id', async (req, res) => {
       throw error;
     }
 
-    // Increment view count using the function (same pattern as vehicles)
-    await supabase.rpc('increment_rental_views', { rental_uuid: id });
+    // ✅ INCREMENT VIEW COUNT IN BACKEND (NO DATABASE FUNCTION)
+    try {
+      const { error: updateError } = await supabase
+        .from('rentals')
+        .update({ 
+          views_count: (rental.views_count || 0) + 1,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (updateError) {
+        console.error('⚠️ Failed to update view count:', updateError);
+        // Continue anyway - this is not critical
+      } else {
+        console.log('✅ View count updated');
+      }
+    } catch (updateError) {
+      console.error('⚠️ View count update error:', updateError);
+      // Continue anyway
+    }
+
+    // Process rental data
+    const processedRental = {
+      ...rental,
+      features: rental.features ? 
+        (typeof rental.features === 'string' ? JSON.parse(rental.features) : rental.features) : [],
+      included_items: rental.included_items ? 
+        (typeof rental.included_items === 'string' ? JSON.parse(rental.included_items) : rental.included_items) : [],
+      pickup_locations: rental.pickup_locations ? 
+        (typeof rental.pickup_locations === 'string' ? JSON.parse(rental.pickup_locations) : rental.pickup_locations) : [],
+      images: rental.images ? 
+        (typeof rental.images === 'string' ? JSON.parse(rental.images) : rental.images) : ['/api/placeholder/400/300'],
+      views_count: (rental.views_count || 0) + 1 // Reflect the increment
+    };
 
     console.log('✅ Rental found and view count updated');
 
     res.json({
       success: true,
-      data: rental
+      data: processedRental
     });
 
   } catch (error) {
@@ -225,9 +295,44 @@ router.get('/:id', async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
-    const rentalData = { ...req.body, user_id: userId };
+    const rentalData = { 
+      ...req.body, 
+      user_id: userId,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      is_active: true,
+      is_available: true,
+      views_count: 0,
+      favorites_count: 0,
+      booking_count: 0
+    };
 
     console.log('📝 Creating new rental for user:', userId);
+
+    // Validate required fields
+    const requiredFields = ['title', 'make', 'model', 'year', 'daily_rate', 'location', 'fuel_type', 'transmission', 'body_type'];
+    const missingFields = requiredFields.filter(field => !rentalData[field]);
+    
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Missing required fields: ${missingFields.join(', ')}`
+      });
+    }
+
+    // Ensure JSON fields are properly formatted
+    if (rentalData.features && typeof rentalData.features !== 'string') {
+      rentalData.features = JSON.stringify(rentalData.features);
+    }
+    if (rentalData.included_items && typeof rentalData.included_items !== 'string') {
+      rentalData.included_items = JSON.stringify(rentalData.included_items);
+    }
+    if (rentalData.pickup_locations && typeof rentalData.pickup_locations !== 'string') {
+      rentalData.pickup_locations = JSON.stringify(rentalData.pickup_locations);
+    }
+    if (rentalData.images && typeof rentalData.images !== 'string') {
+      rentalData.images = JSON.stringify(rentalData.images);
+    }
 
     const { data: rental, error } = await supabase
       .from('rentals')
@@ -262,11 +367,14 @@ router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.id;
-    const updateData = { ...req.body, updated_at: new Date().toISOString() };
+    const updateData = { 
+      ...req.body, 
+      updated_at: new Date().toISOString() 
+    };
 
     console.log(`📝 Updating rental ${id} for user:`, userId);
 
-    // Check ownership (same pattern as your vehicles route)
+    // Check ownership
     const { data: existingRental, error: fetchError } = await supabase
       .from('rentals')
       .select('user_id')
@@ -285,6 +393,20 @@ router.put('/:id', authenticateToken, async (req, res) => {
         success: false,
         message: 'Not authorized to update this rental'
       });
+    }
+
+    // Ensure JSON fields are properly formatted
+    if (updateData.features && typeof updateData.features !== 'string') {
+      updateData.features = JSON.stringify(updateData.features);
+    }
+    if (updateData.included_items && typeof updateData.included_items !== 'string') {
+      updateData.included_items = JSON.stringify(updateData.included_items);
+    }
+    if (updateData.pickup_locations && typeof updateData.pickup_locations !== 'string') {
+      updateData.pickup_locations = JSON.stringify(updateData.pickup_locations);
+    }
+    if (updateData.images && typeof updateData.images !== 'string') {
+      updateData.images = JSON.stringify(updateData.images);
     }
 
     const { data: rental, error } = await supabase
@@ -345,10 +467,13 @@ router.delete('/:id', authenticateToken, async (req, res) => {
       });
     }
 
-    // Soft delete (same pattern as your existing routes)
+    // Soft delete
     const { error } = await supabase
       .from('rentals')
-      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .update({ 
+        is_active: false, 
+        updated_at: new Date().toISOString() 
+      })
       .eq('id', id);
 
     if (error) {
@@ -375,20 +500,43 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 // GET /api/rentals/stats/overview - Get rental statistics
 router.get('/stats/overview', async (req, res) => {
   try {
+    console.log('📊 Fetching rental statistics...');
+
     const { data: stats } = await supabase
       .from('rentals')
-      .select('daily_rate, make, body_type, fuel_type, rental_type')
+      .select('daily_rate, make, body_type, fuel_type, rental_type, booking_count, average_rating')
       .eq('is_active', true)
       .eq('is_available', true);
 
+    if (!stats || stats.length === 0) {
+      return res.json({
+        success: true,
+        data: {
+          total: 0,
+          averagePrice: 0,
+          popularMakes: [],
+          bodyTypes: [],
+          fuelTypes: [],
+          rentalTypes: [],
+          totalBookings: 0,
+          averageRating: 0
+        }
+      });
+    }
+
     const overview = {
-      total: stats?.length || 0,
-      averagePrice: stats?.length ? Math.round(stats.reduce((sum, r) => sum + parseFloat(r.daily_rate), 0) / stats.length) : 0,
-      popularMakes: [...new Set(stats?.map(r => r.make))].slice(0, 5),
-      bodyTypes: [...new Set(stats?.map(r => r.body_type))],
-      fuelTypes: [...new Set(stats?.map(r => r.fuel_type))],
-      rentalTypes: [...new Set(stats?.map(r => r.rental_type))]
+      total: stats.length,
+      averagePrice: Math.round(stats.reduce((sum, r) => sum + parseFloat(r.daily_rate || 0), 0) / stats.length),
+      popularMakes: [...new Set(stats.map(r => r.make))].slice(0, 5),
+      bodyTypes: [...new Set(stats.map(r => r.body_type))],
+      fuelTypes: [...new Set(stats.map(r => r.fuel_type))],
+      rentalTypes: [...new Set(stats.map(r => r.rental_type))],
+      totalBookings: stats.reduce((sum, r) => sum + (r.booking_count || 0), 0),
+      averageRating: stats.length > 0 ? 
+        (stats.reduce((sum, r) => sum + (r.average_rating || 0), 0) / stats.length).toFixed(1) : 0
     };
+
+    console.log('✅ Rental statistics calculated');
 
     res.json({
       success: true,
@@ -399,7 +547,8 @@ router.get('/stats/overview', async (req, res) => {
     console.error('❌ Error fetching rental stats:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch rental statistics'
+      message: 'Failed to fetch rental statistics',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });

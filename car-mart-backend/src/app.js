@@ -1,9 +1,10 @@
 // car-mart-backend/src/app.js
-// PERFECT VERSION - All Issues Fixed + Staff Routes Added
+// ✅ CLEAN VERSION - All Issues Fixed
+
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const path = require('path');
+const path = require('path'); 
 const fs = require('fs');
 
 // Load environment variables
@@ -19,7 +20,7 @@ if (!process.env.JWT_SECRET) {
   process.exit(1);
 }
 
-// Create uploads directory - CONSISTENT PATH
+// Create uploads directory
 const uploadsDir = path.join(__dirname, '../uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
@@ -28,7 +29,7 @@ if (!fs.existsSync(uploadsDir)) {
   console.log('📁 Using existing uploads directory:', uploadsDir);
 }
 
-// Middleware
+// ✅ MIDDLEWARE CONFIGURATION
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://your-frontend-domain.com'] 
@@ -38,10 +39,7 @@ app.use(cors({
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-// Static file serving for uploads - FIXED PATH
 app.use('/uploads', express.static(uploadsDir));
-console.log('📁 Static files served from:', uploadsDir);
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -50,7 +48,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Basic health check route
+// ✅ BASIC ROUTES
 app.get('/', (req, res) => {
   res.json({ 
     message: 'Car Mart API is running!',
@@ -59,6 +57,15 @@ app.get('/', (req, res) => {
     uploadsDir: uploadsDir,
     uploadsDirExists: fs.existsSync(uploadsDir),
     jwtSecretConfigured: !!process.env.JWT_SECRET
+  });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Car Mart API is healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
   });
 });
 
@@ -88,89 +95,31 @@ app.get('/api/upload-info', (req, res) => {
   });
 });
 
-// API Routes - FIXED ORDER AND PATHS
-try {
-  app.use('/api/auth', require('./routes/auth'));
-  console.log('✅ Auth routes loaded');
-} catch (error) {
-  console.log('⚠️ Auth routes not found - will use mock');
-}
+// ✅ API ROUTES - CLEAN ORGANIZATION
+const routes = [
+  { path: '/api/auth', file: './routes/auth', name: 'Auth' },
+  { path: '/api/staff', file: './routes/staff', name: 'Staff' }, // ✅ ONLY ONE STAFF ROUTE
+  { path: '/api/users', file: './routes/users', name: 'Users' },
+  { path: '/api/vehicles', file: './routes/vehicles', name: 'Vehicles' },
+  { path: '/api/parts', file: './routes/parts', name: 'Parts' },
+  { path: '/api/services', file: './routes/services', name: 'Services' },
+  { path: '/api/rentals', file: './routes/rentals', name: 'Rentals' }, // ✅ RENTALS ADDED
+  { path: '/api/upload', file: './routes/upload', name: 'Upload' },
+  { path: '/api/favorites', file: './routes/favorites', name: 'Favorites' },
+  { path: '/api/search', file: './routes/search', name: 'Search' }
+];
 
-// Add this block after the auth routes in your app.js
-try {
-  app.use('/api/staff', require('./routes/staff'));
-  console.log('✅ Staff routes loaded');
-} catch (error) {
-  console.log('⚠️ Staff routes not found');
-  console.error('Staff routes error:', error.message);
-}
+// Load all routes dynamically
+routes.forEach(({ path, file, name }) => {
+  try {
+    app.use(path, require(file));
+    console.log(`✅ ${name} routes loaded`);
+  } catch (error) {
+    console.log(`⚠️ ${name} routes not found - ${error.message}`);
+  }
+});
 
-// 🔥 ADD STAFF ROUTES HERE - THIS IS THE FIX! 🔥
-try {
-  app.use('/api/staff', require('./routes/staff'));
-  console.log('✅ Staff routes loaded');
-} catch (error) {
-  console.log('⚠️ Staff routes not found');
-}
-
-try {
-  app.use('/api/users', require('./routes/users'));
-  console.log('✅ Users routes loaded');
-} catch (error) {
-  console.log('⚠️ Users routes not found');
-}
-
-try {
-  app.use('/api/vehicles', require('./routes/vehicles'));
-  console.log('✅ Vehicles routes loaded');
-} catch (error) {
-  console.log('⚠️ Vehicles routes not found');
-}
-
-try {
-  app.use('/api/parts', require('./routes/parts'));
-  console.log('✅ Parts routes loaded');
-} catch (error) {
-  console.log('⚠️ Parts routes not found');
-}
-
-try {
-  app.use('/api/services', require('./routes/services'));
-  console.log('✅ Services routes loaded');
-} catch (error) {
-  console.log('⚠️ Services routes not found');
-}
-
-// Add this line in your app.js with your other route registrations:
-try {
-  app.use('/api/rentals', require('./routes/rentals'));
-  console.log('✅ Rentals routes loaded');
-} catch (error) {
-  console.log('⚠️ Rentals routes not found');
-}
-
-try {
-  app.use('/api/upload', require('./routes/upload'));
-  console.log('✅ Upload routes loaded');
-} catch (error) {
-  console.log('⚠️ Upload routes not found');
-}
-
-try {
-  app.use('/api/favorites', require('./routes/favorites'));
-  console.log('✅ Favorites routes loaded');
-} catch (error) {
-  console.log('⚠️ Favorites routes not found');
-}
-
-try {
-  app.use('/api/search', require('./routes/search'));
-  console.log('✅ Search routes loaded');
-} catch (error) {
-  console.log('⚠️ Search routes not found');
-}
-
-// Global error handling middleware
+// ✅ ERROR HANDLING MIDDLEWARE
 app.use((error, req, res, next) => {
   console.error('❌ Global error:', error.message);
   
@@ -206,27 +155,19 @@ app.use((error, req, res, next) => {
   });
 });
 
-// 404 handler for undefined routes
+// ✅ 404 HANDLER
 app.use((req, res) => {
   console.log(`❌ 404 - Route not found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({
     success: false,
     message: `Route ${req.originalUrl} not found`,
-    availableRoutes: [
-      'GET /',
-      'GET /api/upload-info',
-      'POST /api/auth/register',
-      'POST /api/auth/login',
-      'POST /api/staff/login',
-      'GET /api/staff/dashboard',
-      'GET /api/vehicles',
-      'GET /api/parts',
-      'POST /api/upload/images'
-    ]
+    availableRoutes: routes.map(route => route.path),
+    method: req.method,
+    timestamp: new Date().toISOString()
   });
 });
 
-// Start server
+// ✅ START SERVER
 app.listen(PORT, () => {
   console.log(`
 🚀 =======================================
@@ -241,16 +182,22 @@ app.listen(PORT, () => {
 
 🧪 Test Endpoints:
    Health Check: http://localhost:${PORT}/
+   API Health:   http://localhost:${PORT}/api/health
    Upload Info:  http://localhost:${PORT}/api/upload-info
    
 🔗 Main Endpoints:
-   Register: POST http://localhost:${PORT}/api/auth/register
-   Login:    POST http://localhost:${PORT}/api/auth/login
-   Staff Login: POST http://localhost:${PORT}/api/staff/login
-   Upload:   POST http://localhost:${PORT}/api/upload/images
+   Register:     POST http://localhost:${PORT}/api/auth/register
+   Login:        POST http://localhost:${PORT}/api/auth/login
+   Staff Login:  POST http://localhost:${PORT}/api/staff/login
+   Vehicles:     GET  http://localhost:${PORT}/api/vehicles
+   Parts:        GET  http://localhost:${PORT}/api/parts
+   Services:     GET  http://localhost:${PORT}/api/services
+   Rentals:      GET  http://localhost:${PORT}/api/rentals  ✅
+   Upload:       POST http://localhost:${PORT}/api/upload/images
+
+📊 Loaded Routes: ${routes.length}
 🚀 =======================================
   `);
 });
 
 module.exports = app;
-
