@@ -1,4 +1,5 @@
-// File: car-mart-frontend/src/pages/StaffLoginPage.tsx
+// File: car-mart-frontend/src/pages/staff/StaffLoginPage.tsx
+// FIXED VERSION - Now redirects properly after login
 import React, { useState } from 'react';
 import { Eye, EyeOff, Shield, Lock, Mail, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,7 +31,7 @@ const StaffLoginPage = () => {
     setError('');
 
     try {
-      // API call would go here
+      // API call to your working backend
       const response = await fetch('http://localhost:3001/api/staff/login', {
         method: 'POST',
         headers: {
@@ -46,8 +47,15 @@ const StaffLoginPage = () => {
         localStorage.setItem('staff_token', result.data.token);
         localStorage.setItem('staff_user', JSON.stringify(result.data.staff));
         
-        // Redirect to staff dashboard (in real app)
-        alert('Login successful! Redirecting to dashboard...');
+        // 🔥 FIXED: Actually redirect to dashboard instead of just showing alert
+        console.log('Login successful, redirecting to dashboard...');
+        
+        // Option 1: Direct redirect (simple)
+        window.location.href = '/staff/dashboard';
+        
+        // Option 2: If using React Router, use navigate instead:
+        // navigate('/staff/dashboard');
+        
       } else {
         setError(result.message || 'Login failed');
       }
@@ -92,7 +100,7 @@ const StaffLoginPage = () => {
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="admin@carmart.com"
+                    placeholder="admin@example.com"
                     value={formData.email}
                     onChange={handleInputChange}
                     className="pl-10"
@@ -156,15 +164,15 @@ const StaffLoginPage = () => {
           </CardContent>
         </Card>
 
-        {/* Debug Info (Remove in production) */}
+        {/* Working Credentials */}
         <Card className="mt-4 border-dashed">
           <CardContent className="pt-4">
             <p className="text-xs text-muted-foreground text-center mb-2">
-              <strong>Demo Credentials:</strong>
+              <strong>Working Credentials:</strong>
             </p>
             <p className="text-xs text-muted-foreground text-center">
-              Email: admin@carmart.com<br />
-              Password: CarMart2025!
+              Email: admin@example.com<br />
+              Password: admin123
             </p>
           </CardContent>
         </Card>
@@ -174,136 +182,3 @@ const StaffLoginPage = () => {
 };
 
 export default StaffLoginPage;
-
-// =============================================================================
-// STAFF SERVICES CODE TO ADD TO YOUR PROJECT
-// =============================================================================
-
-/*
-
-File: car-mart-frontend/src/services/staffAuthService.js
-Staff Authentication Service
-
-const API_BASE_URL = 'http://localhost:3001/api';
-
-class StaffAuthService {
-  constructor() {
-    this.token = localStorage.getItem('staff_token');
-    this.staff = this.getStaffUser();
-  }
-
-  // Get auth headers
-  getAuthHeaders() {
-    const headers = {
-      'Content-Type': 'application/json',
-    };
-
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
-    }
-
-    return headers;
-  }
-
-  // Login
-  async login(email, password) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/staff/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (data.success && data.data) {
-        this.token = data.data.token;
-        this.staff = data.data.staff;
-        
-        localStorage.setItem('staff_token', this.token);
-        localStorage.setItem('staff_user', JSON.stringify(this.staff));
-      }
-
-      return data;
-    } catch (error) {
-      console.error('Staff login error:', error);
-      return {
-        success: false,
-        message: 'Network error. Please try again.'
-      };
-    }
-  }
-
-  // Logout
-  async logout() {
-    try {
-      await fetch(`${API_BASE_URL}/staff/logout`, {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-      });
-    } catch (error) {
-      console.error('Staff logout error:', error);
-    } finally {
-      this.token = null;
-      this.staff = null;
-      localStorage.removeItem('staff_token');
-      localStorage.removeItem('staff_user');
-    }
-  }
-
-  // Check if staff is logged in
-  isLoggedIn() {
-    return !!this.token && !!this.staff;
-  }
-
-  // Get current staff user
-  getStaffUser() {
-    try {
-      const staffData = localStorage.getItem('staff_user');
-      return staffData ? JSON.parse(staffData) : null;
-    } catch (error) {
-      return null;
-    }
-  }
-
-  // Check if super staff
-  isSuperStaff() {
-    return this.staff?.is_super_staff || false;
-  }
-
-  // API request helper
-  async apiRequest(endpoint, options = {}) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/staff${endpoint}`, {
-        ...options,
-        headers: {
-          ...this.getAuthHeaders(),
-          ...options.headers,
-        },
-      });
-
-      const data = await response.json();
-
-      // Handle token expiration
-      if (response.status === 401 && data.message?.includes('token')) {
-        this.logout();
-        window.location.href = '/staff/login';
-        return { success: false, message: 'Session expired' };
-      }
-
-      return data;
-    } catch (error) {
-      console.error('Staff API request error:', error);
-      return {
-        success: false,
-        message: 'Network error. Please try again.'
-      };
-    }
-  }
-}
-
-export const staffAuthService = new StaffAuthService();
-
-*/

@@ -1,5 +1,5 @@
 // car-mart-backend/src/app.js
-// PERFECT VERSION - All Issues Fixed
+// PERFECT VERSION - All Issues Fixed + Staff Routes Added
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -96,6 +96,23 @@ try {
   console.log('⚠️ Auth routes not found - will use mock');
 }
 
+// Add this block after the auth routes in your app.js
+try {
+  app.use('/api/staff', require('./routes/staff'));
+  console.log('✅ Staff routes loaded');
+} catch (error) {
+  console.log('⚠️ Staff routes not found');
+  console.error('Staff routes error:', error.message);
+}
+
+// 🔥 ADD STAFF ROUTES HERE - THIS IS THE FIX! 🔥
+try {
+  app.use('/api/staff', require('./routes/staff'));
+  console.log('✅ Staff routes loaded');
+} catch (error) {
+  console.log('⚠️ Staff routes not found');
+}
+
 try {
   app.use('/api/users', require('./routes/users'));
   console.log('✅ Users routes loaded');
@@ -122,6 +139,14 @@ try {
   console.log('✅ Services routes loaded');
 } catch (error) {
   console.log('⚠️ Services routes not found');
+}
+
+// Add this line in your app.js with your other route registrations:
+try {
+  app.use('/api/rentals', require('./routes/rentals'));
+  console.log('✅ Rentals routes loaded');
+} catch (error) {
+  console.log('⚠️ Rentals routes not found');
 }
 
 try {
@@ -192,6 +217,8 @@ app.use((req, res) => {
       'GET /api/upload-info',
       'POST /api/auth/register',
       'POST /api/auth/login',
+      'POST /api/staff/login',
+      'GET /api/staff/dashboard',
       'GET /api/vehicles',
       'GET /api/parts',
       'POST /api/upload/images'
@@ -219,9 +246,11 @@ app.listen(PORT, () => {
 🔗 Main Endpoints:
    Register: POST http://localhost:${PORT}/api/auth/register
    Login:    POST http://localhost:${PORT}/api/auth/login
+   Staff Login: POST http://localhost:${PORT}/api/staff/login
    Upload:   POST http://localhost:${PORT}/api/upload/images
 🚀 =======================================
   `);
 });
 
 module.exports = app;
+

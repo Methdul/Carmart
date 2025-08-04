@@ -8,6 +8,7 @@ import { Suspense, lazy } from "react";
 import { LoadingSpinner } from "@/components/ErrorBoundary";
 import StaffLoginPage from './pages/staff/StaffLoginPage';
 import StaffDashboardPage from './pages/staff/StaffDashboardPage';
+import RentalsPage from '@/pages/RentalsPage';
 
 // Lazy load components to prevent initial load crashes
 const Index = lazy(() => import("./pages/Index"));
@@ -98,6 +99,7 @@ const App = () => {
                 <Route path="/compare" element={<SafeRoute element={ComparisonPage} />} />
                 <Route path="/staff/login" element={<StaffLoginPage />} />
                 <Route path="/staff/dashboard" element={<StaffDashboardPage />} />
+                <Route path="/rentals" element={<RentalsPage />} />
                 <Route path="*" element={<SafeRoute element={NotFound} />} />
               </Routes>
             </BrowserRouter>

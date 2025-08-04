@@ -1,83 +1,117 @@
 // car-mart-frontend/src/components/Header.tsx
-// Updated with User Avatar Dropdown Menu
+// Complete file with Rentals link added
 
-import { Menu, User, X, Search, LogOut, BarChart3, Plus, Car, Settings, Wrench } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { authService } from "@/services/authService";
-import {
+import React, { useState, useRef, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { 
+  Search, 
+  Menu, 
+  X, 
+  User, 
+  LogOut, 
+  Settings, 
+  Heart, 
+  MessageCircle, 
+  Plus,
+  Car
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { 
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+} from '@/components/ui/dropdown-menu';
+
+interface User {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  avatar_url?: string;
+  account_type: 'personal' | 'business';
+  is_verified: boolean;
+}
 
 const Header = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const [isSignedIn, setIsSignedIn] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
-  
-  // Check authentication state on component mount and when location changes
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Check authentication status
+  const isSignedIn = !!currentUser;
+
+  // Load user data on component mount
   useEffect(() => {
-    const checkAuthState = () => {
-      const isLoggedIn = authService.isLoggedIn();
-      const user = authService.getCurrentUser();
-      
-      setIsSignedIn(isLoggedIn);
-      setCurrentUser(user);
-      
-      console.log('🔐 Auth state check:', { isLoggedIn, user: user?.email });
+    const token = localStorage.getItem('auth_token');
+    const userData = localStorage.getItem('user_data');
+    
+    if (token && userData) {
+      try {
+        const user = JSON.parse(userData);
+        setCurrentUser(user);
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_data');
+      }
+    }
+  }, []);
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setMobileMenuOpen(false);
+      }
     };
 
-    checkAuthState();
-  }, [location.pathname]); // Re-check when navigating
-  
-  const handleListingTypeSelect = (type: string) => {
-    // Navigate to appropriate listing page
-    switch (type) {
-      case 'vehicle':
-        navigate('/list-vehicle');
-        break;
-      case 'part':
-        navigate('/list-parts');
-        break;
-      case 'service':
-        navigate('/list-services');
-        break;
+    if (mobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [mobileMenuOpen]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
     }
   };
 
   const handleLogout = () => {
-    authService.logout();
-    setIsSignedIn(false);
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_data');
     setCurrentUser(null);
-    setIsMobileMenuOpen(false);
     navigate('/');
-    console.log('🚪 User logged out');
   };
 
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
   };
 
-  const getUserDisplayName = () => {
-    if (currentUser) {
-      return `${currentUser.first_name} ${currentUser.last_name}`;
-    }
-    return "User";
+  const handleMobileNavClick = (path: string) => {
+    setMobileMenuOpen(false);
+    navigate(path);
+  };
+
+  const isActivePath = (path: string) => {
+    return location.pathname === path;
   };
 
   const getUserInitials = () => {
-    if (currentUser) {
-      return `${currentUser.first_name?.[0] || ''}${currentUser.last_name?.[0] || ''}`;
+    if (currentUser?.first_name && currentUser?.last_name) {
+      return `${currentUser.first_name[0] || ''}${currentUser.last_name[0] || ''}`;
     }
     return "U";
   };
@@ -106,6 +140,16 @@ const Header = () => {
                 Buy Vehicles
               </Button>
             </Link>
+
+            {/* NEW RENTALS LINK */}
+            <Link to="/rentals">
+              <Button 
+                variant="ghost" 
+                className="text-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 font-medium"
+              >
+                Rentals
+              </Button>
+            </Link>
             
             <Link to="/parts">
               <Button 
@@ -128,278 +172,297 @@ const Header = () => {
 
           {/* Desktop Search Bar */}
           <div className="hidden md:flex flex-1 max-w-sm mx-6">
-            <div className="relative w-full">
+            <form onSubmit={handleSearch} className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 type="search"
                 placeholder="Search vehicles, parts, services..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 w-full bg-muted/50 border-0 focus-visible:bg-background focus-visible:ring-1 focus-visible:ring-primary"
               />
-            </div>
+            </form>
           </div>
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center space-x-4">
             {isSignedIn ? (
-              <div className="flex items-center space-x-2">
-                {/* Post Listing Dropdown */}
+              <>
+                {/* Favorites */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/favorites')}
+                  className="text-muted-foreground hover:text-primary"
+                >
+                  <Heart className="h-5 w-5" />
+                </Button>
+
+                {/* Messages */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/messages')}
+                  className="text-muted-foreground hover:text-primary"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                </Button>
+
+                {/* Add Listing */}
+                <Button
+                  onClick={() => navigate('/sell')}
+                  size="sm"
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Sell
+                </Button>
+
+                {/* User Menu */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      className="border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-200"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Post Listing
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-48" align="end">
-                    <DropdownMenuLabel>What would you like to list?</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem 
-                      className="cursor-pointer"
-                      onClick={() => handleListingTypeSelect('vehicle')}
-                    >
-                      <Car className="mr-2 h-4 w-4" />
-                      <span>Vehicle</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className="cursor-pointer"
-                      onClick={() => handleListingTypeSelect('part')}
-                    >
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Auto Part</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className="cursor-pointer"
-                      onClick={() => handleListingTypeSelect('service')}
-                    >
-                      <Wrench className="mr-2 h-4 w-4" />
-                      <span>Service</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                
-                {/* User Avatar Dropdown */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={currentUser?.avatar} alt={getUserDisplayName()} />
-                        <AvatarFallback className="bg-primary text-white font-medium">
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      {currentUser?.avatar_url ? (
+                        <img
+                          className="h-8 w-8 rounded-full object-cover"
+                          src={currentUser.avatar_url}
+                          alt={`${currentUser.first_name} ${currentUser.last_name}`}
+                        />
+                      ) : (
+                        <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
                           {getUserInitials()}
-                        </AvatarFallback>
-                      </Avatar>
+                        </div>
+                      )}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{getUserDisplayName()}</p>
+                        <p className="text-sm font-medium leading-none">
+                          {currentUser?.first_name} {currentUser?.last_name}
+                          {currentUser?.is_verified && (
+                            <span className="ml-1 text-xs text-primary">✓</span>
+                          )}
+                        </p>
                         <p className="text-xs leading-none text-muted-foreground">
                           {currentUser?.email}
+                        </p>
+                        <p className="text-xs leading-none text-muted-foreground capitalize">
+                          {currentUser?.account_type} Account
                         </p>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link to="/dashboard" className="w-full cursor-pointer">
-                        <BarChart3 className="mr-2 h-4 w-4" />
-                        <span>Dashboard</span>
-                      </Link>
+                    <DropdownMenuItem onClick={() => navigate('/profile')}>
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Dashboard</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/my-listings')}>
+                      <Car className="mr-2 h-4 w-4" />
+                      <span>My Listings</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem 
-                      className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
-                      onClick={handleLogout}
-                    >
+                    <DropdownMenuItem onClick={handleLogout}>
                       <LogOut className="mr-2 h-4 w-4" />
-                      <span>Sign Out</span>
+                      <span>Log out</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </div>
+              </>
             ) : (
-              <div className="flex items-center space-x-2">
-                <Button 
-                  variant="outline" 
-                  className="border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-200"
-                  onClick={() => navigate('/auth')}
+              <div className="flex items-center space-x-3">
+                <Button
+                  variant="ghost"
+                  onClick={() => navigate('/login')}
+                  className="text-foreground hover:text-primary"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Post Listing
+                  Sign In
                 </Button>
-                <Link to="/auth">
-                  <Button 
-                    variant="default"
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-200"
-                  >
-                    <User className="h-4 w-4 mr-2" />
-                    Sign In
-                  </Button>
-                </Link>
+                <Button
+                  onClick={() => navigate('/register')}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  Sign Up
+                </Button>
               </div>
             )}
           </div>
 
-          {/* Mobile Actions */}
-          <div className="flex items-center space-x-2 lg:hidden">
-            {/* Mobile Search Toggle */}
+          {/* Mobile Menu Button */}
+          <div className="lg:hidden">
             <Button
               variant="ghost"
-              size="icon"
-              onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-              className="md:hidden"
+              size="sm"
+              onClick={toggleMobileMenu}
+              className="text-foreground"
             >
-              <Search className="h-5 w-5" />
-            </Button>
-
-            {/* Mobile Menu Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? (
-                <X className="h-5 w-5" />
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6" />
               ) : (
-                <Menu className="h-5 w-5" />
+                <Menu className="h-6 w-6" />
               )}
             </Button>
           </div>
         </div>
 
         {/* Mobile Search Bar */}
-        {isMobileSearchOpen && (
-          <div className="py-4 md:hidden border-t">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                type="search"
-                placeholder="Search vehicles, parts, services..."
-                className="pl-10 w-full"
-              />
-            </div>
-          </div>
-        )}
+        <div className="md:hidden pb-4">
+          <form onSubmit={handleSearch} className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              type="search"
+              placeholder="Search vehicles, parts, services..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 w-full bg-muted/50 border-0 focus-visible:bg-background focus-visible:ring-1 focus-visible:ring-primary"
+            />
+          </form>
+        </div>
+      </div>
 
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="lg:hidden border-t bg-card">
-            <div className="container mx-auto space-y-2 py-4">
-              {/* Navigation Links */}
-              <div className="space-y-1">
-                <Link to="/search" onClick={closeMobileMenu}>
-                  <Button variant="ghost" className="w-full justify-start">
-                    Buy Vehicles
-                  </Button>
-                </Link>
-                <Link to="/parts" onClick={closeMobileMenu}>
-                  <Button variant="ghost" className="w-full justify-start">
-                    Parts
-                  </Button>
-                </Link>
-                <Link to="/services" onClick={closeMobileMenu}>
-                  <Button variant="ghost" className="w-full justify-start">
-                    Services
-                  </Button>
-                </Link>
-                
-                {/* Mobile Post Listing - Show dropdown options directly */}
+      {/* Mobile Navigation Menu */}
+      {mobileMenuOpen && (
+        <div 
+          ref={mobileMenuRef}
+          className="lg:hidden border-t bg-card/95 backdrop-blur"
+        >
+          <div className="container mx-auto px-4 py-4">
+            <nav className="flex flex-col space-y-4">
+              <button
+                onClick={() => handleMobileNavClick('/search')}
+                className={`flex items-center space-x-3 text-left p-3 rounded-lg transition-colors ${
+                  isActivePath('/search')
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-foreground hover:bg-muted'
+                }`}
+              >
+                <Car className="h-5 w-5" />
+                <span className="font-medium">Buy Vehicles</span>
+              </button>
+
+              {/* NEW MOBILE RENTALS LINK */}
+              <button
+                onClick={() => handleMobileNavClick('/rentals')}
+                className={`flex items-center space-x-3 text-left p-3 rounded-lg transition-colors ${
+                  isActivePath('/rentals')
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-foreground hover:bg-muted'
+                }`}
+              >
+                <Car className="h-5 w-5" />
+                <span className="font-medium">Rentals</span>
+              </button>
+
+              <button
+                onClick={() => handleMobileNavClick('/parts')}
+                className={`flex items-center space-x-3 text-left p-3 rounded-lg transition-colors ${
+                  isActivePath('/parts')
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-foreground hover:bg-muted'
+                }`}
+              >
+                <Settings className="h-5 w-5" />
+                <span className="font-medium">Parts</span>
+              </button>
+
+              <button
+                onClick={() => handleMobileNavClick('/services')}
+                className={`flex items-center space-x-3 text-left p-3 rounded-lg transition-colors ${
+                  isActivePath('/services')
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-foreground hover:bg-muted'
+                }`}
+              >
+                <Search className="h-5 w-5" />
+                <span className="font-medium">Services</span>
+              </button>
+
+              {/* Mobile Authentication */}
+              <div className="pt-4 border-t">
                 {isSignedIn ? (
-                  <>
-                    <div className="text-sm font-medium text-muted-foreground px-3 py-2">Post Listing</div>
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start text-primary"
-                      onClick={() => {
-                        handleListingTypeSelect('vehicle');
-                        closeMobileMenu();
-                      }}
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
+                      <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
+                        {getUserInitials()}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">
+                          {currentUser?.first_name} {currentUser?.last_name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {currentUser?.email}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <button
+                      onClick={() => handleMobileNavClick('/profile')}
+                      className="flex items-center space-x-3 w-full text-left p-3 rounded-lg text-foreground hover:bg-muted transition-colors"
                     >
-                      <Car className="h-4 w-4 mr-2" />
-                      Vehicle
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start text-primary"
-                      onClick={() => {
-                        handleListingTypeSelect('part');
-                        closeMobileMenu();
-                      }}
+                      <User className="h-5 w-5" />
+                      <span>Profile</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => handleMobileNavClick('/favorites')}
+                      className="flex items-center space-x-3 w-full text-left p-3 rounded-lg text-foreground hover:bg-muted transition-colors"
                     >
-                      <Settings className="h-4 w-4 mr-2" />
-                      Auto Part
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start text-primary"
-                      onClick={() => {
-                        handleListingTypeSelect('service');
-                        closeMobileMenu();
-                      }}
+                      <Heart className="h-5 w-5" />
+                      <span>Favorites</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => handleMobileNavClick('/messages')}
+                      className="flex items-center space-x-3 w-full text-left p-3 rounded-lg text-foreground hover:bg-muted transition-colors"
                     >
-                      <Wrench className="h-4 w-4 mr-2" />
-                      Service
-                    </Button>
-                  </>
+                      <MessageCircle className="h-5 w-5" />
+                      <span>Messages</span>
+                    </button>
+
+                    <button
+                      onClick={() => handleMobileNavClick('/sell')}
+                      className="flex items-center space-x-3 w-full text-left p-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                    >
+                      <Plus className="h-5 w-5" />
+                      <span>Sell</span>
+                    </button>
+                    
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center space-x-3 w-full text-left p-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut className="h-5 w-5" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
                 ) : (
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                    onClick={() => navigate('/auth')}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Post Listing
-                  </Button>
+                  <div className="space-y-2">
+                    <Button
+                      onClick={() => handleMobileNavClick('/login')}
+                      variant="outline"
+                      className="w-full justify-start"
+                    >
+                      <User className="mr-2 h-4 w-4" />
+                      Sign In
+                    </Button>
+                    <Button
+                      onClick={() => handleMobileNavClick('/register')}
+                      className="w-full justify-start bg-primary hover:bg-primary/90"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Sign Up
+                    </Button>
+                  </div>
                 )}
               </div>
-
-              {/* Authentication Section */}
-              {isSignedIn ? (
-                <div className="space-y-2 pt-2 border-t">
-                  <div className="flex items-center space-x-3 px-3 py-2">
-                    <Avatar className="w-10 h-10">
-                      <AvatarImage src={currentUser?.avatar} />
-                      <AvatarFallback className="bg-primary text-white font-medium">
-                        {getUserInitials()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium text-sm">{getUserDisplayName()}</p>
-                      <p className="text-xs text-muted-foreground">{currentUser?.email}</p>
-                    </div>
-                  </div>
-                  <Link to="/dashboard" onClick={closeMobileMenu}>
-                    <Button variant="ghost" className="w-full justify-start text-left flex items-center gap-2">
-                      <BarChart3 className="h-4 w-4" />
-                      Dashboard
-                    </Button>
-                  </Link>
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start flex items-center gap-2 text-red-600 border-red-200 hover:bg-red-50"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="h-4 w-4" />
-                    Sign Out
-                  </Button>
-                </div>
-              ) : (
-                <Link to="/auth" onClick={closeMobileMenu}>
-                  <Button 
-                    variant="default"
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center gap-2 mt-2"
-                  >
-                    <User className="h-4 w-4" />
-                    Sign In
-                  </Button>
-                </Link>
-              )}
-            </div>
+            </nav>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </header>
   );
 };
