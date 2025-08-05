@@ -1,15 +1,14 @@
 // src/pages/RentalsPage.tsx
-// Safe version with better error handling and mock data fallback
+// ikman.lk style - single column list layout
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Grid3x3, List, SortAsc } from 'lucide-react';
+import { Calendar, SortAsc } from 'lucide-react';
 import { RentalCard } from '@/components/cards/RentalCard';
 import { FilterLayout } from '@/components/layouts/FilterLayout';
 import { PageLayout } from '@/components/layouts/PageLayout';
-import { ResponsiveGrid } from '@/components/layouts/ResponsiveGrid';
 import { LoadingGrid } from '@/components/ui/LoadingGrid';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -27,7 +26,8 @@ const RentalsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterValues>({});
   const [sortBy, setSortBy] = useState('created_at_desc');
-  const [layout, setLayout] = useState<'grid' | 'list'>('grid');
+  // ✅ Always use list layout for ikman.lk style
+  const layout = 'list';
 
   // Load initial filters from URL
   useEffect(() => {
@@ -35,8 +35,6 @@ const RentalsPage = () => {
     searchParams.forEach((value, key) => {
       if (key === 'sort') {
         setSortBy(value);
-      } else if (key === 'layout') {
-        setLayout(value as 'grid' | 'list');
       } else {
         initialFilters[key] = value;
       }
@@ -167,6 +165,46 @@ const RentalsPage = () => {
         booking_count: 28,
         average_rating: 4.6,
         total_reviews: 19
+      },
+      {
+        id: '3',
+        title: '2023 Suzuki Swift RS - City Rental',
+        description: 'Compact and economical car ideal for city navigation',
+        price: 2800,
+        daily_rate: 2800,
+        weekly_rate: 18000,
+        monthly_rate: 70000,
+        security_deposit: 12000,
+        location: 'Galle',
+        images: ['https://via.placeholder.com/400x200'],
+        created_at: new Date().toISOString(),
+        is_featured: true,
+        make: 'Suzuki',
+        model: 'Swift',
+        year: 2023,
+        fuel_type: 'Petrol',
+        transmission: 'Manual',
+        body_type: 'Hatchback',
+        seats: 5,
+        doors: 5,
+        color: 'Blue',
+        mileage: 8000,
+        condition: 'Excellent',
+        rental_type: 'daily',
+        minimum_rental_days: 1,
+        maximum_rental_days: 60,
+        fuel_policy: 'full-to-full',
+        mileage_limit_per_day: 150,
+        available_from: new Date().toISOString(),
+        features: ['AC', 'Bluetooth', 'USB Charging'],
+        included_items: ['Road Map', 'Emergency Kit'],
+        pickup_locations: ['Galle Bus Stand', 'Hotel Pickup'],
+        delivery_available: true,
+        delivery_fee: 300,
+        insurance_included: true,
+        booking_count: 67,
+        average_rating: 4.9,
+        total_reviews: 41
       }
     ];
   };
@@ -183,7 +221,6 @@ const RentalsPage = () => {
       }
     });
     params.set('sort', sortBy);
-    params.set('layout', layout);
     setSearchParams(params);
   };
 
@@ -191,13 +228,6 @@ const RentalsPage = () => {
     setSortBy(newSort);
     const params = new URLSearchParams(searchParams);
     params.set('sort', newSort);
-    setSearchParams(params);
-  };
-
-  const handleLayoutChange = (newLayout: 'grid' | 'list') => {
-    setLayout(newLayout);
-    const params = new URLSearchParams(searchParams);
-    params.set('layout', newLayout);
     setSearchParams(params);
   };
 
@@ -234,25 +264,6 @@ const RentalsPage = () => {
           ))}
         </SelectContent>
       </Select>
-
-      <div className="hidden sm:flex border rounded-md">
-        <Button
-          variant={layout === 'grid' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => handleLayoutChange('grid')}
-          className="rounded-r-none"
-        >
-          <Grid3x3 className="h-4 w-4" />
-        </Button>
-        <Button
-          variant={layout === 'list' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => handleLayoutChange('list')}
-          className="rounded-l-none"
-        >
-          <List className="h-4 w-4" />
-        </Button>
-      </div>
     </div>
   );
 
@@ -287,17 +298,17 @@ const RentalsPage = () => {
             }}
           />
         ) : (
-          <ResponsiveGrid>
+          <div className="space-y-3 max-w-2xl mx-auto px-4">
             {rentals.map((rental) => (
               <RentalCard
                 key={rental.id}
                 rental={rental}
-                layout={layout}
+                layout="list"
                 onView={() => handleViewRental(rental.id)}
                 onBook={() => handleBookRental(rental.id)}
               />
             ))}
-          </ResponsiveGrid>
+          </div>
         )}
       </FilterLayout>
     </PageLayout>

@@ -1,10 +1,10 @@
 // src/components/cards/RentalCard.tsx
-// Fixed version with correct variants
+// Fixed version with proper data mapping for BaseCard
 
 import React from 'react';
 import { BaseCard } from '@/components/ui/BaseCard';
-import { Calendar, MapPin, Shield, Users, Truck, Clock, CheckCircle } from 'lucide-react';
-import { Rental, CardAction, BadgeInfo, getBadgeVariant, getButtonVariant } from '@/design-system/types';
+import { Calendar, MapPin, Shield, Users, Truck, Clock, CheckCircle, Fuel, Settings } from 'lucide-react';
+import { Rental, CardAction, BadgeInfo } from '@/design-system/types';
 
 interface RentalCardProps {
   rental: Rental;
@@ -24,43 +24,53 @@ export const RentalCard: React.FC<RentalCardProps> = ({
   onBook,
   onSave,
   onShare,
-  showUser = true,
+  showUser = false,
   showStats = false,
-  layout = 'grid',
+  layout = 'list',
   className
 }) => {
+  // ✅ Map rental data to BaseCard item format
+  const baseItem = {
+    ...rental,
+    price: rental.daily_rate || rental.price || 0, // ✅ Use daily_rate as price
+    images: rental.images || [],
+    is_featured: rental.is_featured || false,
+    is_verified: false,
+  };
+
   const badges: BadgeInfo[] = [];
   
+  // Add delivery badge
   if (rental.delivery_available) {
     badges.push({
       label: 'Delivery',
-      variant: getBadgeVariant('info'),
-      icon: Truck
+      variant: 'secondary' as const
     });
   }
   
+  // Add insurance badge
   if (rental.insurance_included) {
     badges.push({
       label: 'Insured',
-      variant: getBadgeVariant('success'),
-      icon: Shield
+      variant: 'default' as const
     });
   }
 
-  // Add availability badge
-  const isAvailable = new Date(rental.available_from) <= new Date();
-  badges.push({
-    label: isAvailable ? 'Available' : 'Coming Soon',
-    variant: isAvailable ? getBadgeVariant('success') : getBadgeVariant('warning'),
-    icon: CheckCircle
-  });
+  // Add rental type badge
+  if (rental.rental_type) {
+    badges.push({
+      label: rental.rental_type === 'daily' ? 'Daily' : 
+             rental.rental_type === 'weekly' ? 'Weekly' : 'Monthly',
+      variant: 'outline' as const
+    });
+  }
 
   const actions: CardAction[] = [];
   
   if (onView) {
     actions.push({
       label: 'View Details',
-      variant: getButtonVariant('secondary'),
+      variant: 'secondary',
       onClick: onView
     });
   }
@@ -68,52 +78,33 @@ export const RentalCard: React.FC<RentalCardProps> = ({
   if (onBook) {
     actions.push({
       label: 'Book Now',
-      variant: getButtonVariant('primary'),
+      variant: 'default',
       onClick: onBook
     });
   }
 
+  // ✅ Create metadata for ikman style
   const metadata = (
-    <div className="space-y-2">
-      <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-        <div className="flex items-center gap-1">
-          <Users className="h-3 w-3" />
+    <div className="flex items-center gap-2 text-xs text-gray-500">
+      <span>{rental.year}</span>
+      <span>•</span>
+      <span>{rental.fuel_type}</span>
+      <span>•</span>
+      <span>{rental.transmission}</span>
+      {rental.seats && (
+        <>
+          <span>•</span>
           <span>{rental.seats} seats</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <Calendar className="h-3 w-3" />
-          <span>Min {rental.minimum_rental_days}d</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <Clock className="h-3 w-3" />
-          <span>{rental.fuel_policy}</span>
-        </div>
-        {rental.mileage_limit_per_day && (
-          <div className="flex items-center gap-1">
-            <MapPin className="h-3 w-3" />
-            <span>{rental.mileage_limit_per_day}km/day</span>
-          </div>
-        )}
-      </div>
-      
-      {/* Rental rates */}
-      {(rental.weekly_rate || rental.monthly_rate) && (
-        <div className="text-xs text-muted-foreground pt-1 border-t border-border/50">
-          {rental.weekly_rate && (
-            <div>Weekly: ₹{rental.weekly_rate.toLocaleString()}</div>
-          )}
-          {rental.monthly_rate && (
-            <div>Monthly: ₹{rental.monthly_rate.toLocaleString()}</div>
-          )}
-        </div>
+        </>
       )}
     </div>
   );
 
   return (
     <BaseCard
-      item={rental}
+      item={baseItem}
       imageAlt={`${rental.make} ${rental.model} ${rental.year} for rent`}
+      pricePrefix="Rs "
       priceSuffix="/day"
       badges={badges}
       actions={actions}
@@ -128,3 +119,5 @@ export const RentalCard: React.FC<RentalCardProps> = ({
     />
   );
 };
+
+export default RentalCard;

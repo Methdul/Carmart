@@ -1,15 +1,14 @@
 // src/pages/ServicesPage.tsx
-// Safe version with better error handling and loading states
+// ikman.lk style - single column list layout
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Wrench, Grid3x3, List, SortAsc, Calendar } from 'lucide-react';
+import { Wrench, SortAsc } from 'lucide-react';
 import { ServiceCard } from '@/components/cards/ServiceCard';
 import { FilterLayout } from '@/components/layouts/FilterLayout';
 import { PageLayout } from '@/components/layouts/PageLayout';
-import { ResponsiveGrid } from '@/components/layouts/ResponsiveGrid';
 import { LoadingGrid } from '@/components/ui/LoadingGrid';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -27,7 +26,8 @@ const ServicesPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterValues>({});
   const [sortBy, setSortBy] = useState('rating_desc');
-  const [layout, setLayout] = useState<'grid' | 'list'>('grid');
+  // ✅ Always use list layout for ikman.lk style
+  const layout = 'list';
 
   // Set category filter if provided in URL
   useEffect(() => {
@@ -35,6 +35,19 @@ const ServicesPage = () => {
       setFilters(prev => ({ ...prev, serviceType: category }));
     }
   }, [category]);
+
+  // Load initial filters from URL
+  useEffect(() => {
+    const initialFilters: FilterValues = {};
+    searchParams.forEach((value, key) => {
+      if (key === 'sort') {
+        setSortBy(value);
+      } else {
+        initialFilters[key] = value;
+      }
+    });
+    setFilters(initialFilters);
+  }, [searchParams]);
 
   // Fetch services when filters change
   useEffect(() => {
@@ -128,6 +141,56 @@ const ServicesPage = () => {
         payment_options: ['Cash', 'Card', 'Bank Transfer'],
         average_rating: 4.9,
         total_reviews: 89
+      },
+      {
+        id: '3',
+        title: 'Mobile Tire Change Service',
+        description: '24/7 emergency tire change and repair service at your location',
+        price: 1800,
+        location: 'Galle',
+        images: ['https://via.placeholder.com/400x200'],
+        created_at: new Date().toISOString(),
+        is_featured: true,
+        service_type: 'maintenance',
+        price_type: 'fixed',
+        features: ['Tire change', 'Puncture repair', 'Emergency assistance'],
+        requirements: [],
+        service_areas: ['Galle', 'Matara', 'Hikkaduwa'],
+        availability: {},
+        home_service: true,
+        pickup_dropoff: false,
+        emergency_service: true,
+        online_booking: true,
+        certifications: ['Roadside Assistance Certified'],
+        languages: ['English', 'Sinhala'],
+        payment_options: ['Cash', 'Mobile Payment'],
+        average_rating: 4.7,
+        total_reviews: 203
+      },
+      {
+        id: '4',
+        title: 'Air Conditioning Service & Repair',
+        description: 'Complete AC system service, gas refill and repair for all vehicle types',
+        price: 3200,
+        location: 'Negombo',
+        images: ['https://via.placeholder.com/400x200'],
+        created_at: new Date().toISOString(),
+        is_featured: false,
+        service_type: 'repair',
+        price_type: 'fixed',
+        features: ['AC gas refill', 'Compressor repair', 'Filter replacement'],
+        requirements: [],
+        service_areas: ['Negombo', 'Katunayake', 'Ja-Ela'],
+        availability: {},
+        home_service: false,
+        pickup_dropoff: true,
+        emergency_service: false,
+        online_booking: true,
+        certifications: ['AC Specialist'],
+        languages: ['English', 'Sinhala'],
+        payment_options: ['Cash', 'Card'],
+        average_rating: 4.6,
+        total_reviews: 156
       }
     ];
   };
@@ -135,6 +198,23 @@ const ServicesPage = () => {
   const handleFiltersChange = (newFilters: FilterValues) => {
     console.log('Filters changed:', newFilters);
     setFilters(newFilters);
+    
+    // Update URL params
+    const params = new URLSearchParams();
+    Object.entries(newFilters).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && value !== '' && value !== 'all') {
+        params.set(key, value.toString());
+      }
+    });
+    params.set('sort', sortBy);
+    setSearchParams(params);
+  };
+
+  const handleSortChange = (newSort: string) => {
+    setSortBy(newSort);
+    const params = new URLSearchParams(searchParams);
+    params.set('sort', newSort);
+    setSearchParams(params);
   };
 
   const handleViewService = (serviceId: string) => {
@@ -159,7 +239,7 @@ const ServicesPage = () => {
 
   const headerActions = (
     <div className="flex items-center gap-2">
-      <Select value={sortBy} onValueChange={setSortBy}>
+      <Select value={sortBy} onValueChange={handleSortChange}>
         <SelectTrigger className="w-48">
           <SortAsc className="h-4 w-4 mr-2" />
           <SelectValue />
@@ -172,25 +252,6 @@ const ServicesPage = () => {
           ))}
         </SelectContent>
       </Select>
-
-      <div className="hidden sm:flex border rounded-md">
-        <Button
-          variant={layout === 'grid' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setLayout('grid')}
-          className="rounded-r-none"
-        >
-          <Grid3x3 className="h-4 w-4" />
-        </Button>
-        <Button
-          variant={layout === 'list' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setLayout('list')}
-          className="rounded-l-none"
-        >
-          <List className="h-4 w-4" />
-        </Button>
-      </div>
     </div>
   );
 
@@ -225,18 +286,18 @@ const ServicesPage = () => {
             }}
           />
         ) : (
-          <ResponsiveGrid>
+          <div className="space-y-3 max-w-2xl mx-auto px-4">
             {services.map((service) => (
               <ServiceCard
                 key={service.id}
                 service={service}
-                layout={layout}
+                layout="list"
                 onView={() => handleViewService(service.id)}
                 onBook={service.online_booking ? () => handleBookService(service.id) : undefined}
                 onGetQuote={service.price_type === 'quote' ? () => handleGetQuote(service.id) : undefined}
               />
             ))}
-          </ResponsiveGrid>
+          </div>
         )}
       </FilterLayout>
     </PageLayout>

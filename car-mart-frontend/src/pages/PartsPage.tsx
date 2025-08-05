@@ -1,15 +1,14 @@
 // src/pages/PartsPage.tsx
-// Safe version with better error handling and mock data fallback
+// ikman.lk style - single column list layout
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Package, Grid3x3, List, SortAsc, ShoppingCart } from 'lucide-react';
+import { Package, SortAsc, ShoppingCart } from 'lucide-react';
 import { PartCard } from '@/components/cards/PartCard';
 import { FilterLayout } from '@/components/layouts/FilterLayout';
 import { PageLayout } from '@/components/layouts/PageLayout';
-import { ResponsiveGrid } from '@/components/layouts/ResponsiveGrid';
 import { LoadingGrid } from '@/components/ui/LoadingGrid';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -27,7 +26,8 @@ const PartsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterValues>({});
   const [sortBy, setSortBy] = useState('created_at_desc');
-  const [layout, setLayout] = useState<'grid' | 'list'>('grid');
+  // ✅ Always use list layout for ikman.lk style
+  const layout = 'list';
   const [cartCount, setCartCount] = useState(0);
 
   // Set category filter if provided in URL
@@ -36,6 +36,19 @@ const PartsPage = () => {
       setFilters(prev => ({ ...prev, category }));
     }
   }, [category]);
+
+  // Load initial filters from URL
+  useEffect(() => {
+    const initialFilters: FilterValues = {};
+    searchParams.forEach((value, key) => {
+      if (key === 'sort') {
+        setSortBy(value);
+      } else {
+        initialFilters[key] = value;
+      }
+    });
+    setFilters(initialFilters);
+  }, [searchParams]);
 
   useEffect(() => {
     fetchParts();
@@ -137,12 +150,21 @@ const PartsPage = () => {
     console.log('Filters changed:', newFilters);
     setFilters(newFilters);
     
+    // Update URL params
     const params = new URLSearchParams();
     Object.entries(newFilters).forEach(([key, value]) => {
       if (value !== null && value !== undefined && value !== '' && value !== 'all') {
         params.set(key, value.toString());
       }
     });
+    params.set('sort', sortBy);
+    setSearchParams(params);
+  };
+
+  const handleSortChange = (newSort: string) => {
+    setSortBy(newSort);
+    const params = new URLSearchParams(searchParams);
+    params.set('sort', newSort);
     setSearchParams(params);
   };
 
@@ -165,7 +187,7 @@ const PartsPage = () => {
 
   const headerActions = (
     <div className="flex items-center gap-2">
-      <Select value={sortBy} onValueChange={setSortBy}>
+      <Select value={sortBy} onValueChange={handleSortChange}>
         <SelectTrigger className="w-48">
           <SortAsc className="h-4 w-4 mr-2" />
           <SelectValue />
@@ -188,25 +210,6 @@ const PartsPage = () => {
           </span>
         )}
       </Button>
-
-      <div className="hidden sm:flex border rounded-md">
-        <Button
-          variant={layout === 'grid' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setLayout('grid')}
-          className="rounded-r-none"
-        >
-          <Grid3x3 className="h-4 w-4" />
-        </Button>
-        <Button
-          variant={layout === 'list' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setLayout('list')}
-          className="rounded-l-none"
-        >
-          <List className="h-4 w-4" />
-        </Button>
-      </div>
     </div>
   );
 
@@ -241,17 +244,17 @@ const PartsPage = () => {
             }}
           />
         ) : (
-          <ResponsiveGrid>
+          <div className="space-y-3 max-w-2xl mx-auto px-4">
             {parts.map((part) => (
               <PartCard
                 key={part.id}
                 part={part}
-                layout={layout}
+                layout="list"
                 onView={() => handleViewPart(part.id)}
                 onAddToCart={() => handleAddToCart(part.id)}
               />
             ))}
-          </ResponsiveGrid>
+          </div>
         )}
       </FilterLayout>
     </PageLayout>

@@ -1,10 +1,10 @@
 // src/components/cards/VehicleCard.tsx
-// Fixed version with correct variants
+// Fixed version with proper data mapping for BaseCard
 
 import React from 'react';
 import { BaseCard } from '@/components/ui/BaseCard';
 import { Car, Fuel, Settings, Calendar, Gauge, Users, Shield } from 'lucide-react';
-import { Vehicle, CardAction, BadgeInfo, getBadgeVariant, getButtonVariant } from '@/design-system/types';
+import { Vehicle, CardAction, BadgeInfo } from '@/design-system/types';
 
 interface VehicleCardProps {
   vehicle: Vehicle;
@@ -26,26 +26,36 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
   onSave,
   onShare,
   onCompare,
-  showUser = true,
+  showUser = false,
   showStats = false,
-  layout = 'grid',
+  layout = 'list',
   className
 }) => {
-  const badges: BadgeInfo[] = [
-    {
-      label: vehicle.year.toString(),
-      variant: 'outline',
-      icon: Calendar
-    }
-  ];
+  // ✅ Map vehicle data to BaseCard item format
+  const baseItem = {
+    ...vehicle,
+    price: vehicle.price || 0, // ✅ Ensure price is safe
+    images: vehicle.images || [],
+    is_featured: vehicle.is_featured || false,
+    is_verified: vehicle.is_verified || false,
+  };
 
-  // Add condition badge with correct variant mapping
+  const badges: BadgeInfo[] = [];
+
+  // Add condition badge
   if (vehicle.condition) {
     badges.push({
       label: vehicle.condition,
-      variant: vehicle.condition === 'Excellent' ? getBadgeVariant('success') : 
-              vehicle.condition === 'Good' ? getBadgeVariant('info') : 
-              getBadgeVariant('warning')
+      variant: vehicle.condition === 'Excellent' ? 'default' : 
+              vehicle.condition === 'Good' ? 'secondary' : 'outline'
+    });
+  }
+
+  // Add year badge
+  if (vehicle.year) {
+    badges.push({
+      label: vehicle.year.toString(),
+      variant: 'outline' as const
     });
   }
 
@@ -53,7 +63,7 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
   if (vehicle.negotiable) {
     badges.push({
       label: 'Negotiable',
-      variant: getBadgeVariant('info')
+      variant: 'secondary' as const
     });
   }
 
@@ -62,7 +72,7 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
   if (onView) {
     actions.push({
       label: 'View Details',
-      variant: getButtonVariant('secondary'),
+      variant: 'secondary',
       onClick: onView
     });
   }
@@ -70,40 +80,34 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
   if (onContact) {
     actions.push({
       label: 'Contact Seller',
-      variant: getButtonVariant('primary'),
+      variant: 'default',
       onClick: onContact
     });
   }
 
+  // ✅ Create metadata for ikman style
   const metadata = (
-    <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-      <div className="flex items-center gap-1">
-        <Fuel className="h-3 w-3" />
-        <span>{vehicle.fuel_type}</span>
-      </div>
-      <div className="flex items-center gap-1">
-        <Settings className="h-3 w-3" />
-        <span>{vehicle.transmission}</span>
-      </div>
-      {vehicle.mileage && (
-        <div className="flex items-center gap-1">
-          <Gauge className="h-3 w-3" />
+    <div className="flex items-center gap-2 text-xs text-gray-500">
+      <span>{vehicle.year}</span>
+      <span>•</span>
+      <span>{vehicle.fuel_type}</span>
+      <span>•</span>
+      <span>{vehicle.transmission}</span>
+      {vehicle.mileage && vehicle.mileage > 0 && (
+        <>
+          <span>•</span>
           <span>{vehicle.mileage.toLocaleString()} km</span>
-        </div>
-      )}
-      {vehicle.seats && (
-        <div className="flex items-center gap-1">
-          <Users className="h-3 w-3" />
-          <span>{vehicle.seats} seats</span>
-        </div>
+        </>
       )}
     </div>
   );
 
   return (
     <BaseCard
-      item={vehicle}
+      item={baseItem}
       imageAlt={`${vehicle.make} ${vehicle.model} ${vehicle.year}`}
+      pricePrefix="Rs "
+      priceSuffix=""
       badges={badges}
       actions={actions}
       metadata={metadata}
@@ -117,3 +121,5 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
     />
   );
 };
+
+export default VehicleCard;

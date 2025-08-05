@@ -1,15 +1,14 @@
 // src/pages/VehiclesPage.tsx
-// Safe version with better error handling and mock data fallback
+// ikman.lk style - single column list layout
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Grid3x3, List, SortAsc, Car } from 'lucide-react';
+import { SortAsc, Car } from 'lucide-react';
 import { VehicleCard } from '@/components/cards/VehicleCard';
 import { FilterLayout } from '@/components/layouts/FilterLayout';
 import { PageLayout } from '@/components/layouts/PageLayout';
-import { ResponsiveGrid } from '@/components/layouts/ResponsiveGrid';
 import { LoadingGrid } from '@/components/ui/LoadingGrid';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -27,7 +26,8 @@ const VehiclesPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterValues>({});
   const [sortBy, setSortBy] = useState('created_at_desc');
-  const [layout, setLayout] = useState<'grid' | 'list'>('grid');
+  // ✅ Always use list layout for ikman.lk style
+  const layout = 'list';
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
@@ -37,8 +37,6 @@ const VehiclesPage = () => {
     searchParams.forEach((value, key) => {
       if (key === 'sort') {
         setSortBy(value);
-      } else if (key === 'layout') {
-        setLayout(value as 'grid' | 'list');
       } else if (key === 'page') {
         setPage(parseInt(value) || 1);
       } else {
@@ -189,6 +187,36 @@ const VehiclesPage = () => {
           rating: 4.7,
           total_reviews: 12
         }
+      },
+      {
+        id: '4',
+        title: '2022 Suzuki Alto 800',
+        description: 'Perfect city car with excellent fuel economy and low maintenance',
+        price: 1850000,
+        location: 'Negombo',
+        images: ['https://via.placeholder.com/400x200'],
+        created_at: new Date().toISOString(),
+        is_featured: false,
+        make: 'Suzuki',
+        model: 'Alto',
+        year: 2022,
+        fuel_type: 'Petrol',
+        transmission: 'Manual',
+        body_type: 'Hatchback',
+        seats: 4,
+        doors: 5,
+        color: 'Silver',
+        mileage: 12000,
+        condition: 'Excellent',
+        negotiable: true,
+        user: {
+          id: '4',
+          first_name: 'Sarah',
+          last_name: 'Fernando',
+          account_type: 'individual',
+          rating: 4.5,
+          total_reviews: 8
+        }
       }
     ];
   };
@@ -207,7 +235,6 @@ const VehiclesPage = () => {
       }
     });
     params.set('sort', sortBy);
-    params.set('layout', layout);
     setSearchParams(params);
   };
 
@@ -216,14 +243,6 @@ const VehiclesPage = () => {
     setSortBy(newSort);
     const params = new URLSearchParams(searchParams);
     params.set('sort', newSort);
-    setSearchParams(params);
-  };
-
-  // Handle layout change
-  const handleLayoutChange = (newLayout: 'grid' | 'list') => {
-    setLayout(newLayout);
-    const params = new URLSearchParams(searchParams);
-    params.set('layout', newLayout);
     setSearchParams(params);
   };
 
@@ -275,26 +294,6 @@ const VehiclesPage = () => {
           ))}
         </SelectContent>
       </Select>
-
-      {/* Layout toggle */}
-      <div className="hidden sm:flex border rounded-md">
-        <Button
-          variant={layout === 'grid' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => handleLayoutChange('grid')}
-          className="rounded-r-none"
-        >
-          <Grid3x3 className="h-4 w-4" />
-        </Button>
-        <Button
-          variant={layout === 'list' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => handleLayoutChange('list')}
-          className="rounded-l-none"
-        >
-          <List className="h-4 w-4" />
-        </Button>
-      </div>
     </div>
   );
 
@@ -330,19 +329,19 @@ const VehiclesPage = () => {
             }}
           />
         ) : (
-          <ResponsiveGrid>
+          <div className="space-y-3 max-w-2xl mx-auto px-4">
             {vehicles.map((vehicle) => (
               <VehicleCard
                 key={vehicle.id}
                 vehicle={vehicle}
-                layout={layout}
+                layout="list"
                 onView={() => handleViewVehicle(vehicle.id)}
                 onContact={() => handleContactSeller(vehicle.id)}
                 onSave={() => handleSaveVehicle(vehicle.id)}
                 onShare={() => handleShareVehicle(vehicle.id)}
               />
             ))}
-          </ResponsiveGrid>
+          </div>
         )}
 
         {/* Pagination */}

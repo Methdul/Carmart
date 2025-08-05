@@ -1,5 +1,5 @@
 // src/components/cards/ServiceCard.tsx
-// Fixed version with correct variants
+// Fixed version with proper data mapping for BaseCard
 
 import React from 'react';
 import { BaseCard } from '@/components/ui/BaseCard';
@@ -15,7 +15,7 @@ import {
   AlertCircle,
   Award
 } from 'lucide-react';
-import { Service, CardAction, BadgeInfo, getBadgeVariant, getButtonVariant } from '@/design-system/types';
+import { Service, CardAction, BadgeInfo } from '@/design-system/types';
 
 interface ServiceCardProps {
   service: Service;
@@ -39,49 +39,55 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
   onGetQuote,
   onSave,
   onShare,
-  showUser = true,
+  showUser = false,
   showStats = false,
-  layout = 'grid',
+  layout = 'list',
   className
 }) => {
-  const badges: BadgeInfo[] = [
-    {
-      label: service.price_type === 'quote' ? 'Quote' : 
-             service.price_type === 'hourly' ? 'Hourly' : 'Fixed',
-      variant: 'outline'
-    }
-  ];
+  // ✅ Map service data to BaseCard item format
+  const baseItem = {
+    ...service,
+    price: service.price || 0, // ✅ Ensure price is safe
+    images: service.images || [],
+    is_featured: service.is_featured || false,
+    is_verified: false,
+  };
+
+  const badges: BadgeInfo[] = [];
+
+  // Add price type badge
+  badges.push({
+    label: service.price_type === 'quote' ? 'Quote' : 
+           service.price_type === 'hourly' ? 'Hourly' : 'Fixed',
+    variant: 'outline' as const
+  });
 
   // Add service features badges
   if (service.home_service) {
     badges.push({
       label: 'Home Service',
-      variant: getBadgeVariant('success'),
-      icon: MapPin
+      variant: 'secondary' as const
     });
   }
 
   if (service.emergency_service) {
     badges.push({
       label: '24/7',
-      variant: getBadgeVariant('warning'),
-      icon: AlertCircle
+      variant: 'default' as const
     });
   }
 
   if (service.pickup_dropoff) {
     badges.push({
       label: 'Pickup/Drop',
-      variant: getBadgeVariant('info'),
-      icon: Truck
+      variant: 'secondary' as const
     });
   }
 
   if (service.certifications && service.certifications.length > 0) {
     badges.push({
       label: 'Certified',
-      variant: getBadgeVariant('success'),
-      icon: Award
+      variant: 'default' as const
     });
   }
 
@@ -90,7 +96,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
   if (onView) {
     actions.push({
       label: 'View Details',
-      variant: getButtonVariant('secondary'),
+      variant: 'secondary',
       onClick: onView
     });
   }
@@ -98,85 +104,45 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
   if (service.online_booking && onBook) {
     actions.push({
       label: 'Book Now',
-      variant: getButtonVariant('primary'),
+      variant: 'default',
       onClick: onBook
     });
   } else if (service.price_type === 'quote' && onGetQuote) {
     actions.push({
       label: 'Get Quote',
-      variant: getButtonVariant('primary'),
+      variant: 'default',
       onClick: onGetQuote
-    });
-  } else if (onContact) {
-    actions.push({
-      label: 'Contact',
-      variant: getButtonVariant('primary'),
-      onClick: onContact
     });
   }
 
+  // ✅ Create metadata for ikman style
   const metadata = (
-    <div className="space-y-2">
-      <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-        <div className="flex items-center gap-1">
-          <Wrench className="h-3 w-3" />
-          <span>{service.service_type}</span>
-        </div>
-        {service.duration && (
-          <div className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            <span>{service.duration}</span>
-          </div>
-        )}
-        {service.warranty_period && (
-          <div className="flex items-center gap-1">
-            <Shield className="h-3 w-3" />
-            <span>{service.warranty_period}</span>
-          </div>
-        )}
-        {service.response_time && (
-          <div className="flex items-center gap-1">
-            <Calendar className="h-3 w-3" />
-            <span>{service.response_time}</span>
-          </div>
-        )}
-      </div>
-      
-      {/* Service areas */}
-      {service.service_areas && service.service_areas.length > 0 && (
-        <div className="text-xs text-muted-foreground pt-1 border-t border-border/50">
-          <div className="font-medium">Service Areas:</div>
-          <div className="line-clamp-2">
-            {service.service_areas.slice(0, 3).join(', ')}
-            {service.service_areas.length > 3 && ` +${service.service_areas.length - 3} more`}
-          </div>
-        </div>
+    <div className="flex items-center gap-2 text-xs text-gray-500">
+      <span>{service.service_type}</span>
+      <span>•</span>
+      <span>{service.price_type === 'quote' ? 'Quote required' : 
+             service.price_type === 'hourly' ? 'Hourly rate' : 'Fixed price'}</span>
+      {service.home_service && (
+        <>
+          <span>•</span>
+          <span>Home Service</span>
+        </>
       )}
-      
-      {/* Price display for hourly services */}
-      {service.price_type === 'hourly' && (
-        <div className="text-xs font-medium text-primary pt-1 border-t border-border/50">
-          ₹{service.price.toLocaleString()}/hour
-        </div>
+      {service.emergency_service && (
+        <>
+          <span>•</span>
+          <span>24/7 Available</span>
+        </>
       )}
     </div>
   );
 
-  const priceDisplay = service.price_type === 'quote' ? 'Quote' : 
-                      service.price_type === 'hourly' ? `₹${service.price.toLocaleString()}` :
-                      `₹${service.price.toLocaleString()}`;
-
-  const priceSuffix = service.price_type === 'hourly' ? '/hr' : '';
-
   return (
     <BaseCard
-      item={{
-        ...service,
-        price: service.price_type === 'quote' ? 0 : service.price
-      }}
-      imageAlt={`${service.title} - ${service.service_type}`}
-      pricePrefix={service.price_type === 'quote' ? '' : '₹'}
-      priceSuffix={priceSuffix}
+      item={baseItem}
+      imageAlt={`${service.service_type} service`}
+      pricePrefix="Rs "
+      priceSuffix={service.price_type === 'hourly' ? '/hr' : ''}
       badges={badges}
       actions={actions}
       metadata={metadata}
@@ -190,3 +156,5 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
     />
   );
 };
+
+export default ServiceCard;
