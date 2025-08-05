@@ -1,5 +1,5 @@
 // src/components/cards/VehicleCard.tsx
-// Fixed version with proper data mapping for BaseCard
+// Professional vehicle card with clean metadata
 
 import React from 'react';
 import { BaseCard } from '@/components/ui/BaseCard';
@@ -34,41 +34,22 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
   // ✅ Map vehicle data to BaseCard item format
   const baseItem = {
     ...vehicle,
-    price: vehicle.price || 0, // ✅ Ensure price is safe
+    price: vehicle.price || 0,
     images: vehicle.images || [],
     is_featured: vehicle.is_featured || false,
     is_verified: vehicle.is_verified || false,
   };
 
+  // Single most important badge - condition
   const badges: BadgeInfo[] = [];
-
-  // Add condition badge
   if (vehicle.condition) {
     badges.push({
       label: vehicle.condition,
-      variant: vehicle.condition === 'Excellent' ? 'default' : 
-              vehicle.condition === 'Good' ? 'secondary' : 'outline'
-    });
-  }
-
-  // Add year badge
-  if (vehicle.year) {
-    badges.push({
-      label: vehicle.year.toString(),
-      variant: 'outline' as const
-    });
-  }
-
-  // Add negotiable badge
-  if (vehicle.negotiable) {
-    badges.push({
-      label: 'Negotiable',
-      variant: 'secondary' as const
+      variant: vehicle.condition === 'Excellent' ? 'default' : 'secondary'
     });
   }
 
   const actions: CardAction[] = [];
-  
   if (onView) {
     actions.push({
       label: 'View Details',
@@ -76,7 +57,6 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
       onClick: onView
     });
   }
-  
   if (onContact) {
     actions.push({
       label: 'Contact Seller',
@@ -85,21 +65,11 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
     });
   }
 
-  // ✅ Create metadata for ikman style
+  // Professional metadata - clean and essential
   const metadata = (
-    <div className="flex items-center gap-2 text-xs text-gray-500">
-      <span>{vehicle.year}</span>
-      <span>•</span>
-      <span>{vehicle.fuel_type}</span>
-      <span>•</span>
-      <span>{vehicle.transmission}</span>
-      {vehicle.mileage && vehicle.mileage > 0 && (
-        <>
-          <span>•</span>
-          <span>{vehicle.mileage.toLocaleString()} km</span>
-        </>
-      )}
-    </div>
+    <span>
+      {vehicle.year} • {vehicle.fuel_type}
+    </span>
   );
 
   return (

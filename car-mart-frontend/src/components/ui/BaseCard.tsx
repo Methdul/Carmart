@@ -1,5 +1,5 @@
 // src/components/ui/BaseCard.tsx
-// Fixed version with proper error handling and ikman.lk style
+// Mobile-first design that actually works on small screens
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -91,13 +91,13 @@ export const BaseCard: React.FC<BaseCardProps> = ({
   // ✅ Safe price value
   const safePrice = item.price || 0;
 
-  // Loading skeleton - ikman style
+  // Loading skeleton
   if (loading) {
     return (
       <Card className="mb-3 border border-gray-200 hover:border-gray-300 transition-colors">
         <CardContent className="p-0">
           <div className="flex animate-pulse">
-            <div className="w-36 h-28 bg-gray-200 flex-shrink-0 rounded-l-md"></div>
+            <div className="w-28 h-20 sm:w-40 sm:h-32 bg-gray-200 flex-shrink-0"></div>
             <div className="flex-1 p-3 space-y-2">
               <div className="h-4 bg-gray-200 rounded w-3/4"></div>
               <div className="h-3 bg-gray-200 rounded w-1/2"></div>
@@ -109,7 +109,7 @@ export const BaseCard: React.FC<BaseCardProps> = ({
     );
   }
 
-  // ikman.lk style - simple list layout (always list layout)
+  // MOBILE-FIRST CARD - No fixed heights, natural flow
   return (
     <Card 
       className={cn(
@@ -120,8 +120,8 @@ export const BaseCard: React.FC<BaseCardProps> = ({
     >
       <CardContent className="p-0">
         <div className="flex">
-          {/* Image - ikman style */}
-          <div className="relative w-36 h-28 flex-shrink-0 overflow-hidden rounded-l-md">
+          {/* IMAGE - Mobile optimized sizes */}
+          <div className="relative w-28 h-20 sm:w-40 sm:h-32 flex-shrink-0 bg-gray-100 rounded-l overflow-hidden">
             <img
               src={item.images?.[0] || '/placeholder-image.jpg'}
               alt={imageAlt}
@@ -129,10 +129,19 @@ export const BaseCard: React.FC<BaseCardProps> = ({
               loading="lazy"
             />
             
-            {/* Simple save button - top right */}
+            {/* Featured badge */}
+            {item.is_featured && (
+              <div className="absolute top-1 left-1">
+                <span className="text-xs bg-orange-500 text-white px-1.5 py-0.5 rounded font-medium">
+                  Featured
+                </span>
+              </div>
+            )}
+
+            {/* Save button */}
             {onSave && (
               <button
-                className="absolute top-1 right-1 p-1 bg-white/80 hover:bg-white rounded-full shadow-sm opacity-0 hover:opacity-100 transition-opacity"
+                className="absolute top-1 right-1 w-6 h-6 bg-white/90 rounded-full shadow-sm flex items-center justify-center"
                 onClick={(e) => {
                   e.stopPropagation();
                   onSave();
@@ -141,53 +150,48 @@ export const BaseCard: React.FC<BaseCardProps> = ({
                 <Heart className="h-3 w-3 text-gray-600" />
               </button>
             )}
-
-            {/* Featured badge */}
-            {item.is_featured && (
-              <div className="absolute top-1 left-1">
-                <span className="text-xs bg-orange-500 text-white px-2 py-1 rounded">
-                  Featured
-                </span>
-              </div>
-            )}
           </div>
 
-          {/* Content - ikman style */}
-          <div className="flex-1 p-3 min-h-28 flex flex-col justify-between">
-            <div>
-              {/* Title */}
-              <h3 className="text-sm font-medium text-gray-900 mb-1 line-clamp-1 leading-tight">
-                {item.title}
-              </h3>
-              
-              {/* Meta info - year, location etc */}
-              <div className="text-xs text-gray-500 mb-2">
+          {/* CONTENT - Mobile-first layout */}
+          <div className="flex-1 min-w-0 p-3 sm:p-4">
+            {/* Title - Mobile readable */}
+            <h3 className="text-sm sm:text-base font-semibold text-gray-900 line-clamp-2 leading-5 mb-1">
+              {item.title}
+            </h3>
+            
+            {/* Specs - One line only */}
+            {metadata && (
+              <div className="text-xs sm:text-sm text-gray-600 mb-1 truncate">
                 {metadata}
               </div>
-              
-              {/* Location and date */}
-              <div className="text-xs text-gray-500 mb-2">
-                <span>{item.location}</span>
-                <span className="mx-1">•</span>
-                <span>{formatDate(item.created_at)}</span>
-              </div>
+            )}
+            
+            {/* Location */}
+            <div className="text-xs sm:text-sm text-gray-500 mb-1">
+              {item.location}
             </div>
-
-            {/* Price and badges row */}
-            <div className="flex items-center justify-between">
-              {/* Price - ikman green style */}
-              <div className="text-lg font-semibold text-green-600">
-                {pricePrefix}{formatPrice(safePrice)}{priceSuffix}
+            
+            {/* Price and date row */}
+            <div className="flex items-end justify-between mt-2">
+              <div>
+                {/* Price - Large and readable */}
+                <div className="text-base sm:text-lg font-bold text-green-600">
+                  {pricePrefix}{formatPrice(safePrice)}{priceSuffix}
+                </div>
+                {/* Date below price */}
+                <div className="text-xs text-gray-400">
+                  {formatDate(item.created_at)}
+                </div>
               </div>
               
-              {/* Simple badges */}
-              <div className="flex gap-1">
-                {badges.slice(0, 2).map((badge, index) => (
-                  <span key={index} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                    {badge.label}
+              {/* Badge */}
+              {badges.length > 0 && (
+                <div className="ml-2 flex-shrink-0">
+                  <span className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-200">
+                    {badges[0].label}
                   </span>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

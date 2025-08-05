@@ -282,7 +282,7 @@ const VehiclesPage = () => {
     <div className="flex items-center gap-2">
       {/* Sort dropdown */}
       <Select value={sortBy} onValueChange={handleSortChange}>
-        <SelectTrigger className="w-48">
+        <SelectTrigger className="w-full sm:w-48">
           <SortAsc className="h-4 w-4 mr-2" />
           <SelectValue />
         </SelectTrigger>
@@ -329,7 +329,7 @@ const VehiclesPage = () => {
             }}
           />
         ) : (
-          <div className="space-y-3 max-w-2xl mx-auto px-4">
+          <div className="space-y-2 sm:space-y-3 max-w-2xl mx-auto px-2 sm:px-4">
             {vehicles.map((vehicle) => (
               <VehicleCard
                 key={vehicle.id}

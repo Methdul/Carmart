@@ -44,10 +44,10 @@ export const FilterLayout: React.FC<FilterLayoutProps> = ({
   };
 
   return (
-    <div className={cn("py-6", className)}>
+    <div className={cn("py-4 sm:py-6", className)}>
       {/* ✅ Centered container for entire layout */}
-      <div className="max-w-5xl mx-auto px-4">
-        <div className="flex gap-3">
+      <div className="max-w-5xl mx-auto px-2 sm:px-4">
+        <div className="flex gap-2 sm:gap-3">
           {/* Desktop Sidebar Filter */}
           <div className={cn("hidden lg:block", sidebarWidths[sidebarWidth], "flex-shrink-0")}>
             <div className="sticky top-24">
@@ -64,22 +64,22 @@ export const FilterLayout: React.FC<FilterLayoutProps> = ({
           <div className="flex-1 min-w-0">
             {/* Header Section - Same width as cards */}
             {(title || subtitle || headerActions) && (
-              <div className="max-w-2xl mx-auto px-4 mb-6">
+              <div className="max-w-2xl mx-auto px-2 sm:px-4 mb-4 sm:mb-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="space-y-1">
                     {title && (
-                      <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">
                         {title}
                       </h1>
                     )}
                     {subtitle && (
-                      <p className="text-muted-foreground">
+                      <p className="text-sm sm:text-base text-muted-foreground">
                         {subtitle}
                       </p>
                     )}
                   </div>
                   
-                  <div className="flex items-center gap-3 flex-shrink-0">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
                     {headerActions}
                     
                     {/* Mobile Filter Trigger */}

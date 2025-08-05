@@ -381,13 +381,13 @@ const Header = () => {
           ref={mobileMenuRef}
           className="lg:hidden border-t bg-card/95 backdrop-blur"
         >
-          <div className="container mx-auto px-4 py-4">
+          <div className="container mx-auto px-2 sm:px-4 py-4">
             <nav className="flex flex-col space-y-2">
               {/* ✅ MAIN NAVIGATION */}
               <div className="space-y-1">
                 <button
                   onClick={() => handleMobileNavClick('/search')}
-                  className="flex items-center space-x-3 w-full text-left p-3 rounded-lg transition-colors text-foreground hover:bg-muted"
+                  className="flex items-center space-x-3 w-full text-left p-4 rounded-lg transition-colors text-foreground hover:bg-muted min-h-[48px]"
                 >
                   <Car className="h-5 w-5" />
                   <span className="font-medium">Buy Vehicles</span>
@@ -395,7 +395,7 @@ const Header = () => {
 
                 <button
                   onClick={() => handleMobileNavClick('/rentals')}
-                  className="flex items-center space-x-3 w-full text-left p-3 rounded-lg transition-colors text-foreground hover:bg-muted"
+                  className="flex items-center space-x-3 w-full text-left p-4 rounded-lg transition-colors text-foreground hover:bg-muted min-h-[48px]"
                 >
                   <Car className="h-5 w-5" />
                   <span className="font-medium">Rentals</span>
@@ -403,7 +403,7 @@ const Header = () => {
 
                 <button
                   onClick={() => handleMobileNavClick('/parts')}
-                  className="flex items-center space-x-3 w-full text-left p-3 rounded-lg transition-colors text-foreground hover:bg-muted"
+                  className="flex items-center space-x-3 w-full text-left p-4 rounded-lg transition-colors text-foreground hover:bg-muted min-h-[48px]"
                 >
                   <Settings className="h-5 w-5" />
                   <span className="font-medium">Parts</span>
