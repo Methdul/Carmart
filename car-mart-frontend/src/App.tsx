@@ -1,11 +1,11 @@
 // car-mart-frontend/src/App.tsx
-// ✅ FIXED - ADD BOTH /auth AND /login ROUTES
+// ✅ UPDATED - SearchPage → VehiclesPage Migration
 
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"; // ✅ Added Navigate
 import ErrorBoundary, { DefaultErrorFallback } from "@/components/ErrorBoundary";
 import { Suspense, lazy } from "react";
 import { LoadingSpinner } from "@/components/ErrorBoundary";
@@ -16,10 +16,15 @@ import StaffDashboardPage from './pages/staff/StaffDashboardPage';
 const Index = lazy(() => import("./pages/Index"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const ListVehiclePage = lazy(() => import("./pages/ListVehiclePage"));
-const ListRentalPage = lazy(() => import("./pages/ListRentalPage")); // ✅ NEW
-const SearchPage = lazy(() => import("./pages/SearchPage"));
+const ListRentalPage = lazy(() => import("./pages/ListRentalPage"));
+
+// ✅ NEW: VehiclesPage replaces SearchPage
+const VehiclesPage = lazy(() => import("./pages/VehiclesPage"));
+// ❌ REMOVED: SearchPage - migrating to VehiclesPage
+// const SearchPage = lazy(() => import("./pages/SearchPage"));
+
 const VehicleDetailPage = lazy(() => import("./pages/VehicleDetailPage"));
-const RentalDetailPage = lazy(() => import("./pages/RentalDetailPage")); // ✅ NEW
+const RentalDetailPage = lazy(() => import("./pages/RentalDetailPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const PartsPage = lazy(() => import("./pages/PartsPage"));
 const PartDetailPage = lazy(() => import("./pages/PartDetailPage"));
@@ -83,17 +88,22 @@ const App = () => {
               <Routes>
                 <Route path="/" element={<SafeRoute element={Index} />} />
                 
-                {/* ✅ AUTHENTICATION ROUTES - BOTH /auth AND /login */}
+                {/* AUTHENTICATION ROUTES */}
                 <Route path="/auth" element={<SafeRoute element={AuthPage} />} />
                 <Route path="/login" element={<SafeRoute element={AuthPage} />} /> 
                 <Route path="/register" element={<SafeRoute element={AuthPage} />} />
                 
-                {/* VEHICLE ROUTES */}
-                <Route path="/list-vehicle" element={<SafeRoute element={ListVehiclePage} />} />
-                <Route path="/search" element={<SafeRoute element={SearchPage} />} />
+                {/* ✅ VEHICLE ROUTES - Updated */}
+                <Route path="/vehicles" element={<SafeRoute element={VehiclesPage} />} />
                 <Route path="/vehicles/:id" element={<SafeRoute element={VehicleDetailPage} />} />
+                <Route path="/list-vehicle" element={<SafeRoute element={ListVehiclePage} />} />
                 
-                {/* RENTAL ROUTES ✅ */}
+                {/* ✅ MIGRATION REDIRECTS - Keep old URLs working */}
+                <Route path="/search" element={<Navigate to="/vehicles" replace />} />
+                <Route path="/buy" element={<Navigate to="/vehicles" replace />} />
+                <Route path="/buy-vehicles" element={<Navigate to="/vehicles" replace />} />
+                
+                {/* RENTAL ROUTES */}
                 <Route path="/rentals" element={<SafeRoute element={RentalsPage} />} />
                 <Route path="/rentals/:id" element={<SafeRoute element={RentalDetailPage} />} />
                 <Route path="/list-rental" element={<SafeRoute element={ListRentalPage} />} />

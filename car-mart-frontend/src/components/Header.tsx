@@ -241,35 +241,13 @@ const Header = () => {
           <div className="hidden lg:flex items-center space-x-2 flex-shrink-0">
             {isSignedIn ? (
               <>
-                {/* ✅ QUICK ACTION BUTTONS */}
-                <div className="flex items-center space-x-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => navigate('/favorites')}
-                    className="text-muted-foreground hover:text-primary h-9 w-9 p-0"
-                  >
-                    <Heart className="h-4 w-4" />
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => navigate('/messages')}
-                    className="text-muted-foreground hover:text-primary h-9 w-9 p-0 relative"
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    {/* Optional notification badge */}
-                    {/* <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs bg-red-500">3</Badge> */}
-                  </Button>
-                </div>
 
                 {/* ✅ SELL DROPDOWN - COMPACT */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button size="sm" className="bg-primary hover:bg-primary/90 text-white px-3">
                       <Plus className="h-4 w-4 mr-1" />
-                      Sell
+                      Listing
                       <ChevronDown className="h-3 w-3 ml-1" />
                     </Button>
                   </DropdownMenuTrigger>

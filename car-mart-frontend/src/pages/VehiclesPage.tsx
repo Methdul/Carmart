@@ -1,33 +1,35 @@
-// src/pages/RentalsPage.tsx
+// src/pages/VehiclesPage.tsx
 // Safe version with better error handling and mock data fallback
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Grid3x3, List, SortAsc } from 'lucide-react';
-import { RentalCard } from '@/components/cards/RentalCard';
+import { Grid3x3, List, SortAsc, Car } from 'lucide-react';
+import { VehicleCard } from '@/components/cards/VehicleCard';
 import { FilterLayout } from '@/components/layouts/FilterLayout';
 import { PageLayout } from '@/components/layouts/PageLayout';
 import { ResponsiveGrid } from '@/components/layouts/ResponsiveGrid';
 import { LoadingGrid } from '@/components/ui/LoadingGrid';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
-import { rentalFilterSections } from '@/components/filters/configs/rentalFilters';
-import { Rental, FilterValues } from '@/design-system/types';
+import { vehicleFilterSections } from '@/components/filters/configs/vehicleFilters';
+import { Vehicle, FilterValues } from '@/design-system/types';
 import { apiService } from '@/services/api';
 
-const RentalsPage = () => {
+const VehiclesPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   
   // State management
-  const [rentals, setRentals] = useState<Rental[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterValues>({});
   const [sortBy, setSortBy] = useState('created_at_desc');
   const [layout, setLayout] = useState<'grid' | 'list'>('grid');
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
   // Load initial filters from URL
   useEffect(() => {
@@ -37,6 +39,8 @@ const RentalsPage = () => {
         setSortBy(value);
       } else if (key === 'layout') {
         setLayout(value as 'grid' | 'list');
+      } else if (key === 'page') {
+        setPage(parseInt(value) || 1);
       } else {
         initialFilters[key] = value;
       }
@@ -44,12 +48,12 @@ const RentalsPage = () => {
     setFilters(initialFilters);
   }, [searchParams]);
 
-  // Fetch rentals when filters change
+  // Fetch vehicles when filters change
   useEffect(() => {
-    fetchRentals();
-  }, [filters, sortBy]);
+    fetchVehicles();
+  }, [filters, sortBy, page]);
 
-  const fetchRentals = async () => {
+  const fetchVehicles = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -64,116 +68,136 @@ const RentalsPage = () => {
 
       const queryParams = {
         ...cleanFilters,
-        sort: sortBy
+        sort: sortBy,
+        page,
+        limit: 12
       };
 
-      const response = await apiService.getRentals(queryParams);
+      const response = await apiService.getVehicles(queryParams);
       
       if (response && response.success) {
-        setRentals(Array.isArray(response.data) ? response.data : []);
+        setVehicles(Array.isArray(response.data) ? response.data : []);
+        setTotalCount(response.pagination?.totalItems || response.data?.length || 0);
       } else {
         // ✅ Handle API not implemented yet - use mock data
-        console.warn('Rentals API not implemented yet, using mock data');
-        setRentals(generateMockRentals());
+        console.warn('Vehicles API not implemented yet, using mock data');
+        const mockData = generateMockVehicles();
+        setVehicles(mockData);
+        setTotalCount(mockData.length);
       }
     } catch (err) {
-      console.error('Error fetching rentals:', err);
+      console.error('Error fetching vehicles:', err);
       // ✅ Fallback to mock data instead of showing error
       console.warn('Using mock data due to API error');
-      setRentals(generateMockRentals());
+      const mockData = generateMockVehicles();
+      setVehicles(mockData);
+      setTotalCount(mockData.length);
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Generate mock rentals for testing
-  const generateMockRentals = (): Rental[] => {
+  // ✅ Generate mock vehicles for testing
+  const generateMockVehicles = (): Vehicle[] => {
     return [
       {
         id: '1',
-        title: '2022 Toyota Aqua Hybrid - Daily Rental',
-        description: 'Fuel-efficient hybrid car perfect for city drives and short trips',
-        price: 3500, // This is daily_rate
-        daily_rate: 3500,
-        weekly_rate: 22000,
-        monthly_rate: 85000,
-        security_deposit: 15000,
+        title: '2020 Toyota Camry Hybrid',
+        description: 'Well-maintained hybrid sedan with excellent fuel economy',
+        price: 3250000,
         location: 'Colombo',
         images: ['https://via.placeholder.com/400x200'],
         created_at: new Date().toISOString(),
         is_featured: true,
         make: 'Toyota',
-        model: 'Aqua',
-        year: 2022,
+        model: 'Camry',
+        year: 2020,
         fuel_type: 'Hybrid',
         transmission: 'Automatic',
-        body_type: 'Hatchback',
+        body_type: 'Sedan',
         seats: 5,
-        doors: 5,
+        doors: 4,
         color: 'White',
-        mileage: 15000,
+        mileage: 45000,
         condition: 'Excellent',
-        rental_type: 'daily',
-        minimum_rental_days: 1,
-        maximum_rental_days: 30,
-        fuel_policy: 'full-to-full',
-        mileage_limit_per_day: 200,
-        available_from: new Date().toISOString(),
-        features: ['AC', 'GPS', 'Bluetooth'],
-        included_items: ['First Aid Kit', 'Spare Tire'],
-        pickup_locations: ['Colombo Airport', 'City Center'],
-        delivery_available: true,
-        delivery_fee: 500,
-        insurance_included: true,
-        booking_count: 45,
-        average_rating: 4.8,
-        total_reviews: 32
+        negotiable: true,
+        user: {
+          id: '1',
+          first_name: 'John',
+          last_name: 'Doe',
+          account_type: 'individual',
+          rating: 4.8,
+          total_reviews: 23
+        }
       },
       {
         id: '2',
-        title: '2021 Honda Vezel RS - Weekly Rental',
-        description: 'Stylish SUV with excellent features for longer trips',
-        price: 5500, // This is daily_rate
-        daily_rate: 5500,
-        weekly_rate: 35000,
-        monthly_rate: 140000,
-        security_deposit: 25000,
+        title: '2019 Honda Civic RS Turbo',
+        description: 'Sporty and fuel-efficient hatchback in pristine condition',
+        price: 2890000,
         location: 'Kandy',
         images: ['https://via.placeholder.com/400x200'],
         created_at: new Date().toISOString(),
         is_featured: false,
         make: 'Honda',
-        model: 'Vezel',
+        model: 'Civic',
+        year: 2019,
+        fuel_type: 'Petrol',
+        transmission: 'Manual',
+        body_type: 'Hatchback',
+        seats: 5,
+        doors: 5,
+        color: 'Red',
+        mileage: 32000,
+        condition: 'Good',
+        negotiable: false,
+        user: {
+          id: '2',
+          first_name: 'Jane',
+          last_name: 'Smith',
+          account_type: 'business',
+          rating: 4.9,
+          total_reviews: 45
+        }
+      },
+      {
+        id: '3',
+        title: '2021 Nissan X-Trail 4WD',
+        description: 'Spacious SUV perfect for family trips and off-road adventures',
+        price: 4150000,
+        location: 'Galle',
+        images: ['https://via.placeholder.com/400x200'],
+        created_at: new Date().toISOString(),
+        is_featured: true,
+        make: 'Nissan',
+        model: 'X-Trail',
         year: 2021,
         fuel_type: 'Petrol',
         transmission: 'CVT',
         body_type: 'SUV',
-        seats: 5,
+        seats: 7,
         doors: 5,
-        color: 'Black',
+        color: 'Blue',
         mileage: 28000,
-        condition: 'Good',
-        rental_type: 'weekly',
-        minimum_rental_days: 3,
-        maximum_rental_days: 90,
-        fuel_policy: 'same-to-same',
-        mileage_limit_per_day: 250,
-        available_from: new Date().toISOString(),
-        features: ['Sunroof', 'Reverse Camera', 'Cruise Control'],
-        included_items: ['Mobile Charger', 'Emergency Kit'],
-        pickup_locations: ['Kandy City', 'Train Station'],
-        delivery_available: false,
-        insurance_included: true,
-        booking_count: 28,
-        average_rating: 4.6,
-        total_reviews: 19
+        condition: 'Excellent',
+        negotiable: true,
+        user: {
+          id: '3',
+          first_name: 'Mike',
+          last_name: 'Johnson',
+          account_type: 'individual',
+          rating: 4.7,
+          total_reviews: 12
+        }
       }
     ];
   };
 
+  // Handle filter changes
   const handleFiltersChange = (newFilters: FilterValues) => {
     console.log('Filters changed:', newFilters);
     setFilters(newFilters);
+    setPage(1);
     
     // Update URL params
     const params = new URLSearchParams();
@@ -187,6 +211,7 @@ const RentalsPage = () => {
     setSearchParams(params);
   };
 
+  // Handle sort change
   const handleSortChange = (newSort: string) => {
     setSortBy(newSort);
     const params = new URLSearchParams(searchParams);
@@ -194,6 +219,7 @@ const RentalsPage = () => {
     setSearchParams(params);
   };
 
+  // Handle layout change
   const handleLayoutChange = (newLayout: 'grid' | 'list') => {
     setLayout(newLayout);
     const params = new URLSearchParams(searchParams);
@@ -201,26 +227,41 @@ const RentalsPage = () => {
     setSearchParams(params);
   };
 
-  // Rental actions
-  const handleViewRental = (rentalId: string) => {
-    navigate(`/rentals/${rentalId}`);
+  // Vehicle actions
+  const handleViewVehicle = (vehicleId: string) => {
+    navigate(`/vehicles/${vehicleId}`);
   };
 
-  const handleBookRental = (rentalId: string) => {
-    navigate(`/rentals/${rentalId}?action=book`);
+  const handleContactSeller = (vehicleId: string) => {
+    console.log('Contact seller for vehicle:', vehicleId);
+    // TODO: Implement contact functionality
+  };
+
+  const handleSaveVehicle = (vehicleId: string) => {
+    console.log('Save vehicle:', vehicleId);
+    // TODO: Implement save functionality
+  };
+
+  const handleShareVehicle = (vehicleId: string) => {
+    console.log('Share vehicle:', vehicleId);
+    // TODO: Implement share functionality
   };
 
   // Sort options
   const sortOptions = [
     { value: 'created_at_desc', label: 'Newest First' },
-    { value: 'daily_rate_asc', label: 'Price: Low to High' },
-    { value: 'daily_rate_desc', label: 'Price: High to Low' },
-    { value: 'rating_desc', label: 'Highest Rated' },
-    { value: 'booking_count_desc', label: 'Most Popular' }
+    { value: 'created_at_asc', label: 'Oldest First' },
+    { value: 'price_asc', label: 'Price: Low to High' },
+    { value: 'price_desc', label: 'Price: High to Low' },
+    { value: 'mileage_asc', label: 'Mileage: Low to High' },
+    { value: 'year_desc', label: 'Year: Newest First' },
+    { value: 'views_desc', label: 'Most Popular' }
   ];
 
+  // Header actions
   const headerActions = (
     <div className="flex items-center gap-2">
+      {/* Sort dropdown */}
       <Select value={sortBy} onValueChange={handleSortChange}>
         <SelectTrigger className="w-48">
           <SortAsc className="h-4 w-4 mr-2" />
@@ -235,6 +276,7 @@ const RentalsPage = () => {
         </SelectContent>
       </Select>
 
+      {/* Layout toggle */}
       <div className="hidden sm:flex border rounded-md">
         <Button
           variant={layout === 'grid' ? 'default' : 'ghost'}
@@ -259,27 +301,28 @@ const RentalsPage = () => {
   return (
     <PageLayout>
       <FilterLayout
-        filterSections={rentalFilterSections}
+        filterSections={vehicleFilterSections}
         filters={filters}
         onFiltersChange={handleFiltersChange}
         loading={loading}
-        title="Rent Vehicles"
-        subtitle={`${rentals.length} vehicles available for rent`}
+        title="Buy Vehicles"
+        subtitle={`${totalCount.toLocaleString()} vehicles available`}
         headerActions={headerActions}
       >
+        {/* Results Content */}
         {loading ? (
           <LoadingGrid count={12} />
         ) : error ? (
           <ErrorState
-            title="Failed to load rentals"
+            title="Failed to load vehicles"
             description={error}
-            onRetry={fetchRentals}
+            onRetry={fetchVehicles}
           />
-        ) : rentals.length === 0 ? (
+        ) : vehicles.length === 0 ? (
           <EmptyState
-            icon={Calendar}
-            title="No rentals found"
-            description="Try adjusting your dates or filters to find available rentals."
+            icon={Car}
+            title="No vehicles found"
+            description="Try adjusting your filters or search criteria to find vehicles."
             action={{
               label: 'Clear Filters',
               onClick: () => handleFiltersChange({}),
@@ -288,20 +331,47 @@ const RentalsPage = () => {
           />
         ) : (
           <ResponsiveGrid>
-            {rentals.map((rental) => (
-              <RentalCard
-                key={rental.id}
-                rental={rental}
+            {vehicles.map((vehicle) => (
+              <VehicleCard
+                key={vehicle.id}
+                vehicle={vehicle}
                 layout={layout}
-                onView={() => handleViewRental(rental.id)}
-                onBook={() => handleBookRental(rental.id)}
+                onView={() => handleViewVehicle(vehicle.id)}
+                onContact={() => handleContactSeller(vehicle.id)}
+                onSave={() => handleSaveVehicle(vehicle.id)}
+                onShare={() => handleShareVehicle(vehicle.id)}
               />
             ))}
           </ResponsiveGrid>
+        )}
+
+        {/* Pagination */}
+        {!loading && vehicles.length > 0 && totalCount > 12 && (
+          <div className="flex justify-center mt-8">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                disabled={page === 1}
+                onClick={() => setPage(page - 1)}
+              >
+                Previous
+              </Button>
+              <span className="px-4 py-2 text-sm text-muted-foreground">
+                Page {page} of {Math.ceil(totalCount / 12)}
+              </span>
+              <Button
+                variant="outline"
+                disabled={page >= Math.ceil(totalCount / 12)}
+                onClick={() => setPage(page + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
         )}
       </FilterLayout>
     </PageLayout>
   );
 };
 
-export default RentalsPage;
+export default VehiclesPage;
