@@ -11,6 +11,8 @@ import { Suspense, lazy } from "react";
 import { LoadingSpinner } from "@/components/ErrorBoundary";
 import StaffLoginPage from './pages/staff/StaffLoginPage';
 import StaffDashboardPage from './pages/staff/StaffDashboardPage';
+import RentalSearchPage from '@/pages/RentalSearchPage';
+import ServiceSearchPage from '@/pages/ServiceSearchPage';
 
 // Lazy load components
 const Index = lazy(() => import("./pages/Index"));

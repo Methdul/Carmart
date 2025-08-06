@@ -142,10 +142,17 @@ const Header = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      const redirectPath = getSearchRedirectPath(); // ✅ UPDATED: Use context-aware redirect
+      const redirectPath = getSearchRedirectPath();
+      
+      // Navigate to the appropriate search page with the query
       navigate(`${redirectPath}?q=${encodeURIComponent(searchQuery.trim())}`);
+      
+      // Clear the search and close mobile elements
       setSearchQuery('');
-      setSearchBarOpen(false); // ✅ NEW: Close search bar after search
+      setSearchBarOpen(false);
+      setMobileMenuOpen(false);
+      
+      console.log(`🔍 Navigating to: ${redirectPath}?q=${searchQuery.trim()}`);
     }
   };
 
