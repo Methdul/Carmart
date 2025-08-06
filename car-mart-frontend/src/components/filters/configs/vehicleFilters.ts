@@ -1,5 +1,7 @@
-// src/components/filters/configs/vehicleFilters.ts
-import { Car, DollarSign, MapPin, Calendar, Settings, Fuel, Shield } from 'lucide-react';
+// car-mart-frontend/src/components/filters/configs/vehicleFilters.ts
+// ✅ COMPLETE SIMPLIFIED VERSION - Replace your existing file
+
+import { Car, DollarSign, Settings } from 'lucide-react';
 import { FilterSection } from '@/design-system/types';
 
 export const vehicleFilterSections: FilterSection[] = [
@@ -14,7 +16,7 @@ export const vehicleFilterSections: FilterSection[] = [
         id: 'search',
         label: 'Search vehicles',
         type: 'search',
-        placeholder: 'Make, model, or keyword...'
+        placeholder: 'Car name, model, or keyword...'
       }
     ]
   },
@@ -27,12 +29,16 @@ export const vehicleFilterSections: FilterSection[] = [
     priority: 2,
     filters: [
       {
-        id: 'priceRange',
-        label: 'Price',
-        type: 'range',
-        min: 0,
-        max: 10000000,
-        step: 100000
+        id: 'minPrice',
+        label: 'Min Price',
+        type: 'number',
+        placeholder: 'Minimum price (₹)'
+      },
+      {
+        id: 'maxPrice',
+        label: 'Max Price',
+        type: 'number',
+        placeholder: 'Maximum price (₹)'
       }
     ]
   },
@@ -46,50 +52,52 @@ export const vehicleFilterSections: FilterSection[] = [
     filters: [
       {
         id: 'make',
-        label: 'Make',
+        label: 'Brand',
         type: 'select',
-        placeholder: 'Select make',
+        placeholder: 'Select brand',
         options: [
-          { value: 'toyota', label: 'Toyota', count: 45 },
-          { value: 'honda', label: 'Honda', count: 38 },
-          { value: 'nissan', label: 'Nissan', count: 32 },
-          { value: 'suzuki', label: 'Suzuki', count: 28 },
-          { value: 'hyundai', label: 'Hyundai', count: 25 },
-          { value: 'bmw', label: 'BMW', count: 15 },
-          { value: 'mercedes', label: 'Mercedes-Benz', count: 12 },
-          { value: 'audi', label: 'Audi', count: 10 },
-          { value: 'volkswagen', label: 'Volkswagen', count: 8 },
-          { value: 'mazda', label: 'Mazda', count: 7 }
+          { value: 'maruti-suzuki', label: 'Maruti Suzuki', count: 45 },
+          { value: 'hyundai', label: 'Hyundai', count: 38 },
+          { value: 'tata', label: 'Tata', count: 32 },
+          { value: 'mahindra', label: 'Mahindra', count: 28 },
+          { value: 'honda', label: 'Honda', count: 25 },
+          { value: 'toyota', label: 'Toyota', count: 22 },
+          { value: 'kia', label: 'Kia', count: 18 },
+          { value: 'ford', label: 'Ford', count: 15 },
+          { value: 'volkswagen', label: 'Volkswagen', count: 12 },
+          { value: 'skoda', label: 'Skoda', count: 10 }
         ]
       },
       {
         id: 'bodyType',
         label: 'Body Type',
-        type: 'checkbox',
+        type: 'select',
+        placeholder: 'Select body type',
         options: [
-          { value: 'sedan', label: 'Sedan', count: 85 },
-          { value: 'suv', label: 'SUV', count: 67 },
           { value: 'hatchback', label: 'Hatchback', count: 52 },
-          { value: 'wagon', label: 'Wagon', count: 23 },
-          { value: 'coupe', label: 'Coupe', count: 18 },
-          { value: 'convertible', label: 'Convertible', count: 8 },
-          { value: 'pickup', label: 'Pickup Truck', count: 15 },
-          { value: 'van', label: 'Van', count: 12 }
+          { value: 'sedan', label: 'Sedan', count: 48 },
+          { value: 'suv', label: 'SUV', count: 35 },
+          { value: 'wagon', label: 'Wagon', count: 15 },
+          { value: 'coupe', label: 'Coupe', count: 8 }
         ]
       },
       {
-        id: 'year',
-        label: 'Year Range',
-        type: 'range',
-        min: 1990,
-        max: 2025,
-        step: 1
+        id: 'yearFrom',
+        label: 'Year From',
+        type: 'number',
+        placeholder: 'e.g. 2015'
+      },
+      {
+        id: 'yearTo',
+        label: 'Year To',
+        type: 'number',
+        placeholder: 'e.g. 2024'
       }
     ]
   },
   {
     id: 'specs',
-    title: 'Specifications',
+    title: 'Engine & Transmission',
     icon: Settings,
     collapsible: true,
     defaultOpen: false,
@@ -98,103 +106,24 @@ export const vehicleFilterSections: FilterSection[] = [
       {
         id: 'fuelType',
         label: 'Fuel Type',
-        type: 'checkbox',
+        type: 'select',
+        placeholder: 'Select fuel type',
         options: [
           { value: 'petrol', label: 'Petrol', count: 142 },
           { value: 'diesel', label: 'Diesel', count: 89 },
           { value: 'hybrid', label: 'Hybrid', count: 34 },
-          { value: 'electric', label: 'Electric', count: 12 },
-          { value: 'cng', label: 'CNG', count: 8 }
+          { value: 'electric', label: 'Electric', count: 12 }
         ]
       },
       {
         id: 'transmission',
         label: 'Transmission',
-        type: 'checkbox',
-        options: [
-          { value: 'automatic', label: 'Automatic', count: 156 },
-          { value: 'manual', label: 'Manual', count: 98 },
-          { value: 'cvt', label: 'CVT', count: 31 }
-        ]
-      },
-      {
-        id: 'mileage',
-        label: 'Mileage (km)',
-        type: 'range',
-        min: 0,
-        max: 300000,
-        step: 10000
-      }
-    ]
-  },
-  {
-    id: 'condition',
-    title: 'Condition & Features',
-    icon: Shield,
-    collapsible: true,
-    defaultOpen: false,
-    priority: 5,
-    filters: [
-      {
-        id: 'condition',
-        label: 'Condition',
-        type: 'checkbox',
-        options: [
-          { value: 'excellent', label: 'Excellent', count: 67 },
-          { value: 'good', label: 'Good', count: 123 },
-          { value: 'fair', label: 'Fair', count: 78 },
-          { value: 'needs_work', label: 'Needs Work', count: 17 }
-        ]
-      },
-      {
-        id: 'accidentHistory',
-        label: 'Accident History',
-        type: 'radio',
-        options: [
-          { value: 'no_accidents', label: 'No Accidents', count: 234 },
-          { value: 'minor_accidents', label: 'Minor Accidents', count: 45 },
-          { value: 'major_accidents', label: 'Major Accidents', count: 6 }
-        ]
-      },
-      {
-        id: 'features',
-        label: 'Features',
-        type: 'checkbox',
-        options: [
-          { value: 'ac', label: 'Air Conditioning', count: 245 },
-          { value: 'abs', label: 'ABS', count: 189 },
-          { value: 'airbags', label: 'Airbags', count: 167 },
-          { value: 'power_steering', label: 'Power Steering', count: 234 },
-          { value: 'central_locking', label: 'Central Locking', count: 198 },
-          { value: 'sunroof', label: 'Sunroof', count: 45 },
-          { value: 'leather_seats', label: 'Leather Seats', count: 78 },
-          { value: 'gps', label: 'GPS Navigation', count: 89 }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'location',
-    title: 'Location',
-    icon: MapPin,
-    collapsible: true,
-    defaultOpen: false,
-    priority: 6,
-    filters: [
-      {
-        id: 'location',
-        label: 'City',
         type: 'select',
-        placeholder: 'Select city',
+        placeholder: 'Select transmission',
         options: [
-          { value: 'colombo', label: 'Colombo', count: 89 },
-          { value: 'kandy', label: 'Kandy', count: 45 },
-          { value: 'galle', label: 'Galle', count: 34 },
-          { value: 'jaffna', label: 'Jaffna', count: 23 },
-          { value: 'negombo', label: 'Negombo', count: 32 },
-          { value: 'anuradhapura', label: 'Anuradhapura', count: 18 },
-          { value: 'batticaloa', label: 'Batticaloa', count: 15 },
-          { value: 'kurunegala', label: 'Kurunegala', count: 29 }
+          { value: 'manual', label: 'Manual', count: 98 },
+          { value: 'automatic', label: 'Automatic', count: 85 },
+          { value: 'cvt', label: 'CVT', count: 31 }
         ]
       }
     ]

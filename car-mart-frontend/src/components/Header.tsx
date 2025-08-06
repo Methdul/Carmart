@@ -1,5 +1,5 @@
 // car-mart-frontend/src/components/Header.tsx
-// ✅ IMPROVED STYLING VERSION - REPLACE ENTIRE FILE
+// ✅ ORIGINAL FILE WITH ONLY SEARCH MODIFICATIONS
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -43,50 +43,72 @@ interface User {
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchBarOpen, setSearchBarOpen] = useState(false); // ✅ NEW: Search bar toggle state
   const [searchQuery, setSearchQuery] = useState('');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const searchBarRef = useRef<HTMLDivElement>(null); // ✅ NEW: Search bar ref
 
   // Check authentication status
-  const isSignedIn = !!currentUser;
+  const isSignedIn = currentUser !== null;
 
-  // Load user data
+  // ✅ NEW: Context-aware search placeholder
+  const getSearchPlaceholder = () => {
+    const path = location.pathname;
+    
+    if (path.includes('/vehicles') || path.includes('/search') || path === '/') {
+      return "Search vehicles...";
+    } else if (path.includes('/rentals')) {
+      return "Search rental vehicles...";
+    } else if (path.includes('/parts')) {
+      return "Search parts...";
+    } else if (path.includes('/services')) {
+      return "Search services...";
+    } else {
+      return "Search vehicles, parts, services...";
+    }
+  };
+
+  // ✅ NEW: Context-aware search redirect
+  const getSearchRedirectPath = () => {
+    const path = location.pathname;
+    
+    if (path.includes('/vehicles') || path.includes('/search') || path === '/') {
+      return '/vehicles';
+    } else if (path.includes('/rentals')) {
+      return '/rentals';
+    } else if (path.includes('/parts')) {
+      return '/parts';
+    } else if (path.includes('/services')) {
+      return '/services';
+    } else {
+      return '/vehicles';
+    }
+  };
+
+  // Check authentication on component mount
   useEffect(() => {
-    const loadUserData = () => {
-      const token = localStorage.getItem('auth_token');
-      const userData = localStorage.getItem('user_data');
-      
-      if (token && userData) {
-        try {
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        const userData = localStorage.getItem('user_data');
+        
+        if (token && userData) {
           const user = JSON.parse(userData);
           setCurrentUser(user);
-        } catch (error) {
-          console.error('Error parsing user data:', error);
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('user_data');
-          setCurrentUser(null);
         }
-      } else {
-        setCurrentUser(null);
-      }
-      
-      setAuthChecked(true);
-    };
-
-    loadUserData();
-
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'auth_token' || e.key === 'user_data') {
-        loadUserData();
+      } catch (error) {
+        console.error('Auth check error:', error);
+      } finally {
+        setAuthChecked(true);
       }
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, [location.pathname]);
+    checkAuth();
+  }, []);
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -98,18 +120,32 @@ const Header = () => {
 
     if (mobileMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
     }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
   }, [mobileMenuOpen]);
 
+  // ✅ NEW: Close search bar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchBarRef.current && !searchBarRef.current.contains(event.target as Node)) {
+        setSearchBarOpen(false);
+      }
+    };
+
+    if (searchBarOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [searchBarOpen]);
+
+  // Handle search submission
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      const redirectPath = getSearchRedirectPath(); // ✅ UPDATED: Use context-aware redirect
+      navigate(`${redirectPath}?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
+      setSearchBarOpen(false); // ✅ NEW: Close search bar after search
     }
   };
 
@@ -126,6 +162,11 @@ const Header = () => {
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  // ✅ NEW: Toggle search bar function
+  const toggleSearchBar = () => {
+    setSearchBarOpen(!searchBarOpen);
   };
 
   const handleMobileNavClick = (path: string) => {
@@ -221,83 +262,79 @@ const Header = () => {
                 Services
               </Button>
             </Link>
-          </nav>
 
-          {/* ✅ DESKTOP SEARCH BAR */}
-          <div className="hidden md:flex flex-1 max-w-md mx-4">
-            <form onSubmit={handleSearch} className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                type="search"
-                placeholder="Search vehicles, parts, services..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-full bg-muted/30 border-0 focus-visible:bg-background focus-visible:ring-1 focus-visible:ring-primary"
-              />
-            </form>
-          </div>
+            {/* ✅ NEW: Search icon button */}
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={toggleSearchBar}
+              className="text-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200"
+            >
+              <Search className="h-4 w-4" />
+            </Button>
+          </nav>
 
           {/* ✅ DESKTOP ACTIONS - IMPROVED STYLING */}
           <div className="hidden lg:flex items-center space-x-2 flex-shrink-0">
             {isSignedIn ? (
               <>
 
-                {/* ✅ SELL DROPDOWN - COMPACT */}
+                {/* ✅ LIST ITEM DROPDOWN - COMPACT */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button size="sm" className="bg-primary hover:bg-primary/90 text-white px-3">
                       <Plus className="h-4 w-4 mr-1" />
-                      Listing
+                      List Item
                       <ChevronDown className="h-3 w-3 ml-1" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuItem onClick={() => navigate('/list-vehicle')} className="cursor-pointer">
                       <Car className="mr-2 h-4 w-4" />
-                      <span>Sell Vehicle</span>
+                      <span>List Vehicle</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate('/list-rental')} className="cursor-pointer">
                       <Car className="mr-2 h-4 w-4" />
-                      <span>Rent Out Car</span>
+                      <span>List Rental</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => navigate('/list-parts')} className="cursor-pointer">
                       <Settings className="mr-2 h-4 w-4" />
-                      <span>Sell Parts</span>
+                      <span>List Parts</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate('/list-services')} className="cursor-pointer">
                       <Settings className="mr-2 h-4 w-4" />
-                      <span>List Service</span>
+                      <span>List Services</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
 
+                {/* ✅ FAVORITES */}
+                <Button variant="ghost" size="sm" className="text-foreground hover:text-primary">
+                  <Heart className="h-4 w-4" />
+                </Button>
+
                 {/* ✅ USER MENU - IMPROVED STYLING */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-9 w-9 rounded-full p-0 ml-2">
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={currentUser?.avatar_url} alt={getUserDisplayName()} />
-                        <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
-                          {getUserInitials()}
-                        </AvatarFallback>
+                        <AvatarFallback className="text-xs">{getUserInitials()}</AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-64" align="end" forceMount>
-                    {/* ✅ USER INFO HEADER */}
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
-                        <div className="flex items-center space-x-2">
-                          <p className="text-sm font-medium leading-none">
-                            {getUserDisplayName()}
-                          </p>
+                        <p className="text-sm font-medium leading-none flex items-center gap-2">
+                          {getUserDisplayName()}
                           {currentUser?.is_verified && (
-                            <Badge variant="secondary" className="h-4 px-1 text-xs">
+                            <Badge variant="secondary" className="text-xs px-1 py-0">
                               ✓
                             </Badge>
                           )}
-                        </div>
+                        </p>
                         <p className="text-xs leading-none text-muted-foreground">
                           {currentUser?.email}
                         </p>
@@ -313,7 +350,6 @@ const Header = () => {
                       <BarChart3 className="mr-2 h-4 w-4" />
                       <span>Dashboard</span>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-600">
                       <LogOut className="mr-2 h-4 w-4" />
@@ -360,13 +396,32 @@ const Header = () => {
           </div>
         </div>
 
+        {/* ✅ NEW: Professional search bar in separate row - toggleable */}
+        {searchBarOpen && (
+          <div ref={searchBarRef} className="pb-4 pt-2 border-t border-border/40 animate-in slide-in-from-top-2 duration-200">
+            <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+                <Input
+                  type="search"
+                  placeholder={getSearchPlaceholder()}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-12 pr-4 w-full h-12 text-base bg-background border-2 border-border/50 focus-visible:border-primary focus-visible:ring-0 shadow-sm rounded-lg"
+                  autoFocus
+                />
+              </div>
+            </form>
+          </div>
+        )}
+
         {/* ✅ MOBILE SEARCH BAR */}
         <div className="md:hidden pb-4">
           <form onSubmit={handleSearch} className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               type="search"
-              placeholder="Search vehicles, parts, services..."
+              placeholder={getSearchPlaceholder()}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 w-full bg-muted/30 border-0 focus-visible:bg-background focus-visible:ring-1 focus-visible:ring-primary"
@@ -381,13 +436,13 @@ const Header = () => {
           ref={mobileMenuRef}
           className="lg:hidden border-t bg-card/95 backdrop-blur"
         >
-          <div className="container mx-auto px-2 sm:px-4 py-4">
+          <div className="container mx-auto px-4 py-4">
             <nav className="flex flex-col space-y-2">
               {/* ✅ MAIN NAVIGATION */}
               <div className="space-y-1">
                 <button
                   onClick={() => handleMobileNavClick('/search')}
-                  className="flex items-center space-x-3 w-full text-left p-4 rounded-lg transition-colors text-foreground hover:bg-muted min-h-[48px]"
+                  className="flex items-center space-x-3 w-full text-left p-3 rounded-lg transition-colors text-foreground hover:bg-muted"
                 >
                   <Car className="h-5 w-5" />
                   <span className="font-medium">Buy Vehicles</span>
@@ -395,7 +450,7 @@ const Header = () => {
 
                 <button
                   onClick={() => handleMobileNavClick('/rentals')}
-                  className="flex items-center space-x-3 w-full text-left p-4 rounded-lg transition-colors text-foreground hover:bg-muted min-h-[48px]"
+                  className="flex items-center space-x-3 w-full text-left p-3 rounded-lg transition-colors text-foreground hover:bg-muted"
                 >
                   <Car className="h-5 w-5" />
                   <span className="font-medium">Rentals</span>
@@ -403,7 +458,7 @@ const Header = () => {
 
                 <button
                   onClick={() => handleMobileNavClick('/parts')}
-                  className="flex items-center space-x-3 w-full text-left p-4 rounded-lg transition-colors text-foreground hover:bg-muted min-h-[48px]"
+                  className="flex items-center space-x-3 w-full text-left p-3 rounded-lg transition-colors text-foreground hover:bg-muted"
                 >
                   <Settings className="h-5 w-5" />
                   <span className="font-medium">Parts</span>
@@ -422,133 +477,58 @@ const Header = () => {
               <div className="pt-4 border-t">
                 {isSignedIn ? (
                   <div className="space-y-2">
-                    {/* ✅ USER INFO CARD - CLEANER */}
-                    <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
-                      <Avatar className="h-10 w-10">
+                    <div className="flex items-center space-x-3 p-3">
+                      <Avatar className="h-8 w-8">
                         <AvatarImage src={currentUser?.avatar_url} alt={getUserDisplayName()} />
-                        <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
-                          {getUserInitials()}
-                        </AvatarFallback>
+                        <AvatarFallback className="text-xs">{getUserInitials()}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-1">
-                          <p className="text-sm font-medium truncate">
-                            {getUserDisplayName()}
-                          </p>
+                        <p className="text-sm font-medium truncate flex items-center gap-2">
+                          {getUserDisplayName()}
                           {currentUser?.is_verified && (
-                            <Badge variant="secondary" className="h-4 px-1 text-xs flex-shrink-0">
+                            <Badge variant="secondary" className="text-xs px-1 py-0">
                               ✓
                             </Badge>
                           )}
-                        </div>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {currentUser?.email}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate capitalize">
+                          {currentUser?.account_type} Account
                         </p>
                       </div>
                     </div>
                     
-                    {/* ✅ USER MENU ITEMS */}
-                    <div className="space-y-1">
-                      <button
-                        onClick={() => handleMobileNavClick('/profile')}
-                        className="flex items-center space-x-3 w-full text-left p-3 rounded-lg text-foreground hover:bg-muted transition-colors"
-                      >
-                        <User className="h-5 w-5" />
-                        <span>Profile</span>
-                      </button>
-                      
-                      <button
-                        onClick={() => handleMobileNavClick('/dashboard')}
-                        className="flex items-center space-x-3 w-full text-left p-3 rounded-lg text-foreground hover:bg-muted transition-colors"
-                      >
-                        <BarChart3 className="h-5 w-5" />
-                        <span>Dashboard</span>
-                      </button>
-                      
-                      <button
-                        onClick={() => handleMobileNavClick('/favorites')}
-                        className="flex items-center space-x-3 w-full text-left p-3 rounded-lg text-foreground hover:bg-muted transition-colors"
-                      >
-                        <Heart className="h-5 w-5" />
-                        <span>Saved Items</span>
-                      </button>
-                      
-                      <button
-                        onClick={() => handleMobileNavClick('/messages')}
-                        className="flex items-center space-x-3 w-full text-left p-3 rounded-lg text-foreground hover:bg-muted transition-colors"
-                      >
-                        <MessageCircle className="h-5 w-5" />
-                        <span>Messages</span>
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => handleMobileNavClick('/dashboard')}
+                      className="flex items-center space-x-3 w-full text-left p-3 rounded-lg transition-colors text-foreground hover:bg-muted"
+                    >
+                      <BarChart3 className="h-5 w-5" />
+                      <span className="font-medium">Dashboard</span>
+                    </button>
 
-                    {/* ✅ LISTING OPTIONS */}
-                    <div className="pt-3 border-t">
-                      <p className="text-xs font-medium text-muted-foreground mb-2 px-3">CREATE LISTING</p>
-                      
-                      <div className="space-y-1">
-                        <button
-                          onClick={() => handleMobileNavClick('/list-vehicle')}
-                          className="flex items-center space-x-3 w-full text-left p-3 rounded-lg text-foreground hover:bg-muted transition-colors"
-                        >
-                          <Car className="h-5 w-5" />
-                          <span>Sell Vehicle</span>
-                        </button>
-
-                        <button
-                          onClick={() => handleMobileNavClick('/list-rental')}
-                          className="flex items-center space-x-3 w-full text-left p-3 rounded-lg text-foreground hover:bg-muted transition-colors"
-                        >
-                          <Car className="h-5 w-5" />
-                          <span>Rent Out Car</span>
-                        </button>
-
-                        <button
-                          onClick={() => handleMobileNavClick('/list-parts')}
-                          className="flex items-center space-x-3 w-full text-left p-3 rounded-lg text-foreground hover:bg-muted transition-colors"
-                        >
-                          <Settings className="h-5 w-5" />
-                          <span>Sell Parts</span>
-                        </button>
-
-                        <button
-                          onClick={() => handleMobileNavClick('/list-services')}
-                          className="flex items-center space-x-3 w-full text-left p-3 rounded-lg text-foreground hover:bg-muted transition-colors"
-                        >
-                          <Settings className="h-5 w-5" />
-                          <span>List Service</span>
-                        </button>
-                      </div>
-                    </div>
-                    
-                    {/* ✅ LOGOUT */}
-                    <div className="pt-3 border-t">
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center space-x-3 w-full text-left p-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
-                      >
-                        <LogOut className="h-5 w-5" />
-                        <span>Sign Out</span>
-                      </button>
-                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center space-x-3 w-full text-left p-3 rounded-lg transition-colors text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                    >
+                      <LogOut className="h-5 w-5" />
+                      <span className="font-medium">Sign Out</span>
+                    </button>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <Button
+                    <button
                       onClick={() => handleMobileNavClick('/auth')}
-                      variant="outline"
-                      className="w-full justify-start"
+                      className="flex items-center space-x-3 w-full text-left p-3 rounded-lg transition-colors text-foreground hover:bg-muted"
                     >
-                      <User className="mr-2 h-4 w-4" />
-                      Sign In
-                    </Button>
-                    <Button
+                      <User className="h-5 w-5" />
+                      <span className="font-medium">Sign In</span>
+                    </button>
+                    <button
                       onClick={() => handleMobileNavClick('/auth')}
-                      className="w-full justify-start bg-primary hover:bg-primary/90"
+                      className="flex items-center space-x-3 w-full text-left p-3 rounded-lg transition-colors bg-primary text-white hover:bg-primary/90"
                     >
-                      <Plus className="mr-2 h-4 w-4" />
-                      Sign Up
-                    </Button>
+                      <Plus className="h-5 w-5" />
+                      <span className="font-medium">Sign Up</span>
+                    </button>
                   </div>
                 )}
               </div>

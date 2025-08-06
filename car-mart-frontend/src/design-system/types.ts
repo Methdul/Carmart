@@ -185,7 +185,7 @@ export const getButtonVariant = (semantic: 'primary' | 'secondary' | 'success' |
 export interface FilterOption {
   id: string;
   label: string;
-  type: 'select' | 'range' | 'checkbox' | 'date' | 'search' | 'multiselect' | 'radio';
+  type: 'search' | 'select' | 'range' | 'checkbox' | 'date' | 'multiselect' | 'radio' | 'number';
   options?: { value: string; label: string; count?: number }[];
   min?: number;
   max?: number;

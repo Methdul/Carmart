@@ -1,13 +1,12 @@
-// src/components/filters/BaseFilter.tsx
-// Fixed version - no empty string values in Select
+// car-mart-frontend/src/components/filters/BaseFilter.tsx
+// ✅ COMPLETE FIXED VERSION - Replace your existing BaseFilter.tsx with this
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Calendar } from '@/components/ui/calendar';
@@ -45,23 +44,37 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
   loading = false
 }) => {
   const [filters, setFilters] = useState<FilterValues>(initialFilters);
+  const [localSearchValues, setLocalSearchValues] = useState<Record<string, string>>({});
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(
     sections.reduce((acc, section) => ({
       ...acc,
       [section.id]: section.defaultOpen ?? true
     }), {})
   );
+  
+  // Refs for search timeouts
+  const searchTimeouts = useRef<Record<string, NodeJS.Timeout>>({});
 
   // Update filters when initialFilters change
   useEffect(() => {
     setFilters(initialFilters);
-  }, [initialFilters]);
+    // Update local search values when initial filters change
+    const searchFilters = sections.reduce((acc, section) => {
+      section.filters.forEach(filter => {
+        if (filter.type === 'search' && initialFilters[filter.id]) {
+          acc[filter.id] = initialFilters[filter.id];
+        }
+      });
+      return acc;
+    }, {} as Record<string, string>);
+    setLocalSearchValues(searchFilters);
+  }, [initialFilters, sections]);
 
   // Update filter value and notify parent
   const updateFilter = (filterId: string, value: any) => {
     const newFilters = { ...filters };
     
-    // ✅ Handle special "all" value - treat as clearing the filter
+    // Handle special "all" value - treat as clearing the filter
     if (value === '' || value === null || value === undefined || value === 'all' ||
         (Array.isArray(value) && value.length === 0)) {
       delete newFilters[filterId];
@@ -76,6 +89,10 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
   // Clear all filters
   const clearFilters = () => {
     setFilters({});
+    setLocalSearchValues({});
+    // Clear all search timeouts
+    Object.values(searchTimeouts.current).forEach(timeout => clearTimeout(timeout));
+    searchTimeouts.current = {};
     onFiltersChange({});
   };
 
@@ -83,6 +100,18 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
   const clearFilter = (filterId: string) => {
     const newFilters = { ...filters };
     delete newFilters[filterId];
+    
+    // Clear local search value if it's a search filter
+    const newLocalSearch = { ...localSearchValues };
+    delete newLocalSearch[filterId];
+    setLocalSearchValues(newLocalSearch);
+    
+    // Clear search timeout for this filter
+    if (searchTimeouts.current[filterId]) {
+      clearTimeout(searchTimeouts.current[filterId]);
+      delete searchTimeouts.current[filterId];
+    }
+    
     setFilters(newFilters);
     onFiltersChange(newFilters);
   };
@@ -97,6 +126,14 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
 
   // Get active filter count
   const activeFilterCount = Object.keys(filters).length;
+
+  // Format rupee for display
+  const formatRupee = (amount: number) => {
+    if (amount >= 10000000) return `₹${(amount / 10000000).toFixed(1)}Cr`;
+    if (amount >= 100000) return `₹${(amount / 100000).toFixed(0)}L`;
+    if (amount >= 1000) return `₹${(amount / 1000).toFixed(0)}K`;
+    return `₹${amount}`;
+  };
 
   // Get filter label for display
   const getFilterLabel = (filterId: string, value: any): string => {
@@ -121,9 +158,9 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
         }
         return value;
       
-      case 'range':
-        if (Array.isArray(value)) {
-          return `₹${value[0].toLocaleString()} - ₹${value[1].toLocaleString()}`;
+      case 'number':
+        if (typeof value === 'number' || !isNaN(Number(value))) {
+          return formatRupee(Number(value));
         }
         return value;
       
@@ -144,23 +181,54 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
 
     switch (filter.type) {
       case 'search':
+        const localValue = localSearchValues[filter.id] !== undefined ? localSearchValues[filter.id] : (value || '');
+        
         return (
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={filter.placeholder || `Search ${filter.label.toLowerCase()}...`}
-              value={value || ''}
-              onChange={(e) => updateFilter(filter.id, e.target.value)}
+              value={localValue}
+              onChange={(e) => {
+                const newValue = e.target.value;
+                
+                // Update local state immediately for smooth typing
+                setLocalSearchValues(prev => ({
+                  ...prev,
+                  [filter.id]: newValue
+                }));
+                
+                // Clear existing timeout
+                if (searchTimeouts.current[filter.id]) {
+                  clearTimeout(searchTimeouts.current[filter.id]);
+                }
+                
+                // Update filter after user stops typing (500ms delay)
+                searchTimeouts.current[filter.id] = setTimeout(() => {
+                  updateFilter(filter.id, newValue);
+                }, 500);
+              }}
               className="pl-10"
               disabled={loading}
             />
           </div>
         );
 
+      case 'number':
+        return (
+          <Input
+            type="number"
+            placeholder={filter.placeholder || `Enter ${filter.label.toLowerCase()}`}
+            value={value || ''}
+            onChange={(e) => updateFilter(filter.id, e.target.value)}
+            disabled={loading}
+          />
+        );
+
       case 'select':
         return (
           <Select 
-            value={value || 'all'} // ✅ Default to 'all' instead of empty string
+            value={value || 'all'}
             onValueChange={(val) => updateFilter(filter.id, val === 'all' ? null : val)}
             disabled={loading}
           >
@@ -168,7 +236,6 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
               <SelectValue placeholder={filter.placeholder || `Select ${filter.label.toLowerCase()}`} />
             </SelectTrigger>
             <SelectContent>
-              {/* ✅ Use 'all' instead of empty string */}
               <SelectItem value="all">All {filter.label}</SelectItem>
               {filter.options?.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
@@ -212,51 +279,24 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
           </RadioGroup>
         );
 
-      case 'range':
-        const rangeValue = value || [filter.min || 0, filter.max || 100];
-        return (
-          <div className="space-y-4">
-            <div className="px-2">
-              <Slider
-                value={rangeValue}
-                onValueChange={(val) => updateFilter(filter.id, val)}
-                max={filter.max || 100}
-                min={filter.min || 0}
-                step={filter.step || 1}
-                className="w-full"
-                disabled={loading}
-              />
-            </div>
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>₹{rangeValue[0].toLocaleString()}</span>
-              <span>₹{rangeValue[1].toLocaleString()}</span>
-            </div>
-          </div>
-        );
-
       case 'checkbox':
-      case 'multiselect':
-        const checkboxValues = value || [];
+        const checkboxValue = Array.isArray(value) ? value : [];
         return (
-          <div className="space-y-3 max-h-48 overflow-y-auto">
+          <div className="space-y-2">
             {filter.options?.map((option) => (
               <div key={option.value} className="flex items-center space-x-2">
                 <Checkbox
                   id={`${filter.id}-${option.value}`}
-                  checked={checkboxValues.includes(option.value)}
+                  checked={checkboxValue.includes(option.value)}
                   onCheckedChange={(checked) => {
-                    const currentValues = checkboxValues;
-                    const newValues = checked
-                      ? [...currentValues, option.value]
-                      : currentValues.filter((v: string) => v !== option.value);
-                    updateFilter(filter.id, newValues);
+                    const newValue = checked
+                      ? [...checkboxValue, option.value]
+                      : checkboxValue.filter(v => v !== option.value);
+                    updateFilter(filter.id, newValue.length > 0 ? newValue : null);
                   }}
                   disabled={loading}
                 />
-                <Label 
-                  htmlFor={`${filter.id}-${option.value}`} 
-                  className="text-sm font-normal flex-1 cursor-pointer"
-                >
+                <Label htmlFor={`${filter.id}-${option.value}`} className="text-sm font-normal flex-1">
                   <div className="flex items-center justify-between">
                     <span>{option.label}</span>
                     {option.count && (
@@ -275,13 +315,16 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
         return (
           <Popover>
             <PopoverTrigger asChild>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start text-left font-normal"
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !value && "text-muted-foreground"
+                )}
                 disabled={loading}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {value ? format(value, 'PPP') : (filter.placeholder || 'Select date')}
+                {value ? format(value, "PPP") : filter.placeholder || "Pick a date"}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -289,6 +332,7 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
                 mode="single"
                 selected={value}
                 onSelect={(date) => updateFilter(filter.id, date)}
+                disabled={loading}
                 initialFocus
               />
             </PopoverContent>
@@ -298,8 +342,7 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
       default:
         return (
           <Input
-            type="text"
-            placeholder={filter.placeholder}
+            placeholder={filter.placeholder || `Enter ${filter.label.toLowerCase()}`}
             value={value || ''}
             onChange={(e) => updateFilter(filter.id, e.target.value)}
             disabled={loading}
@@ -309,15 +352,13 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
   };
 
   return (
-    <div className={cn("space-y-4", className)}>
-      {/* Active Filters */}
+    <div className={cn("space-y-1", className)}>
+      {/* Active Filters Display */}
       {showActiveFilters && activeFilterCount > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium">
-                Active Filters ({activeFilterCount})
-              </CardTitle>
+        <Card className="shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium">Active Filters</span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -325,24 +366,16 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
                 className="h-auto p-1 text-muted-foreground hover:text-foreground"
                 disabled={loading}
               >
-                Clear All
+                <RotateCcw className="h-3 w-3" />
               </Button>
             </div>
-          </CardHeader>
-          <CardContent className="pt-0">
             <div className="flex flex-wrap gap-2">
               {Object.entries(filters).map(([filterId, filterValue]) => (
-                <Badge
-                  key={filterId}
-                  variant="secondary"
-                  className="flex items-center gap-1 px-2 py-1"
-                >
-                  <span className="text-xs">
-                    {getFilterLabel(filterId, filterValue)}
-                  </span>
+                <Badge key={filterId} variant="secondary" className="text-xs">
+                  {getFilterLabel(filterId, filterValue)}
                   <button
                     onClick={() => clearFilter(filterId)}
-                    className="ml-1 hover:bg-destructive hover:text-destructive-foreground rounded-full p-0.5"
+                    className="ml-2 hover:text-destructive"
                     disabled={loading}
                   >
                     <X className="h-3 w-3" />
