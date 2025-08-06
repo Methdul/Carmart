@@ -6,21 +6,6 @@ import { FilterSection } from '@/design-system/types';
 
 export const partFilterSections: FilterSection[] = [
   {
-    id: 'search',
-    title: 'Search',
-    icon: Package,
-    collapsible: false,
-    priority: 1,
-    filters: [
-      {
-        id: 'search',
-        label: 'Search parts',
-        type: 'search',
-        placeholder: 'Part name, brand, or part number...'
-      }
-    ]
-  },
-  {
     id: 'price',
     title: 'Price Range',
     icon: DollarSign,

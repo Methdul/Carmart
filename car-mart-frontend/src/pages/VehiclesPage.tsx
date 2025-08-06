@@ -2,7 +2,7 @@
 // ikman.lk style - single column list layout
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams} from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SortAsc, Car } from 'lucide-react';
@@ -308,6 +308,7 @@ const VehiclesPage = () => {
         subtitle={`${totalCount.toLocaleString()} vehicles available`}
         headerActions={headerActions}
       >
+
         {/* Results Content */}
         {loading ? (
           <LoadingGrid count={12} />

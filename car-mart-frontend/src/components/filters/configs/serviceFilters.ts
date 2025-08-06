@@ -6,21 +6,6 @@ import { FilterSection } from '@/design-system/types';
 
 export const serviceFilterSections: FilterSection[] = [
   {
-    id: 'search',
-    title: 'Search',
-    icon: Wrench,
-    collapsible: false,
-    priority: 1,
-    filters: [
-      {
-        id: 'search',
-        label: 'Search services',
-        type: 'search',
-        placeholder: 'Service type or provider...'
-      }
-    ]
-  },
-  {
     id: 'price',
     title: 'Price Range',
     icon: DollarSign,

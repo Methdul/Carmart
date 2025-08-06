@@ -49,6 +49,7 @@ const Header = () => {
   const [authChecked, setAuthChecked] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const pathname = location.pathname; 
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const searchBarRef = useRef<HTMLDivElement>(null); // ✅ NEW: Search bar ref
 
@@ -139,21 +140,26 @@ const Header = () => {
   }, [searchBarOpen]);
 
   // Handle search submission
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      const redirectPath = getSearchRedirectPath();
-      
-      // Navigate to the appropriate search page with the query
-      navigate(`${redirectPath}?q=${encodeURIComponent(searchQuery.trim())}`);
-      
-      // Clear the search and close mobile elements
-      setSearchQuery('');
-      setSearchBarOpen(false);
-      setMobileMenuOpen(false);
-      
-      console.log(`🔍 Navigating to: ${redirectPath}?q=${searchQuery.trim()}`);
+    if (!searchQuery.trim()) return;
+    
+    // Navigate to appropriate page based on current location
+    if (pathname.includes('/parts')) {
+      navigate(`/parts?search=${encodeURIComponent(searchQuery)}`);
+    } else if (pathname.includes('/services')) {
+      navigate(`/services?search=${encodeURIComponent(searchQuery)}`);
+    } else {
+      // Default to vehicles page
+      navigate(`/vehicles?search=${encodeURIComponent(searchQuery)}`);
     }
+    
+    // Close mobile menu and search bar
+    setMobileMenuOpen(false);
+    setSearchBarOpen(false);
+    
+    // Clear search input
+    setSearchQuery('');
   };
 
   const handleLogout = () => {

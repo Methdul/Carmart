@@ -6,21 +6,6 @@ import { FilterSection } from '@/design-system/types';
 
 export const rentalFilterSections: FilterSection[] = [
   {
-    id: 'search',
-    title: 'Search',
-    icon: Car,
-    collapsible: false,
-    priority: 1,
-    filters: [
-      {
-        id: 'search',
-        label: 'Search rental vehicles',
-        type: 'search',
-        placeholder: 'Car name, model, or location...'
-      }
-    ]
-  },
-  {
     id: 'price',
     title: 'Daily Rate',
     icon: DollarSign,

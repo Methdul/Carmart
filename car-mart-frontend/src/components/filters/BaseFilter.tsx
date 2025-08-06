@@ -53,20 +53,29 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
   const activeFilterCount = Object.keys(filters).length;
 
   // Apply all filters
+    // Apply all filters - PRESERVE SEARCH
   const handleApply = () => {
-    const newFilters = { ...filters };
+    const newFilters = { ...filters }; // This preserves search and all existing filters
+    
+    // Apply local changes
     Object.entries(localValues).forEach(([filterId, value]) => {
-      if (value === '' || value === null || value === undefined || value === 'all' ||
-          (Array.isArray(value) && value.length === 0)) {
+        if (value === '' || value === null || value === undefined || value === 'all' ||
+            (Array.isArray(value) && value.length === 0)) {
         delete newFilters[filterId];
-      } else {
+        } else {
         newFilters[filterId] = value;
-      }
+        }
     });
+    
+    // ✅ Ensure search is preserved if it exists in original filters
+    if (filters.search && !newFilters.search) {
+        newFilters.search = filters.search;
+    }
+    
     setFilters(newFilters);
     setLocalValues({});
     onFiltersChange(newFilters);
-  };
+    };
 
   // Clear all
   const handleClear = () => {
@@ -92,7 +101,7 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
     return localValues[filterId] !== undefined ? localValues[filterId] : filters[filterId];
   };
 
-  // Remove specific filter
+  // Remove specific filter - ALLOW MANUAL SEARCH REMOVAL
   const removeFilter = (filterId: string) => {
     const newFilters = { ...filters };
     const newLocal = { ...localValues };
@@ -101,10 +110,15 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
     setFilters(newFilters);
     setLocalValues(newLocal);
     onFiltersChange(newFilters);
-  };
+    };
 
   // Get filter display label
   const getFilterLabel = (filterId: string, value: any): string => {
+    // ✅ Special case for search filter (removed from config but still used)
+    if (filterId === 'search') {
+      return `Search: ${value}`;
+    }
+    
     const section = sections.find(s => s.filters.some(f => f.id === filterId));
     const filter = section?.filters.find(f => f.id === filterId);
     if (!filter) return '';

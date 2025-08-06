@@ -6,21 +6,6 @@ import { FilterSection } from '@/design-system/types';
 
 export const vehicleFilterSections: FilterSection[] = [
   {
-    id: 'search',
-    title: 'Search',
-    icon: Car,
-    collapsible: false,
-    priority: 1,
-    filters: [
-      {
-        id: 'search',
-        label: 'Search vehicles',
-        type: 'search',
-        placeholder: 'Car name, model, or keyword...'
-      }
-    ]
-  },
-  {
     id: 'price',
     title: 'Price Range',
     icon: DollarSign,
