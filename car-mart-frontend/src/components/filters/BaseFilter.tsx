@@ -1,7 +1,7 @@
 // car-mart-frontend/src/components/filters/BaseFilter.tsx
-// ✅ COMPLETE FIXED VERSION - Replace your existing BaseFilter.tsx with this
+// ✅ PROFESSIONAL & COMPACT VERSION - ALL FILTERS VISIBLE
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,16 +11,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { 
-  ChevronDown, 
-  ChevronUp, 
-  RotateCcw, 
-  Search, 
   CalendarIcon,
   X,
-  Filter
+  Filter,
+  RotateCcw,
+  Check
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FilterSection, FilterOption, FilterValues } from '@/design-system/types';
@@ -44,102 +42,71 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
   loading = false
 }) => {
   const [filters, setFilters] = useState<FilterValues>(initialFilters);
-  const [localSearchValues, setLocalSearchValues] = useState<Record<string, string>>({});
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>(
-    sections.reduce((acc, section) => ({
-      ...acc,
-      [section.id]: section.defaultOpen ?? true
-    }), {})
-  );
-  
-  // Refs for search timeouts
-  const searchTimeouts = useRef<Record<string, NodeJS.Timeout>>({});
+  const [localValues, setLocalValues] = useState<Record<string, any>>({});
 
-  // Update filters when initialFilters change
   useEffect(() => {
     setFilters(initialFilters);
-    // Update local search values when initial filters change
-    const searchFilters = sections.reduce((acc, section) => {
-      section.filters.forEach(filter => {
-        if (filter.type === 'search' && initialFilters[filter.id]) {
-          acc[filter.id] = initialFilters[filter.id];
-        }
-      });
-      return acc;
-    }, {} as Record<string, string>);
-    setLocalSearchValues(searchFilters);
-  }, [initialFilters, sections]);
+    setLocalValues({});
+  }, [initialFilters]);
 
-  // Update filter value and notify parent
-  const updateFilter = (filterId: string, value: any) => {
+  const hasChanges = Object.keys(localValues).length > 0;
+  const activeFilterCount = Object.keys(filters).length;
+
+  // Apply all filters
+  const handleApply = () => {
     const newFilters = { ...filters };
-    
-    // Handle special "all" value - treat as clearing the filter
-    if (value === '' || value === null || value === undefined || value === 'all' ||
-        (Array.isArray(value) && value.length === 0)) {
-      delete newFilters[filterId];
-    } else {
-      newFilters[filterId] = value;
-    }
-    
+    Object.entries(localValues).forEach(([filterId, value]) => {
+      if (value === '' || value === null || value === undefined || value === 'all' ||
+          (Array.isArray(value) && value.length === 0)) {
+        delete newFilters[filterId];
+      } else {
+        newFilters[filterId] = value;
+      }
+    });
     setFilters(newFilters);
+    setLocalValues({});
     onFiltersChange(newFilters);
   };
 
-  // Clear all filters
-  const clearFilters = () => {
+  // Clear all
+  const handleClear = () => {
     setFilters({});
-    setLocalSearchValues({});
-    // Clear all search timeouts
-    Object.values(searchTimeouts.current).forEach(timeout => clearTimeout(timeout));
-    searchTimeouts.current = {};
+    setLocalValues({});
     onFiltersChange({});
   };
 
-  // Clear specific filter
-  const clearFilter = (filterId: string) => {
-    const newFilters = { ...filters };
-    delete newFilters[filterId];
-    
-    // Clear local search value if it's a search filter
-    const newLocalSearch = { ...localSearchValues };
-    delete newLocalSearch[filterId];
-    setLocalSearchValues(newLocalSearch);
-    
-    // Clear search timeout for this filter
-    if (searchTimeouts.current[filterId]) {
-      clearTimeout(searchTimeouts.current[filterId]);
-      delete searchTimeouts.current[filterId];
+  // Update local value
+  const updateLocal = (filterId: string, value: any) => {
+    if (value === '' || value === null || value === undefined || value === 'all' ||
+        (Array.isArray(value) && value.length === 0)) {
+      const newLocal = { ...localValues };
+      delete newLocal[filterId];
+      setLocalValues(newLocal);
+    } else {
+      setLocalValues(prev => ({ ...prev, [filterId]: value }));
     }
-    
+  };
+
+  // Get current value
+  const getCurrentValue = (filterId: string) => {
+    return localValues[filterId] !== undefined ? localValues[filterId] : filters[filterId];
+  };
+
+  // Remove specific filter
+  const removeFilter = (filterId: string) => {
+    const newFilters = { ...filters };
+    const newLocal = { ...localValues };
+    delete newFilters[filterId];
+    delete newLocal[filterId];
     setFilters(newFilters);
+    setLocalValues(newLocal);
     onFiltersChange(newFilters);
   };
 
-  // Toggle section open/closed
-  const toggleSection = (sectionId: string) => {
-    setOpenSections(prev => ({
-      ...prev,
-      [sectionId]: !prev[sectionId]
-    }));
-  };
-
-  // Get active filter count
-  const activeFilterCount = Object.keys(filters).length;
-
-  // Format rupee for display
-  const formatRupee = (amount: number) => {
-    if (amount >= 10000000) return `₹${(amount / 10000000).toFixed(1)}Cr`;
-    if (amount >= 100000) return `₹${(amount / 100000).toFixed(0)}L`;
-    if (amount >= 1000) return `₹${(amount / 1000).toFixed(0)}K`;
-    return `₹${amount}`;
-  };
-
-  // Get filter label for display
+  // Get filter display label
   const getFilterLabel = (filterId: string, value: any): string => {
     const section = sections.find(s => s.filters.some(f => f.id === filterId));
     const filter = section?.filters.find(f => f.id === filterId);
-    
     if (!filter) return '';
 
     switch (filter.type) {
@@ -147,9 +114,7 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
       case 'radio':
         const option = filter.options?.find(opt => opt.value === value);
         return option?.label || value;
-      
       case 'checkbox':
-      case 'multiselect':
         if (Array.isArray(value)) {
           return value.map(v => {
             const opt = filter.options?.find(opt => opt.value === v);
@@ -157,71 +122,39 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
           }).join(', ');
         }
         return value;
-      
       case 'number':
         if (typeof value === 'number' || !isNaN(Number(value))) {
-          return formatRupee(Number(value));
+          const num = Number(value);
+          if (num >= 100000) return `₹${(num / 100000).toFixed(0)}L`;
+          if (num >= 1000) return `₹${(num / 1000).toFixed(0)}K`;
+          return `₹${num}`;
         }
         return value;
-      
       case 'date':
-        if (value instanceof Date) {
-          return format(value, 'MMM dd, yyyy');
-        }
+        if (value instanceof Date) return format(value, 'MMM dd');
         return value;
-      
       default:
         return value?.toString() || '';
     }
   };
 
-  // Render individual filter component
+  // Render compact filter input
   const renderFilter = (filter: FilterOption) => {
-    const value = filters[filter.id];
+    const value = getCurrentValue(filter.id);
+    const hasValue = value !== undefined && value !== null && value !== '';
 
     switch (filter.type) {
-      case 'search':
-        const localValue = localSearchValues[filter.id] !== undefined ? localSearchValues[filter.id] : (value || '');
-        
-        return (
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={filter.placeholder || `Search ${filter.label.toLowerCase()}...`}
-              value={localValue}
-              onChange={(e) => {
-                const newValue = e.target.value;
-                
-                // Update local state immediately for smooth typing
-                setLocalSearchValues(prev => ({
-                  ...prev,
-                  [filter.id]: newValue
-                }));
-                
-                // Clear existing timeout
-                if (searchTimeouts.current[filter.id]) {
-                  clearTimeout(searchTimeouts.current[filter.id]);
-                }
-                
-                // Update filter after user stops typing (500ms delay)
-                searchTimeouts.current[filter.id] = setTimeout(() => {
-                  updateFilter(filter.id, newValue);
-                }, 500);
-              }}
-              className="pl-10"
-              disabled={loading}
-            />
-          </div>
-        );
-
       case 'number':
         return (
           <Input
             type="number"
-            placeholder={filter.placeholder || `Enter ${filter.label.toLowerCase()}`}
+            placeholder={filter.placeholder || "Amount"}
             value={value || ''}
-            onChange={(e) => updateFilter(filter.id, e.target.value)}
-            disabled={loading}
+            onChange={(e) => updateLocal(filter.id, e.target.value)}
+            className={cn(
+              "h-8 text-xs",
+              hasValue && "border-primary bg-primary/5"
+            )}
           />
         );
 
@@ -229,24 +162,19 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
         return (
           <Select 
             value={value || 'all'}
-            onValueChange={(val) => updateFilter(filter.id, val === 'all' ? null : val)}
-            disabled={loading}
+            onValueChange={(val) => updateLocal(filter.id, val === 'all' ? null : val)}
           >
-            <SelectTrigger>
-              <SelectValue placeholder={filter.placeholder || `Select ${filter.label.toLowerCase()}`} />
+            <SelectTrigger className={cn(
+              "h-8 text-xs",
+              hasValue && "border-primary bg-primary/5"
+            )}>
+              <SelectValue placeholder={`Select ${filter.label}`} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All {filter.label}</SelectItem>
-              {filter.options?.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  <div className="flex items-center justify-between w-full">
-                    <span>{option.label}</span>
-                    {option.count && (
-                      <span className="text-xs text-muted-foreground ml-2">
-                        ({option.count})
-                      </span>
-                    )}
-                  </div>
+              <SelectItem value="all" className="text-xs">All</SelectItem>
+              {filter.options?.slice(0, 8).map((option) => (
+                <SelectItem key={option.value} value={option.value} className="text-xs">
+                  {option.label}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -254,60 +182,63 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
         );
 
       case 'radio':
+        const radioValue = value || '';
         return (
-          <RadioGroup
-            value={value || ''}
-            onValueChange={(val) => updateFilter(filter.id, val)}
-            className="space-y-2"
-            disabled={loading}
-          >
-            {filter.options?.map((option) => (
-              <div key={option.value} className="flex items-center space-x-2">
-                <RadioGroupItem value={option.value} id={`${filter.id}-${option.value}`} />
-                <Label htmlFor={`${filter.id}-${option.value}`} className="text-sm font-normal flex-1">
-                  <div className="flex items-center justify-between">
-                    <span>{option.label}</span>
-                    {option.count && (
-                      <span className="text-xs text-muted-foreground">
-                        ({option.count})
-                      </span>
-                    )}
-                  </div>
-                </Label>
-              </div>
+          <div className="grid grid-cols-2 gap-1">
+            {filter.options?.slice(0, 4).map((option) => (
+              <label
+                key={option.value}
+                className={cn(
+                  "flex items-center space-x-1 p-1.5 rounded text-xs cursor-pointer transition-colors",
+                  "hover:bg-muted/50",
+                  radioValue === option.value && "bg-primary text-primary-foreground"
+                )}
+              >
+                <input
+                  type="radio"
+                  name={filter.id}
+                  value={option.value}
+                  checked={radioValue === option.value}
+                  onChange={(e) => updateLocal(filter.id, e.target.value)}
+                  className="hidden"
+                />
+                <span className="truncate">{option.label}</span>
+              </label>
             ))}
-          </RadioGroup>
+          </div>
         );
 
       case 'checkbox':
         const checkboxValue = Array.isArray(value) ? value : [];
         return (
-          <div className="space-y-2">
-            {filter.options?.map((option) => (
-              <div key={option.value} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`${filter.id}-${option.value}`}
-                  checked={checkboxValue.includes(option.value)}
-                  onCheckedChange={(checked) => {
-                    const newValue = checked
-                      ? [...checkboxValue, option.value]
-                      : checkboxValue.filter(v => v !== option.value);
-                    updateFilter(filter.id, newValue.length > 0 ? newValue : null);
-                  }}
-                  disabled={loading}
-                />
-                <Label htmlFor={`${filter.id}-${option.value}`} className="text-sm font-normal flex-1">
-                  <div className="flex items-center justify-between">
-                    <span>{option.label}</span>
-                    {option.count && (
-                      <span className="text-xs text-muted-foreground">
-                        ({option.count})
-                      </span>
-                    )}
-                  </div>
-                </Label>
-              </div>
-            ))}
+          <div className="grid grid-cols-2 gap-1">
+            {filter.options?.slice(0, 6).map((option) => {
+              const isChecked = checkboxValue.includes(option.value);
+              return (
+                <label
+                  key={option.value}
+                  className={cn(
+                    "flex items-center space-x-1 p-1.5 rounded text-xs cursor-pointer transition-colors",
+                    "hover:bg-muted/50",
+                    isChecked && "bg-primary text-primary-foreground"
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={(e) => {
+                      const newValue = e.target.checked
+                        ? [...checkboxValue, option.value]
+                        : checkboxValue.filter(v => v !== option.value);
+                      updateLocal(filter.id, newValue.length > 0 ? newValue : null);
+                    }}
+                    className="hidden"
+                  />
+                  {isChecked && <Check className="h-2 w-2" />}
+                  <span className="truncate">{option.label}</span>
+                </label>
+              );
+            })}
           </div>
         );
 
@@ -318,21 +249,20 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
               <Button
                 variant="outline"
                 className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !value && "text-muted-foreground"
+                  "w-full justify-start text-left font-normal h-8 text-xs",
+                  !value && "text-muted-foreground",
+                  hasValue && "border-primary bg-primary/5"
                 )}
-                disabled={loading}
               >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {value ? format(value, "PPP") : filter.placeholder || "Pick a date"}
+                <CalendarIcon className="mr-1 h-3 w-3" />
+                {value ? format(value, "MMM dd, yyyy") : "Date"}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
               <Calendar
                 mode="single"
                 selected={value}
-                onSelect={(date) => updateFilter(filter.id, date)}
-                disabled={loading}
+                onSelect={(date) => updateLocal(filter.id, date)}
                 initialFocus
               />
             </PopoverContent>
@@ -342,137 +272,145 @@ export const BaseFilter: React.FC<BaseFilterProps> = ({
       default:
         return (
           <Input
-            placeholder={filter.placeholder || `Enter ${filter.label.toLowerCase()}`}
+            placeholder={filter.placeholder || "Enter value"}
             value={value || ''}
-            onChange={(e) => updateFilter(filter.id, e.target.value)}
-            disabled={loading}
+            onChange={(e) => updateLocal(filter.id, e.target.value)}
+            className={cn(
+              "h-8 text-xs",
+              hasValue && "border-primary bg-primary/5"
+            )}
           />
         );
     }
   };
 
   return (
-    <div className={cn("space-y-1", className)}>
-      {/* Active Filters Display */}
-      {showActiveFilters && activeFilterCount > 0 && (
-        <Card className="shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium">Active Filters</span>
+    <div className={cn("h-screen flex flex-col bg-background border-r border-border shadow-sm", className)}>
+      {/* Header with Apply/Clear */}
+      <div className="border-b bg-background">
+        <div className="p-4 pb-3">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-foreground" />
+              <h2 className="font-semibold text-sm text-foreground">Filters</h2>
+              {activeFilterCount > 0 && (
+                <Badge variant="secondary" className="text-xs h-4 px-1.5">
+                  {activeFilterCount}
+                </Badge>
+              )}
+            </div>
+            <div className="flex gap-2">
               <Button
-                variant="ghost"
+                onClick={handleApply}
+                disabled={!hasChanges || loading}
                 size="sm"
-                onClick={clearFilters}
-                className="h-auto p-1 text-muted-foreground hover:text-foreground"
-                disabled={loading}
+                className="text-xs h-7 px-3 font-medium"
               >
-                <RotateCcw className="h-3 w-3" />
+                Apply
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleClear}
+                disabled={activeFilterCount === 0 && !hasChanges}
+                size="sm"
+                className="text-xs h-7 px-2"
+              >
+                <RotateCcw className="w-3 h-3" />
               </Button>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {Object.entries(filters).map(([filterId, filterValue]) => (
-                <Badge key={filterId} variant="secondary" className="text-xs">
-                  {getFilterLabel(filterId, filterValue)}
-                  <button
-                    onClick={() => clearFilter(filterId)}
-                    className="ml-2 hover:text-destructive"
-                    disabled={loading}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
 
-      {/* Filter Sections */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              Filters
-            </CardTitle>
+          {/* Status & Active Filters */}
+          {hasChanges && (
+            <div className="flex items-center gap-2 mb-3 px-2 py-1.5 bg-amber-50 border border-amber-200 rounded text-xs text-amber-700">
+              <div className="h-1.5 w-1.5 bg-amber-500 rounded-full"></div>
+              <span>Changes pending</span>
+            </div>
+          )}
+          
+          {showActiveFilters && activeFilterCount > 0 && (
+            <div className="space-y-2">
+              <span className="text-xs font-medium text-muted-foreground">Active Filters:</span>
+              <div className="flex flex-wrap gap-1">
+                {Object.entries(filters).map(([filterId, filterValue]) => (
+                  <Badge 
+                    key={filterId} 
+                    variant="outline" 
+                    className="text-xs h-5 px-2 bg-blue-50 border-blue-200 text-blue-700"
+                  >
+                    {getFilterLabel(filterId, filterValue)}
+                    <button
+                      onClick={() => removeFilter(filterId)}
+                      className="ml-1 hover:text-red-600 transition-colors"
+                    >
+                      <X className="h-2 w-2" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Filter Content - Clean Grid Layout */}
+      <div className="flex-1 overflow-y-auto bg-gray-50/30">
+        <div className="p-4 space-y-6">
+          {sections.map((section, index) => (
+            <div key={section.id} className="bg-white border border-border rounded-lg shadow-sm">
+              <div className="p-4">
+                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-100">
+                  {section.icon && <section.icon className="h-4 w-4 text-gray-600" />}
+                  <h3 className="font-medium text-sm text-gray-900">{section.title}</h3>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {section.filters
+                    .filter(filter => filter.type !== 'search')
+                    .map((filter) => (
+                      <div key={filter.id} className="space-y-2">
+                        <Label className="text-xs font-medium text-gray-700">
+                          {filter.label}
+                          {filter.required && (
+                            <span className="text-red-500 ml-1">*</span>
+                          )}
+                        </Label>
+                        {renderFilter(filter)}
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer with Quick Actions */}
+      <div className="border-t bg-white p-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-gray-600">
+            {hasChanges ? (
+              <span className="text-amber-600 font-medium">
+                {Object.keys(localValues).length} change{Object.keys(localValues).length !== 1 ? 's' : ''} pending
+              </span>
+            ) : (
+              <span>
+                {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} active
+              </span>
+            )}
+          </span>
+          {(hasChanges || activeFilterCount > 0) && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={clearFilters}
-              className="text-muted-foreground hover:text-foreground"
-              disabled={loading || activeFilterCount === 0}
+              onClick={hasChanges ? handleApply : handleClear}
+              className="text-xs h-6 px-3 font-medium"
             >
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Reset
+              {hasChanges ? "Apply All" : "Clear All"}
             </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {sections
-            .sort((a, b) => (a.priority || 0) - (b.priority || 0))
-            .map((section) => (
-            <div key={section.id}>
-              {section.collapsible ? (
-                <Collapsible
-                  open={openSections[section.id]}
-                  onOpenChange={() => toggleSection(section.id)}
-                >
-                  <CollapsibleTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-between p-0 h-auto font-semibold hover:no-underline"
-                      disabled={loading}
-                    >
-                      <div className="flex items-center gap-2">
-                        {section.icon && <section.icon className="h-4 w-4" />}
-                        {section.title}
-                      </div>
-                      {openSections[section.id] ? (
-                        <ChevronUp className="h-4 w-4" />
-                      ) : (
-                        <ChevronDown className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="space-y-4 mt-4">
-                    {section.filters.map((filter) => (
-                      <div key={filter.id} className="space-y-2">
-                        <Label className="text-sm font-medium flex items-center justify-between">
-                          {filter.label}
-                          {filter.required && (
-                            <span className="text-destructive">*</span>
-                          )}
-                        </Label>
-                        {renderFilter(filter)}
-                      </div>
-                    ))}
-                  </CollapsibleContent>
-                </Collapsible>
-              ) : (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 font-semibold">
-                    {section.icon && <section.icon className="h-4 w-4" />}
-                    {section.title}
-                  </div>
-                  <div className="space-y-4">
-                    {section.filters.map((filter) => (
-                      <div key={filter.id} className="space-y-2">
-                        <Label className="text-sm font-medium flex items-center justify-between">
-                          {filter.label}
-                          {filter.required && (
-                            <span className="text-destructive">*</span>
-                          )}
-                        </Label>
-                        {renderFilter(filter)}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
