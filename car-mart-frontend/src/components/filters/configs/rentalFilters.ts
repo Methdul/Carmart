@@ -1,34 +1,34 @@
 // car-mart-frontend/src/components/filters/configs/rentalFilters.ts
-// ✅ SIMPLE VERSION - Just case fixes, same structure as vehicle filters
+// ✅ FIXED VERSION - Uses exact database values from check-rentals-values.js
 
-import { Car, DollarSign, Settings, Calendar } from 'lucide-react';
+import { Car, DollarSign, Settings, MapPin, Calendar } from 'lucide-react';
 import { FilterSection } from '@/design-system/types';
 
 export const rentalFilterSections: FilterSection[] = [
   {
     id: 'price',
-    title: 'Daily Rate',
+    title: 'Price Range',
     icon: DollarSign,
     collapsible: true,
     defaultOpen: true,
     priority: 2,
     filters: [
       {
-        id: 'minDailyRate',
+        id: 'minPrice',
         label: 'Min Daily Rate',
         type: 'number',
-        placeholder: 'Minimum rate (₹)'
+        placeholder: 'Minimum daily rate (₹)'
       },
       {
-        id: 'maxDailyRate',
+        id: 'maxPrice',
         label: 'Max Daily Rate',
         type: 'number',
-        placeholder: 'Maximum rate (₹)'
+        placeholder: 'Maximum daily rate (₹)'
       }
     ]
   },
   {
-    id: 'basic',
+    id: 'vehicle',
     title: 'Vehicle Details',
     icon: Car,
     collapsible: true,
@@ -37,42 +37,51 @@ export const rentalFilterSections: FilterSection[] = [
     filters: [
       {
         id: 'make',
-        label: 'Brand',
+        label: 'Make',
         type: 'select',
-        placeholder: 'Select brand',
+        placeholder: 'Select make',
         options: [
-          // ✅ FIXED VALUES - Match your database exactly
-          { value: 'Honda', label: 'Honda', count: 15 },
-          { value: 'Toyota', label: 'Toyota', count: 12 },
-          { value: 'BMW', label: 'BMW', count: 8 },
-          { value: 'Mercedes-Benz', label: 'Mercedes-Benz', count: 6 },
-          { value: 'Audi', label: 'Audi', count: 5 },
-          { value: 'Nissan', label: 'Nissan', count: 4 }
+          // ✅ EXACT values from your database
+          { value: 'BMW', label: 'BMW', count: 1 },
+          { value: 'Honda', label: 'Honda', count: 1 },
+          { value: 'Mercedes-Benz', label: 'Mercedes-Benz', count: 1 },
+          { value: 'Nissan', label: 'Nissan', count: 1 },
+          { value: 'Suzuki', label: 'Suzuki', count: 1 },
+          { value: 'Toyota', label: 'Toyota', count: 1 }
         ]
       },
       {
         id: 'bodyType',
-        label: 'Vehicle Type',
+        label: 'Body Type',
         type: 'select',
-        placeholder: 'Select vehicle type',
+        placeholder: 'Select body type',
         options: [
-          // ✅ FIXED VALUES - Match your database exactly
-          { value: 'Sedan', label: 'Sedan', count: 25 },
-          { value: 'SUV', label: 'SUV', count: 18 },
-          { value: 'Hatchback', label: 'Hatchback', count: 12 }
+          // ✅ EXACT values from your database
+          { value: 'Hatchback', label: 'Hatchback', count: 2 },
+          { value: 'SUV', label: 'SUV', count: 1 },
+          { value: 'Sedan', label: 'Sedan', count: 3 }
         ]
-      },
+      }
+    ]
+  },
+  {
+    id: 'specs',
+    title: 'Engine & Transmission',
+    icon: Settings,
+    collapsible: true,
+    defaultOpen: false,
+    priority: 4,
+    filters: [
       {
         id: 'fuelType',
         label: 'Fuel Type',
         type: 'select',
         placeholder: 'Select fuel type',
         options: [
-          // ✅ FIXED VALUES - Match your database exactly
-          { value: 'Petrol', label: 'Petrol', count: 45 },
-          { value: 'Diesel', label: 'Diesel', count: 15 },
-          { value: 'Hybrid', label: 'Hybrid', count: 6 },
-          { value: 'Electric', label: 'Electric', count: 4 }
+          // ✅ EXACT values from your database
+          { value: 'Electric', label: 'Electric', count: 1 },
+          { value: 'Hybrid', label: 'Hybrid', count: 1 },
+          { value: 'Petrol', label: 'Petrol', count: 4 }
         ]
       },
       {
@@ -81,75 +90,56 @@ export const rentalFilterSections: FilterSection[] = [
         type: 'select',
         placeholder: 'Select transmission',
         options: [
-          // ✅ FIXED VALUES - Match your database exactly
-          { value: 'Manual', label: 'Manual', count: 25 },
-          { value: 'Automatic', label: 'Automatic', count: 38 },
-          { value: 'CVT', label: 'CVT', count: 7 }
+          // ✅ EXACT values from your database
+          { value: 'Automatic', label: 'Automatic', count: 5 },
+          { value: 'Manual', label: 'Manual', count: 1 }
         ]
       }
     ]
   },
   {
-    id: 'rental',
-    title: 'Rental Terms',
-    icon: Calendar,
-    collapsible: true,
-    defaultOpen: false,
-    priority: 4,
-    filters: [
-      {
-        id: 'rentalType',
-        label: 'Rental Duration',
-        type: 'select',
-        placeholder: 'Select rental type',
-        options: [
-          { value: 'Daily', label: 'Daily Rental', count: 45 },
-          { value: 'Weekly', label: 'Weekly Rental', count: 25 },
-          { value: 'Monthly', label: 'Monthly Rental', count: 18 },
-          { value: 'Long Term', label: 'Long Term', count: 5 }
-        ]
-      },
-      {
-        id: 'seatingCapacity',
-        label: 'Seating',
-        type: 'select',
-        placeholder: 'Select seating capacity',
-        options: [
-          { value: '2', label: '2 Seater', count: 5 },
-          { value: '4', label: '4 Seater', count: 18 },
-          { value: '5', label: '5 Seater', count: 35 },
-          { value: '7', label: '7 Seater', count: 12 }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'features',
-    title: 'Features',
-    icon: Settings,
+    id: 'location',
+    title: 'Location',
+    icon: MapPin,
     collapsible: true,
     defaultOpen: false,
     priority: 5,
     filters: [
       {
-        id: 'airConditioning',
-        label: 'Air Conditioning',
+        id: 'location',
+        label: 'Pickup Location',
         type: 'select',
-        placeholder: 'AC availability',
+        placeholder: 'Select location',
         options: [
-          { value: 'Yes', label: 'AC Available', count: 62 },
-          { value: 'No', label: 'No AC', count: 8 }
+          // ✅ EXACT values from your database
+          { value: 'Colombo 03', label: 'Colombo 03', count: 1 },
+          { value: 'Colombo 07', label: 'Colombo 07', count: 1 },
+          { value: 'Galle', label: 'Galle', count: 1 },
+          { value: 'Kandy', label: 'Kandy', count: 1 },
+          { value: 'Negombo', label: 'Negombo', count: 1 }
         ]
-      },
+      }
+    ]
+  },
+  {
+    id: 'services',
+    title: 'Additional Services',
+    icon: Calendar,
+    collapsible: true,
+    defaultOpen: false,
+    priority: 6,
+    filters: [
       {
         id: 'deliveryAvailable',
-        label: 'Delivery',
-        type: 'select',
-        placeholder: 'Delivery service',
-        options: [
-          { value: 'Yes', label: 'Delivery Available', count: 45 },
-          { value: 'No', label: 'Pickup Only', count: 25 }
-        ]
+        label: 'Delivery Available',
+        type: 'checkbox',
+        placeholder: 'Delivery to your location'
+      },
+      {
+        id: 'insuranceIncluded',
+        label: 'Insurance Included',
+        type: 'checkbox',
+        placeholder: 'Insurance coverage included'
       }
     ]
   }
