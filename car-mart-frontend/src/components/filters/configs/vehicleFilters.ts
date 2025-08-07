@@ -1,5 +1,5 @@
 // car-mart-frontend/src/components/filters/configs/vehicleFilters.ts
-// ✅ COMPLETE SIMPLIFIED VERSION - Replace your existing file
+// ✅ FIXED VERSION - Matches your exact database values
 
 import { Car, DollarSign, Settings } from 'lucide-react';
 import { FilterSection } from '@/design-system/types';
@@ -41,16 +41,13 @@ export const vehicleFilterSections: FilterSection[] = [
         type: 'select',
         placeholder: 'Select brand',
         options: [
-          { value: 'maruti-suzuki', label: 'Maruti Suzuki', count: 45 },
-          { value: 'hyundai', label: 'Hyundai', count: 38 },
-          { value: 'tata', label: 'Tata', count: 32 },
-          { value: 'mahindra', label: 'Mahindra', count: 28 },
-          { value: 'honda', label: 'Honda', count: 25 },
-          { value: 'toyota', label: 'Toyota', count: 22 },
-          { value: 'kia', label: 'Kia', count: 18 },
-          { value: 'ford', label: 'Ford', count: 15 },
-          { value: 'volkswagen', label: 'Volkswagen', count: 12 },
-          { value: 'skoda', label: 'Skoda', count: 10 }
+          // ✅ EXACT values from your database
+          { value: 'Audi', label: 'Audi', count: 1 },
+          { value: 'BMW', label: 'BMW', count: 1 },
+          { value: 'Honda', label: 'Honda', count: 3 },
+          { value: 'Mercedes-Benz', label: 'Mercedes-Benz', count: 1 },
+          { value: 'Nissan', label: 'Nissan', count: 1 },
+          { value: 'Toyota', label: 'Toyota', count: 3 }
         ]
       },
       {
@@ -59,11 +56,9 @@ export const vehicleFilterSections: FilterSection[] = [
         type: 'select',
         placeholder: 'Select body type',
         options: [
-          { value: 'hatchback', label: 'Hatchback', count: 52 },
-          { value: 'sedan', label: 'Sedan', count: 48 },
-          { value: 'suv', label: 'SUV', count: 35 },
-          { value: 'wagon', label: 'Wagon', count: 15 },
-          { value: 'coupe', label: 'Coupe', count: 8 }
+          // ✅ EXACT values from your database
+          { value: 'Sedan', label: 'Sedan', count: 8 },
+          { value: 'SUV', label: 'SUV', count: 2 }
         ]
       },
       {
@@ -94,10 +89,9 @@ export const vehicleFilterSections: FilterSection[] = [
         type: 'select',
         placeholder: 'Select fuel type',
         options: [
-          { value: 'petrol', label: 'Petrol', count: 142 },
-          { value: 'diesel', label: 'Diesel', count: 89 },
-          { value: 'hybrid', label: 'Hybrid', count: 34 },
-          { value: 'electric', label: 'Electric', count: 12 }
+          // ✅ EXACT values from your database
+          { value: 'Petrol', label: 'Petrol', count: 9 },
+          { value: 'Hybrid', label: 'Hybrid', count: 1 }
         ]
       },
       {
@@ -106,9 +100,10 @@ export const vehicleFilterSections: FilterSection[] = [
         type: 'select',
         placeholder: 'Select transmission',
         options: [
-          { value: 'manual', label: 'Manual', count: 98 },
-          { value: 'automatic', label: 'Automatic', count: 85 },
-          { value: 'cvt', label: 'CVT', count: 31 }
+          // ✅ EXACT values from your database
+          { value: 'Manual', label: 'Manual', count: 4 },
+          { value: 'Automatic', label: 'Automatic', count: 5 },
+          { value: 'CVT', label: 'CVT', count: 1 }
         ]
       }
     ]

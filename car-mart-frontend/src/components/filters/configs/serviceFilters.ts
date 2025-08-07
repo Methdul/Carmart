@@ -1,7 +1,7 @@
 // car-mart-frontend/src/components/filters/configs/serviceFilters.ts
-// ✅ COMPLETE SIMPLIFIED VERSION - Create this new file
+// ✅ FIXED VERSION - Proper case and realistic values
 
-import { Wrench, DollarSign, MapPin } from 'lucide-react';
+import { Wrench, DollarSign, MapPin, Star } from 'lucide-react';
 import { FilterSection } from '@/design-system/types';
 
 export const serviceFilterSections: FilterSection[] = [
@@ -41,13 +41,30 @@ export const serviceFilterSections: FilterSection[] = [
         type: 'select',
         placeholder: 'Select service type',
         options: [
-          { value: 'maintenance', label: 'General Maintenance', count: 45 },
-          { value: 'repair', label: 'Repair Work', count: 38 },
-          { value: 'body-work', label: 'Body Work & Paint', count: 25 },
-          { value: 'electrical', label: 'Electrical Work', count: 22 },
-          { value: 'ac-service', label: 'AC Service', count: 18 },
-          { value: 'towing', label: 'Towing Service', count: 15 },
-          { value: 'inspection', label: 'Vehicle Inspection', count: 12 }
+          // ✅ Fixed case - realistic automotive services
+          { value: 'General Maintenance', label: 'General Maintenance', count: 145 },
+          { value: 'Engine Repair', label: 'Engine Repair', count: 89 },
+          { value: 'Body Work & Paint', label: 'Body Work & Paint', count: 67 },
+          { value: 'Electrical Work', label: 'Electrical Work', count: 54 },
+          { value: 'AC Service', label: 'AC Service', count: 43 },
+          { value: 'Brake Service', label: 'Brake Service', count: 38 },
+          { value: 'Tyre Service', label: 'Tyre Service', count: 32 },
+          { value: 'Towing Service', label: 'Towing Service', count: 28 },
+          { value: 'Vehicle Inspection', label: 'Vehicle Inspection', count: 21 }
+        ]
+      },
+      {
+        id: 'specialization',
+        label: 'Vehicle Type',
+        type: 'select',
+        placeholder: 'Select vehicle specialization',
+        options: [
+          // ✅ Fixed case
+          { value: 'All Vehicles', label: 'All Vehicles', count: 156 },
+          { value: 'Cars Only', label: 'Cars Only', count: 98 },
+          { value: 'SUVs & Trucks', label: 'SUVs & Trucks', count: 67 },
+          { value: 'Luxury Cars', label: 'Luxury Cars', count: 45 },
+          { value: 'Commercial Vehicles', label: 'Commercial Vehicles', count: 23 }
         ]
       }
     ]
@@ -61,14 +78,64 @@ export const serviceFilterSections: FilterSection[] = [
     priority: 4,
     filters: [
       {
-        id: 'homeService',
+        id: 'serviceLocation',
         label: 'Service Type',
         type: 'select',
         placeholder: 'Select service location',
         options: [
-          { value: 'home-service', label: 'Home Service Available', count: 34 },
-          { value: 'workshop', label: 'Workshop Service', count: 67 },
-          { value: 'pickup-drop', label: 'Pickup & Drop', count: 23 }
+          // ✅ Fixed case
+          { value: 'Workshop Service', label: 'Workshop Service', count: 167 },
+          { value: 'Home Service Available', label: 'Home Service Available', count: 89 },
+          { value: 'Pickup & Drop', label: 'Pickup & Drop', count: 56 },
+          { value: 'Roadside Assistance', label: 'Roadside Assistance', count: 34 }
+        ]
+      },
+      {
+        id: 'experienceLevel',
+        label: 'Experience Level',
+        type: 'select',
+        placeholder: 'Select experience level',
+        options: [
+          // ✅ Fixed case
+          { value: '10+ Years', label: '10+ Years Experience', count: 78 },
+          { value: '5-10 Years', label: '5-10 Years Experience', count: 92 },
+          { value: '2-5 Years', label: '2-5 Years Experience', count: 64 },
+          { value: 'Under 2 Years', label: 'Under 2 Years Experience', count: 23 }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'quality',
+    title: 'Quality & Reviews',
+    icon: Star,
+    collapsible: true,
+    defaultOpen: false,
+    priority: 5,
+    filters: [
+      {
+        id: 'rating',
+        label: 'Minimum Rating',
+        type: 'select',
+        placeholder: 'Select minimum rating',
+        options: [
+          // ✅ Fixed case
+          { value: '4.5', label: '4.5+ Stars', count: 45 },
+          { value: '4.0', label: '4.0+ Stars', count: 89 },
+          { value: '3.5', label: '3.5+ Stars', count: 134 },
+          { value: '3.0', label: '3.0+ Stars', count: 187 }
+        ]
+      },
+      {
+        id: 'certified',
+        label: 'Certifications',
+        type: 'select',
+        placeholder: 'Select certification',
+        options: [
+          // ✅ Fixed case
+          { value: 'Certified Mechanic', label: 'Certified Mechanic', count: 67 },
+          { value: 'Brand Authorized', label: 'Brand Authorized', count: 34 },
+          { value: 'Insurance Approved', label: 'Insurance Approved', count: 23 }
         ]
       }
     ]

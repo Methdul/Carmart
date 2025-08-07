@@ -1,7 +1,7 @@
 // car-mart-frontend/src/components/filters/configs/rentalFilters.ts
-// ✅ COMPLETE SIMPLIFIED VERSION - Create this new file
+// ✅ SIMPLE VERSION - Just case fixes, same structure as vehicle filters
 
-import { Car, DollarSign, Calendar, Settings } from 'lucide-react';
+import { Car, DollarSign, Settings, Calendar } from 'lucide-react';
 import { FilterSection } from '@/design-system/types';
 
 export const rentalFilterSections: FilterSection[] = [
@@ -14,16 +14,16 @@ export const rentalFilterSections: FilterSection[] = [
     priority: 2,
     filters: [
       {
-        id: 'minPrice',
+        id: 'minDailyRate',
         label: 'Min Daily Rate',
         type: 'number',
-        placeholder: 'Min price per day (₹)'
+        placeholder: 'Minimum rate (₹)'
       },
       {
-        id: 'maxPrice',
-        label: 'Max Daily Rate', 
+        id: 'maxDailyRate',
+        label: 'Max Daily Rate',
         type: 'number',
-        placeholder: 'Max price per day (₹)'
+        placeholder: 'Maximum rate (₹)'
       }
     ]
   },
@@ -41,24 +41,25 @@ export const rentalFilterSections: FilterSection[] = [
         type: 'select',
         placeholder: 'Select brand',
         options: [
-          { value: 'maruti-suzuki', label: 'Maruti Suzuki', count: 25 },
-          { value: 'hyundai', label: 'Hyundai', count: 22 },
-          { value: 'tata', label: 'Tata', count: 18 },
-          { value: 'mahindra', label: 'Mahindra', count: 15 },
-          { value: 'honda', label: 'Honda', count: 12 },
-          { value: 'toyota', label: 'Toyota', count: 10 }
+          // ✅ FIXED VALUES - Match your database exactly
+          { value: 'Honda', label: 'Honda', count: 15 },
+          { value: 'Toyota', label: 'Toyota', count: 12 },
+          { value: 'BMW', label: 'BMW', count: 8 },
+          { value: 'Mercedes-Benz', label: 'Mercedes-Benz', count: 6 },
+          { value: 'Audi', label: 'Audi', count: 5 },
+          { value: 'Nissan', label: 'Nissan', count: 4 }
         ]
       },
       {
         id: 'bodyType',
-        label: 'Body Type',
+        label: 'Vehicle Type',
         type: 'select',
-        placeholder: 'Select body type',
+        placeholder: 'Select vehicle type',
         options: [
-          { value: 'hatchback', label: 'Hatchback', count: 30 },
-          { value: 'sedan', label: 'Sedan', count: 25 },
-          { value: 'suv', label: 'SUV', count: 20 },
-          { value: 'luxury', label: 'Luxury', count: 8 }
+          // ✅ FIXED VALUES - Match your database exactly
+          { value: 'Sedan', label: 'Sedan', count: 25 },
+          { value: 'SUV', label: 'SUV', count: 18 },
+          { value: 'Hatchback', label: 'Hatchback', count: 12 }
         ]
       },
       {
@@ -67,53 +68,88 @@ export const rentalFilterSections: FilterSection[] = [
         type: 'select',
         placeholder: 'Select fuel type',
         options: [
-          { value: 'petrol', label: 'Petrol', count: 45 },
-          { value: 'diesel', label: 'Diesel', count: 35 },
-          { value: 'hybrid', label: 'Hybrid', count: 12 },
-          { value: 'electric', label: 'Electric', count: 8 }
+          // ✅ FIXED VALUES - Match your database exactly
+          { value: 'Petrol', label: 'Petrol', count: 45 },
+          { value: 'Diesel', label: 'Diesel', count: 15 },
+          { value: 'Hybrid', label: 'Hybrid', count: 6 },
+          { value: 'Electric', label: 'Electric', count: 4 }
         ]
-      }
-    ]
-  },
-  {
-    id: 'features',
-    title: 'Rental Features',
-    icon: Settings,
-    collapsible: true,
-    defaultOpen: false,
-    priority: 4,
-    filters: [
+      },
       {
         id: 'transmission',
         label: 'Transmission',
         type: 'select',
         placeholder: 'Select transmission',
         options: [
-          { value: 'automatic', label: 'Automatic', count: 55 },
-          { value: 'manual', label: 'Manual', count: 45 }
+          // ✅ FIXED VALUES - Match your database exactly
+          { value: 'Manual', label: 'Manual', count: 25 },
+          { value: 'Automatic', label: 'Automatic', count: 38 },
+          { value: 'CVT', label: 'CVT', count: 7 }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'rental',
+    title: 'Rental Terms',
+    icon: Calendar,
+    collapsible: true,
+    defaultOpen: false,
+    priority: 4,
+    filters: [
+      {
+        id: 'rentalType',
+        label: 'Rental Duration',
+        type: 'select',
+        placeholder: 'Select rental type',
+        options: [
+          { value: 'Daily', label: 'Daily Rental', count: 45 },
+          { value: 'Weekly', label: 'Weekly Rental', count: 25 },
+          { value: 'Monthly', label: 'Monthly Rental', count: 18 },
+          { value: 'Long Term', label: 'Long Term', count: 5 }
+        ]
+      },
+      {
+        id: 'seatingCapacity',
+        label: 'Seating',
+        type: 'select',
+        placeholder: 'Select seating capacity',
+        options: [
+          { value: '2', label: '2 Seater', count: 5 },
+          { value: '4', label: '4 Seater', count: 18 },
+          { value: '5', label: '5 Seater', count: 35 },
+          { value: '7', label: '7 Seater', count: 12 }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'features',
+    title: 'Features',
+    icon: Settings,
+    collapsible: true,
+    defaultOpen: false,
+    priority: 5,
+    filters: [
+      {
+        id: 'airConditioning',
+        label: 'Air Conditioning',
+        type: 'select',
+        placeholder: 'AC availability',
+        options: [
+          { value: 'Yes', label: 'AC Available', count: 62 },
+          { value: 'No', label: 'No AC', count: 8 }
         ]
       },
       {
         id: 'deliveryAvailable',
-        label: 'Delivery Options',
+        label: 'Delivery',
         type: 'select',
-        placeholder: 'Select delivery option',
+        placeholder: 'Delivery service',
         options: [
-          { value: 'home-delivery', label: 'Home Delivery', count: 35 },
-          { value: 'pickup-only', label: 'Pickup Only', count: 65 }
+          { value: 'Yes', label: 'Delivery Available', count: 45 },
+          { value: 'No', label: 'Pickup Only', count: 25 }
         ]
-      },
-      {
-        id: 'minDays',
-        label: 'Min Rental Days',
-        type: 'number',
-        placeholder: 'e.g. 1'
-      },
-      {
-        id: 'maxDays',
-        label: 'Max Rental Days',
-        type: 'number',
-        placeholder: 'e.g. 30'
       }
     ]
   }

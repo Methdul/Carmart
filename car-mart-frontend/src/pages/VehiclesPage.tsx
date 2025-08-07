@@ -70,7 +70,10 @@ const VehiclesPage = () => {
         page,
         limit: 12
       };
-
+      
+      console.log('🔍 Frontend filters object:', filters);
+      console.log('🧹 Clean filters after processing:', cleanFilters);  
+      console.log('📡 Final API params being sent:', queryParams);
       const response = await apiService.getVehicles(queryParams);
       
       if (response && response.success) {

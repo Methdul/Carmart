@@ -1,5 +1,5 @@
 // car-mart-frontend/src/components/filters/configs/partFilters.ts
-// ✅ COMPLETE SIMPLIFIED VERSION - Replace your existing file
+// ✅ FIXED VERSION - Proper case and realistic values
 
 import { Package, DollarSign, Wrench, Shield } from 'lucide-react';
 import { FilterSection } from '@/design-system/types';
@@ -41,14 +41,15 @@ export const partFilterSections: FilterSection[] = [
         type: 'select',
         placeholder: 'Select category',
         options: [
-          { value: 'engine', label: 'Engine Parts', count: 156 },
-          { value: 'body', label: 'Body Parts', count: 134 },
-          { value: 'electrical', label: 'Electrical', count: 98 },
-          { value: 'brake', label: 'Brake System', count: 87 },
-          { value: 'suspension', label: 'Suspension', count: 65 },
-          { value: 'interior', label: 'Interior', count: 54 },
-          { value: 'exhaust', label: 'Exhaust System', count: 43 },
-          { value: 'cooling', label: 'Cooling System', count: 32 }
+          // ✅ Fixed case and realistic automotive categories
+          { value: 'Engine Parts', label: 'Engine Parts', count: 156 },
+          { value: 'Body Parts', label: 'Body Parts', count: 134 },
+          { value: 'Electrical Parts', label: 'Electrical Parts', count: 98 },
+          { value: 'Brake System', label: 'Brake System', count: 87 },
+          { value: 'Suspension', label: 'Suspension', count: 65 },
+          { value: 'Interior Parts', label: 'Interior Parts', count: 54 },
+          { value: 'Exhaust System', label: 'Exhaust System', count: 43 },
+          { value: 'Cooling System', label: 'Cooling System', count: 32 }
         ]
       },
       {
@@ -57,20 +58,22 @@ export const partFilterSections: FilterSection[] = [
         type: 'select',
         placeholder: 'Select brand',
         options: [
-          { value: 'genuine', label: 'Genuine/OEM', count: 234 },
-          { value: 'bosch', label: 'Bosch', count: 89 },
-          { value: 'denso', label: 'Denso', count: 67 },
-          { value: 'mann', label: 'Mann Filter', count: 45 },
-          { value: 'ngk', label: 'NGK', count: 34 },
-          { value: 'brembo', label: 'Brembo', count: 23 }
+          // ✅ Fixed case - real automotive part brands
+          { value: 'Genuine OEM', label: 'Genuine OEM', count: 234 },
+          { value: 'Bosch', label: 'Bosch', count: 89 },
+          { value: 'Denso', label: 'Denso', count: 67 },
+          { value: 'Mann Filter', label: 'Mann Filter', count: 45 },
+          { value: 'NGK', label: 'NGK', count: 34 },
+          { value: 'Brembo', label: 'Brembo', count: 23 },
+          { value: 'Mahle', label: 'Mahle', count: 18 }
         ]
       }
     ]
   },
   {
-    id: 'condition',
-    title: 'Condition',
-    icon: Shield,
+    id: 'details',
+    title: 'Part Details',
+    icon: Package,
     collapsible: true,
     defaultOpen: false,
     priority: 4,
@@ -81,9 +84,25 @@ export const partFilterSections: FilterSection[] = [
         type: 'select',
         placeholder: 'Select condition',
         options: [
-          { value: 'new', label: 'New', count: 345 },
-          { value: 'used', label: 'Used - Good', count: 123 },
-          { value: 'refurbished', label: 'Refurbished', count: 67 }
+          // ✅ Fixed case
+          { value: 'New', label: 'New', count: 345 },
+          { value: 'Used - Good', label: 'Used - Good', count: 123 },
+          { value: 'Refurbished', label: 'Refurbished', count: 67 }
+        ]
+      },
+      {
+        id: 'compatibility',
+        label: 'Vehicle Make',
+        type: 'select',
+        placeholder: 'Select vehicle make',
+        options: [
+          // ✅ Match the vehicle makes from your database
+          { value: 'Honda', label: 'Honda', count: 89 },
+          { value: 'Toyota', label: 'Toyota', count: 76 },
+          { value: 'BMW', label: 'BMW', count: 45 },
+          { value: 'Mercedes-Benz', label: 'Mercedes-Benz', count: 34 },
+          { value: 'Audi', label: 'Audi', count: 28 },
+          { value: 'Nissan', label: 'Nissan', count: 21 }
         ]
       }
     ]
