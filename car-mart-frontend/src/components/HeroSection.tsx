@@ -1,5 +1,7 @@
 import { Car, Wrench, Settings, ArrowRight, Shield, Star, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 const HeroSection = () => {
   const navigate = useNavigate();
@@ -11,7 +13,9 @@ const HeroSection = () => {
       icon: Car,
       href: "/search",
       color: "bg-blue-600/90",
-      stats: "50K+ Vehicles"
+      stats: "50K+ Vehicles",
+      isActive: false,
+      badge: "Coming Soon"
     },
     {
       title: "Auto Parts", 
@@ -19,7 +23,9 @@ const HeroSection = () => {
       icon: Settings,
       href: "/parts",
       color: "bg-emerald-600/90",
-      stats: "100K+ Parts"
+      stats: "100K+ Parts",
+      isActive: false,
+      badge: "Coming Soon"
     },
     {
       title: "Services",
@@ -27,12 +33,16 @@ const HeroSection = () => {
       icon: Wrench,
       href: "/services", 
       color: "bg-purple-600/90",
-      stats: "5K+ Providers"
+      stats: "5K+ Providers",
+      isActive: true,
+      badge: null
     }
   ];
 
-  const handleCategoryClick = (href: string) => {
-    navigate(href);
+  const handleCategoryClick = (category: any) => {
+    if (category.isActive) {
+      navigate(category.href);
+    }
   };
 
   return (
@@ -53,90 +63,115 @@ const HeroSection = () => {
           {/* Main Heading */}
           <div className="mb-8 sm:mb-12 animate-fade-in">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-4 sm:mb-6 leading-tight">
-              Your Complete{" "}
-              <span className="text-accent block sm:inline">Automotive Marketplace</span>
+              Your Complete
+              <span className="block text-accent">Vehicle Services Hub</span>
             </h1>
-            <p className="text-lg sm:text-xl md:text-2xl text-primary-foreground/90 mb-6 sm:mb-8 max-w-4xl mx-auto">
-              Buy vehicles, find parts, book services - all in one professional platform
+            <p className="text-lg sm:text-xl text-primary-foreground/90 max-w-3xl mx-auto leading-relaxed">
+              Connect with verified garages, mechanics, and service providers across Sri Lanka. 
+              Book professional vehicle services with ease and confidence.
             </p>
-            
-            {/* Trust indicators */}
-            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-sm sm:text-lg text-primary-foreground/80 mb-8 sm:mb-12">
-              <div className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-green-400" />
-                <span>Verified Sellers</span>
-              </div>
-              <span className="text-primary-foreground/50">•</span>
-              <div className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-yellow-400" />
-                <span>AI Health Scores</span>
-              </div>
-              <span className="text-primary-foreground/50">•</span>
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-blue-400" />
-                <span>Trusted Community</span>
-              </div>
-            </div>
           </div>
 
-          {/* Category Selection Cards - Even Smaller Mobile */}
-          <div className="animate-slide-up mb-8 sm:mb-12">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6">
-              {categories.map((category, index) => {
-                const IconComponent = category.icon;
-                return (
-                  <div
-                    key={category.title}
-                    className="group relative bg-white/15 backdrop-blur-md border border-white/30 rounded-xl sm:rounded-3xl p-4 sm:p-6 transition-all duration-500 cursor-pointer hover:scale-105 hover:shadow-2xl hover:bg-white/25 min-h-[140px] sm:min-h-[240px] flex flex-col justify-center text-center"
-                    onClick={() => handleCategoryClick(category.href)}
-                  >
-                    {/* Category Content */}
-                    <div className="flex-1 flex flex-col justify-center">
-                      <h3 className="text-lg sm:text-2xl lg:text-3xl font-bold text-white mb-2 sm:mb-4 group-hover:text-blue-300 transition-colors">
-                        {category.title}
-                      </h3>
-                      <p className="text-xs sm:text-base lg:text-lg text-white/90 mb-2 sm:mb-5 leading-relaxed font-light">
-                        {category.description}
-                      </p>
-                      <div className="inline-block bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 sm:px-5 sm:py-2 text-xs sm:text-sm text-white font-semibold mb-2 sm:mb-5 mx-auto">
-                        {category.stats}
+          {/* Category Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-12 sm:mb-16">
+            {categories.map((category, index) => {
+              const IconComponent = category.icon;
+              
+              return (
+                <div
+                  key={category.title}
+                  className={`relative group transition-all duration-300 transform hover:scale-105 ${
+                    category.isActive 
+                      ? 'cursor-pointer' 
+                      : 'cursor-not-allowed opacity-70'
+                  }`}
+                  onClick={() => handleCategoryClick(category)}
+                >
+                  <div className={`${category.color} backdrop-blur-sm rounded-2xl p-6 sm:p-8 text-white shadow-2xl border border-white/20 relative overflow-hidden`}>
+                    {/* Background Pattern */}
+                    <div className="absolute inset-0 opacity-10">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full -translate-y-16 translate-x-16"></div>
+                      <div className="absolute bottom-0 left-0 w-24 h-24 bg-white rounded-full translate-y-12 -translate-x-12"></div>
+                    </div>
+                    
+                    {/* Badge */}
+                    {category.badge && (
+                      <div className="absolute top-4 right-4">
+                        <Badge variant="secondary" className="text-xs font-medium">
+                          {category.badge}
+                        </Badge>
+                      </div>
+                    )}
+                    
+                    {/* Content */}
+                    <div className="relative z-10">
+                      <div className="mb-4 sm:mb-6">
+                        <IconComponent className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-white" />
                       </div>
                       
-                      {/* Bottom action area */}
-                      <div className="flex items-center justify-center text-white/80 group-hover:text-white transition-colors">
-                        <span className="text-xs sm:text-base font-medium mr-2 sm:mr-3">Explore Now</span>
-                        <ArrowRight className="h-3 w-3 sm:h-5 sm:w-5 group-hover:translate-x-2 transition-transform duration-300" />
+                      <h3 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3">
+                        {category.title}
+                      </h3>
+                      
+                      <p className="text-white/90 mb-4 sm:mb-6 text-sm sm:text-base leading-relaxed">
+                        {category.description}
+                      </p>
+                      
+                      <div className="flex items-center justify-between">
+                        <span className="text-white/80 text-sm font-medium">
+                          {category.stats}
+                        </span>
+                        
+                        {category.isActive ? (
+                          <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
+                        ) : (
+                          <div className="w-5 h-5" /> // Placeholder for alignment
+                        )}
                       </div>
                     </div>
-
-                    {/* Premium hover effect */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-blue-600/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl sm:rounded-3xl pointer-events-none"></div>
-                    
-                    {/* Subtle border glow on hover */}
-                    <div className="absolute inset-0 rounded-xl sm:rounded-3xl border border-blue-400/0 group-hover:border-blue-400/30 transition-colors duration-500 pointer-events-none"></div>
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
           </div>
 
-          {/* Statistics Bar */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 animate-fade-in">
-            <div className="text-center bg-primary-foreground/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-4 sm:p-6 border border-primary-foreground/20">
-              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary-foreground mb-1 sm:mb-2">150K+</div>
-              <div className="text-xs sm:text-sm text-primary-foreground/90 font-medium">Total Listings</div>
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button 
+              size="lg" 
+              onClick={() => navigate('/services')}
+              className="bg-accent hover:bg-accent/90 text-accent-foreground px-8 py-6 text-lg font-semibold rounded-xl shadow-2xl hover:shadow-accent/25 transition-all duration-300 transform hover:scale-105"
+            >
+              <Wrench className="w-5 h-5 mr-2" />
+              Explore Services
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="lg"
+              onClick={() => navigate('/list-services')}
+              className="border-2 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground hover:text-primary px-8 py-6 text-lg font-semibold rounded-xl backdrop-blur-sm transition-all duration-300"
+            >
+              <Users className="w-5 h-5 mr-2" />
+              Join as Provider
+            </Button>
+          </div>
+
+          {/* Trust Indicators */}
+          <div className="mt-12 sm:mt-16 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
+            <div className="flex items-center justify-center space-x-3 text-primary-foreground/80">
+              <Shield className="w-6 h-6 text-accent" />
+              <span className="text-sm sm:text-base font-medium">Verified Providers</span>
             </div>
-            <div className="text-center bg-primary-foreground/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-4 sm:p-6 border border-primary-foreground/20">
-              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary-foreground mb-1 sm:mb-2">15K+</div>
-              <div className="text-xs sm:text-sm text-primary-foreground/90 font-medium">Verified Sellers</div>
+            
+            <div className="flex items-center justify-center space-x-3 text-primary-foreground/80">
+              <Star className="w-6 h-6 text-accent" />
+              <span className="text-sm sm:text-base font-medium">Quality Guaranteed</span>
             </div>
-            <div className="text-center bg-primary-foreground/10 backdrop-blur-md rounded-lg sm:rounded-xl p-4 sm:p-6 border border-primary-foreground/20">
-              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary-foreground mb-1 sm:mb-2">98%</div>
-              <div className="text-xs sm:text-sm text-primary-foreground/90 font-medium">Satisfaction Rate</div>
-            </div>
-            <div className="text-center bg-primary-foreground/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-4 sm:p-6 border border-primary-foreground/20">
-              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-blue-400 mb-1 sm:mb-2">AI</div>
-              <div className="text-xs sm:text-sm text-primary-foreground/90 font-medium">Powered</div>
+            
+            <div className="flex items-center justify-center space-x-3 text-primary-foreground/80">
+              <Users className="w-6 h-6 text-accent" />
+              <span className="text-sm sm:text-base font-medium">24/7 Support</span>
             </div>
           </div>
         </div>

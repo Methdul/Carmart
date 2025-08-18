@@ -1,5 +1,5 @@
 // car-mart-frontend/src/components/Header.tsx
-// ✅ ORIGINAL FILE WITH ONLY SEARCH MODIFICATIONS
+// ✅ MVP READY HEADER - SERVICES ONLY
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -16,7 +16,8 @@ import {
   Car,
   ChevronDown,
   Bell,
-  BarChart3
+  BarChart3,
+  Wrench
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,79 +38,39 @@ interface User {
   last_name: string;
   email: string;
   avatar_url?: string;
-  account_type: 'personal' | 'business';
-  is_verified: boolean;
+  role?: string;
 }
 
-const Header = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchBarOpen, setSearchBarOpen] = useState(false); // ✅ NEW: Search bar toggle state
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [authChecked, setAuthChecked] = useState(false);
+interface HeaderProps {
+  currentUser?: User | null;
+  setCurrentUser?: (user: User | null) => void;
+  isSignedIn?: boolean;
+  authChecked?: boolean;
+}
+
+const Header: React.FC<HeaderProps> = ({ 
+  currentUser, 
+  setCurrentUser, 
+  isSignedIn = false,
+  authChecked = true 
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const pathname = location.pathname; 
+  const pathname = location.pathname;
+
+  // State management
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchBarOpen, setSearchBarOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Refs for click outside detection
   const mobileMenuRef = useRef<HTMLDivElement>(null);
-  const searchBarRef = useRef<HTMLDivElement>(null); // ✅ NEW: Search bar ref
+  const searchBarRef = useRef<HTMLDivElement>(null);
 
-  // Check authentication status
-  const isSignedIn = currentUser !== null;
-
-  // ✅ NEW: Context-aware search placeholder
+  // Get search placeholder based on current page
   const getSearchPlaceholder = () => {
-    const path = location.pathname;
-    
-    if (path.includes('/vehicles') || path.includes('/search') || path === '/') {
-      return "Search vehicles...";
-    } else if (path.includes('/rentals')) {
-      return "Search rental vehicles...";
-    } else if (path.includes('/parts')) {
-      return "Search parts...";
-    } else if (path.includes('/services')) {
-      return "Search services...";
-    } else {
-      return "Search vehicles, parts, services...";
-    }
+    return "Search for vehicle services...";
   };
-
-  // ✅ NEW: Context-aware search redirect
-  const getSearchRedirectPath = () => {
-    const path = location.pathname;
-    
-    if (path.includes('/vehicles') || path.includes('/search') || path === '/') {
-      return '/vehicles';
-    } else if (path.includes('/rentals')) {
-      return '/rentals';
-    } else if (path.includes('/parts')) {
-      return '/parts';
-    } else if (path.includes('/services')) {
-      return '/services';
-    } else {
-      return '/vehicles';
-    }
-  };
-
-  // Check authentication on component mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const token = localStorage.getItem('auth_token');
-        const userData = localStorage.getItem('user_data');
-        
-        if (token && userData) {
-          const user = JSON.parse(userData);
-          setCurrentUser(user);
-        }
-      } catch (error) {
-        console.error('Auth check error:', error);
-      } finally {
-        setAuthChecked(true);
-      }
-    };
-
-    checkAuth();
-  }, []);
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -125,7 +86,7 @@ const Header = () => {
     }
   }, [mobileMenuOpen]);
 
-  // ✅ NEW: Close search bar when clicking outside
+  // Close search bar when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchBarRef.current && !searchBarRef.current.contains(event.target as Node)) {
@@ -139,20 +100,13 @@ const Header = () => {
     }
   }, [searchBarOpen]);
 
-  // Handle search submission
-  const handleSearch = (e) => {
+  // Handle search submission - MVP focused on services only
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
     
-    // Navigate to appropriate page based on current location
-    if (pathname.includes('/parts')) {
-      navigate(`/parts?search=${encodeURIComponent(searchQuery)}`);
-    } else if (pathname.includes('/services')) {
-      navigate(`/services?search=${encodeURIComponent(searchQuery)}`);
-    } else {
-      // Default to vehicles page
-      navigate(`/vehicles?search=${encodeURIComponent(searchQuery)}`);
-    }
+    // Always navigate to services for MVP
+    navigate(`/services?search=${encodeURIComponent(searchQuery)}`);
     
     // Close mobile menu and search bar
     setMobileMenuOpen(false);
@@ -166,7 +120,7 @@ const Header = () => {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_data');
     localStorage.removeItem('refresh_token');
-    setCurrentUser(null);
+    setCurrentUser?.(null);
     navigate('/');
     setTimeout(() => {
       window.location.reload();
@@ -177,7 +131,6 @@ const Header = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
-  // ✅ NEW: Toggle search bar function
   const toggleSearchBar = () => {
     setSearchBarOpen(!searchBarOpen);
   };
@@ -201,16 +154,17 @@ const Header = () => {
     return currentUser?.email || "User";
   };
 
-  // Don't render until auth is checked
+  // Loading state while auth is being checked
   if (!authChecked) {
     return (
       <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             <Link to="/" className="flex items-center space-x-2">
+              <Wrench className="h-6 w-6 text-primary" />
               <div className="flex flex-col">
-                <span className="text-lg sm:text-xl font-bold text-primary">Car Mart</span>
-                <span className="text-xs text-muted-foreground hidden sm:block">Premium Vehicles</span>
+                <span className="text-lg sm:text-xl font-bold text-primary">Vehicle Services Hub</span>
+                <span className="text-xs text-muted-foreground hidden sm:block">Loading...</span>
               </div>
             </Link>
             <div className="animate-pulse bg-muted h-8 w-24 rounded"></div>
@@ -224,113 +178,95 @@ const Header = () => {
     <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between gap-4">
-          {/* ✅ LOGO */}
+          {/* ✅ UPDATED LOGO FOR MVP */}
           <Link to="/" className="flex items-center space-x-2 group flex-shrink-0">
+            <Wrench className="h-6 w-6 text-primary group-hover:text-primary/80 transition-colors" />
             <div className="flex flex-col">
               <span className="text-lg sm:text-xl font-bold text-primary group-hover:text-primary/80 transition-colors">
-                Car Mart
+                Vehicle Services Hub
               </span>
-              <span className="text-xs text-muted-foreground hidden sm:block">Premium Vehicles</span>
+              <span className="text-xs text-muted-foreground hidden sm:block">Premium Services</span>
             </div>
           </Link>
 
-          {/* ✅ DESKTOP NAVIGATION */}
+          {/* ✅ DESKTOP NAVIGATION - MVP FOCUSED */}
           <nav className="hidden lg:flex items-center space-x-1">
-            <Link to="/search">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className="text-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200"
-              >
-                Buy Vehicles
-              </Button>
-            </Link>
-
-            <Link to="/rentals">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className="text-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200"
-              >
-                Rentals
-              </Button>
-            </Link>
-            
-            <Link to="/parts">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className="text-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200"
-              >
-                Parts
-              </Button>
-            </Link>
-            
+            {/* ACTIVE - Services */}
             <Link to="/services">
               <Button 
                 variant="ghost" 
                 size="sm"
-                className="text-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200"
+                className="text-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 font-medium bg-primary/5 border border-primary/20"
               >
+                <Wrench className="h-4 w-4 mr-1" />
                 Services
               </Button>
             </Link>
 
-            {/* ✅ NEW: Search icon button */}
+            {/* DISABLED - Buy Vehicles */}
+            <Button 
+              variant="ghost" 
+              size="sm"
+              disabled
+              className="text-muted-foreground cursor-not-allowed opacity-60 relative"
+              title="Coming February 2025"
+            >
+              Buy Vehicles
+              <Badge variant="secondary" className="ml-2 text-xs">Soon</Badge>
+            </Button>
+
+            {/* DISABLED - Parts */}
+            <Button 
+              variant="ghost" 
+              size="sm"
+              disabled
+              className="text-muted-foreground cursor-not-allowed opacity-60"
+              title="Coming March 2025"
+            >
+              Parts
+              <Badge variant="secondary" className="ml-2 text-xs">Soon</Badge>
+            </Button>
+
+            {/* DISABLED - Rentals */}
+            <Button 
+              variant="ghost" 
+              size="sm"
+              disabled
+              className="text-muted-foreground cursor-not-allowed opacity-60"
+              title="Coming Q2 2025"
+            >
+              Rentals
+              <Badge variant="secondary" className="ml-2 text-xs">Phase 2</Badge>
+            </Button>
+
+            {/* Search icon button */}
             <Button 
               variant="ghost" 
               size="sm"
               onClick={toggleSearchBar}
               className="text-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200"
+              title="Search services"
             >
               <Search className="h-4 w-4" />
             </Button>
           </nav>
 
-          {/* ✅ DESKTOP ACTIONS - IMPROVED STYLING */}
+          {/* ✅ DESKTOP USER ACTIONS */}
           <div className="hidden lg:flex items-center space-x-2 flex-shrink-0">
             {isSignedIn ? (
-              <>
+              <div className="flex items-center space-x-2">
+                {/* Quick Actions */}
+                <Link to="/list-services">
+                  <Button variant="outline" size="sm" className="border-primary/20 hover:bg-primary/5">
+                    <Plus className="h-4 w-4 mr-1" />
+                    List Service
+                  </Button>
+                </Link>
 
-                {/* ✅ LIST ITEM DROPDOWN - COMPACT */}
+                {/* User Dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button size="sm" className="bg-primary hover:bg-primary/90 text-white px-3">
-                      <Plus className="h-4 w-4 mr-1" />
-                      List Item
-                      <ChevronDown className="h-3 w-3 ml-1" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={() => navigate('/list-vehicle')} className="cursor-pointer">
-                      <Car className="mr-2 h-4 w-4" />
-                      <span>List Vehicle</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/list-rental')} className="cursor-pointer">
-                      <Car className="mr-2 h-4 w-4" />
-                      <span>List Rental</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => navigate('/list-parts')} className="cursor-pointer">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>List Parts</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/list-services')} className="cursor-pointer">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>List Services</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                {/* ✅ FAVORITES */}
-                <Button variant="ghost" size="sm" className="text-foreground hover:text-primary">
-                  <Heart className="h-4 w-4" />
-                </Button>
-
-                {/* ✅ USER MENU - IMPROVED STYLING */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={currentUser?.avatar_url} alt={getUserDisplayName()} />
                         <AvatarFallback className="text-xs">{getUserInitials()}</AvatarFallback>
@@ -340,65 +276,57 @@ const Header = () => {
                   <DropdownMenuContent className="w-56" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none flex items-center gap-2">
-                          {getUserDisplayName()}
-                          {currentUser?.is_verified && (
-                            <Badge variant="secondary" className="text-xs px-1 py-0">
-                              ✓
-                            </Badge>
-                          )}
-                        </p>
+                        <p className="text-sm font-medium leading-none">{getUserDisplayName()}</p>
                         <p className="text-xs leading-none text-muted-foreground">
                           {currentUser?.email}
-                        </p>
-                        <p className="text-xs leading-none text-muted-foreground capitalize">
-                          {currentUser?.account_type} Account
                         </p>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    
-                    {/* ✅ MAIN MENU ITEMS */}
-                    <DropdownMenuItem onClick={() => navigate('/dashboard')} className="cursor-pointer">
+                    <DropdownMenuItem onClick={() => navigate('/dashboard')}>
                       <BarChart3 className="mr-2 h-4 w-4" />
-                      <span>Dashboard</span>
+                      Dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/profile')}>
+                      <User className="mr-2 h-4 w-4" />
+                      Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/settings')}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-600">
+                    <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                       <LogOut className="mr-2 h-4 w-4" />
-                      <span>Sign Out</span>
+                      Sign Out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </>
+              </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate('/auth')}
-                  className="text-foreground hover:text-primary"
-                >
-                  Sign In
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => navigate('/auth')}
-                  className="bg-primary hover:bg-primary/90 text-white"
-                >
-                  Sign Up
-                </Button>
+                <Link to="/auth">
+                  <Button variant="ghost" size="sm">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/auth?mode=provider">
+                  <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
+                    <Plus className="h-4 w-4 mr-1" />
+                    Join as Provider
+                  </Button>
+                </Link>
               </div>
             )}
           </div>
 
           {/* ✅ MOBILE MENU BUTTON */}
-          <div className="lg:hidden flex-shrink-0">
+          <div className="lg:hidden">
             <Button
               variant="ghost"
               size="sm"
               onClick={toggleMobileMenu}
-              className="text-foreground h-9 w-9 p-0"
+              className="h-9 w-9 p-0"
             >
               {mobileMenuOpen ? (
                 <X className="h-5 w-5" />
@@ -409,7 +337,7 @@ const Header = () => {
           </div>
         </div>
 
-        {/* ✅ NEW: Professional search bar in separate row - toggleable */}
+        {/* ✅ DESKTOP SEARCH BAR */}
         {searchBarOpen && (
           <div ref={searchBarRef} className="pb-4 pt-2 border-t border-border/40 animate-in slide-in-from-top-2 duration-200">
             <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
@@ -443,7 +371,7 @@ const Header = () => {
         </div>
       </div>
 
-      {/* ✅ MOBILE NAVIGATION MENU - IMPROVED */}
+      {/* ✅ MOBILE NAVIGATION MENU - MVP FOCUSED */}
       {mobileMenuOpen && (
         <div 
           ref={mobileMenuRef}
@@ -453,63 +381,68 @@ const Header = () => {
             <nav className="flex flex-col space-y-2">
               {/* ✅ MAIN NAVIGATION */}
               <div className="space-y-1">
-                <button
-                  onClick={() => handleMobileNavClick('/search')}
-                  className="flex items-center space-x-3 w-full text-left p-3 rounded-lg transition-colors text-foreground hover:bg-muted"
-                >
-                  <Car className="h-5 w-5" />
-                  <span className="font-medium">Buy Vehicles</span>
-                </button>
-
-                <button
-                  onClick={() => handleMobileNavClick('/rentals')}
-                  className="flex items-center space-x-3 w-full text-left p-3 rounded-lg transition-colors text-foreground hover:bg-muted"
-                >
-                  <Car className="h-5 w-5" />
-                  <span className="font-medium">Rentals</span>
-                </button>
-
-                <button
-                  onClick={() => handleMobileNavClick('/parts')}
-                  className="flex items-center space-x-3 w-full text-left p-3 rounded-lg transition-colors text-foreground hover:bg-muted"
-                >
-                  <Settings className="h-5 w-5" />
-                  <span className="font-medium">Parts</span>
-                </button>
-
+                {/* ACTIVE - Services */}
                 <button
                   onClick={() => handleMobileNavClick('/services')}
-                  className="flex items-center space-x-3 w-full text-left p-3 rounded-lg transition-colors text-foreground hover:bg-muted"
+                  className="flex items-center space-x-3 w-full text-left p-3 rounded-lg transition-colors text-foreground hover:bg-muted bg-primary/5 border border-primary/20"
                 >
-                  <Settings className="h-5 w-5" />
+                  <Wrench className="h-5 w-5" />
                   <span className="font-medium">Services</span>
                 </button>
+
+                {/* DISABLED FEATURES */}
+                <div className="flex items-center justify-between w-full text-left p-3 rounded-lg transition-colors text-muted-foreground cursor-not-allowed opacity-60">
+                  <div className="flex items-center space-x-3">
+                    <Car className="h-5 w-5" />
+                    <span className="font-medium">Buy Vehicles</span>
+                  </div>
+                  <Badge variant="secondary" className="text-xs">Soon</Badge>
+                </div>
+
+                <div className="flex items-center justify-between w-full text-left p-3 rounded-lg transition-colors text-muted-foreground cursor-not-allowed opacity-60">
+                  <div className="flex items-center space-x-3">
+                    <Settings className="h-5 w-5" />
+                    <span className="font-medium">Auto Parts</span>
+                  </div>
+                  <Badge variant="secondary" className="text-xs">Soon</Badge>
+                </div>
+
+                <div className="flex items-center justify-between w-full text-left p-3 rounded-lg transition-colors text-muted-foreground cursor-not-allowed opacity-60">
+                  <div className="flex items-center space-x-3">
+                    <Car className="h-5 w-5" />
+                    <span className="font-medium">Rentals</span>
+                  </div>
+                  <Badge variant="secondary" className="text-xs">Phase 2</Badge>
+                </div>
               </div>
 
-              {/* ✅ MOBILE AUTHENTICATION */}
-              <div className="pt-4 border-t">
+              <div className="border-t pt-4 mt-4">
                 {isSignedIn ? (
                   <div className="space-y-2">
-                    <div className="flex items-center space-x-3 p-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={currentUser?.avatar_url} alt={getUserDisplayName()} />
-                        <AvatarFallback className="text-xs">{getUserInitials()}</AvatarFallback>
+                    {/* User Info */}
+                    <div className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={currentUser?.avatar_url} />
+                        <AvatarFallback>{getUserInitials()}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate flex items-center gap-2">
+                        <p className="text-sm font-medium text-foreground truncate">
                           {getUserDisplayName()}
-                          {currentUser?.is_verified && (
-                            <Badge variant="secondary" className="text-xs px-1 py-0">
-                              ✓
-                            </Badge>
-                          )}
                         </p>
-                        <p className="text-xs text-muted-foreground truncate capitalize">
-                          {currentUser?.account_type} Account
+                        <p className="text-xs text-muted-foreground truncate">
+                          {currentUser?.email}
                         </p>
                       </div>
                     </div>
                     
+                    <button
+                      onClick={() => handleMobileNavClick('/list-services')}
+                      className="flex items-center space-x-3 w-full text-left p-3 rounded-lg transition-colors bg-primary text-white hover:bg-primary/90"
+                    >
+                      <Plus className="h-5 w-5" />
+                      <span className="font-medium">List Service</span>
+                    </button>
+
                     <button
                       onClick={() => handleMobileNavClick('/dashboard')}
                       className="flex items-center space-x-3 w-full text-left p-3 rounded-lg transition-colors text-foreground hover:bg-muted"
@@ -536,11 +469,11 @@ const Header = () => {
                       <span className="font-medium">Sign In</span>
                     </button>
                     <button
-                      onClick={() => handleMobileNavClick('/auth')}
+                      onClick={() => handleMobileNavClick('/auth?mode=provider')}
                       className="flex items-center space-x-3 w-full text-left p-3 rounded-lg transition-colors bg-primary text-white hover:bg-primary/90"
                     >
                       <Plus className="h-5 w-5" />
-                      <span className="font-medium">Sign Up</span>
+                      <span className="font-medium">Join as Provider</span>
                     </button>
                   </div>
                 )}

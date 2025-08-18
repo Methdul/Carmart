@@ -1,44 +1,67 @@
-// car-mart-backend/src/routes/services.js
-// Complete services implementation
+// Replace your car-mart-backend/src/routes/services.js with this:
 
 const express = require('express');
 const router = express.Router();
-const { ServiceService } = require('../services/database');
 const { authenticateToken, optionalAuth } = require('../middleware/auth');
 
-// GET /api/services - Get all services with filtering (public)
+// Direct Supabase connection
+const { createClient } = require('@supabase/supabase-js');
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+
+// GET /api/services - Get all services (simplified for MVP)
 router.get('/', optionalAuth, async (req, res) => {
   try {
-    console.log('📋 Fetching services with filters:', req.query);
+    console.log('📋 Fetching all services...');
     
-    // Extract and prepare filters
-    const filters = {
-      search: req.query.search || '',
-      location: req.query.location || '',
-      serviceType: req.query.serviceType || '',
-      minPrice: req.query.minPrice ? parseInt(req.query.minPrice) : null,
-      maxPrice: req.query.maxPrice ? parseInt(req.query.maxPrice) : null
-    };
+    // Simple query to get all active services
+    const { data, error, count } = await supabase
+      .from('services')
+      .select(`
+        *,
+        users!services_user_id_fkey (
+          first_name,
+          last_name,
+          phone,
+          email,
+          location
+        )
+      `, { count: 'exact' })
+      .eq('is_active', true)
+      .order('created_at', { ascending: false });
 
-    // Remove empty filters
-    Object.keys(filters).forEach(key => {
-      if (filters[key] === '' || filters[key] === null) {
-        delete filters[key];
-      }
-    });
+    if (error) {
+      console.error('❌ Database error:', error);
+      throw new Error(`Database error: ${error.message}`);
+    }
 
-    console.log('🔍 Applied filters:', filters);
+    console.log(`✅ Found ${data.length} active services`);
 
-    // Get services from database
-    const services = await ServiceService.getServices(filters);
-    
-    console.log(`✅ Found ${services.length} services`);
+    // Apply basic search filter if provided
+    let filteredData = data;
+    if (req.query.search) {
+      const searchTerm = req.query.search.toLowerCase();
+      filteredData = data.filter(service => 
+        service.title.toLowerCase().includes(searchTerm) ||
+        service.description.toLowerCase().includes(searchTerm) ||
+        service.service_type.toLowerCase().includes(searchTerm)
+      );
+      console.log(`🔍 Search "${req.query.search}" found ${filteredData.length} results`);
+    }
+
+    // Apply location filter if provided
+    if (req.query.location && req.query.location !== 'all') {
+      filteredData = filteredData.filter(service => 
+        service.location.toLowerCase().includes(req.query.location.toLowerCase())
+      );
+      console.log(`📍 Location filter "${req.query.location}" found ${filteredData.length} results`);
+    }
 
     res.json({
       success: true,
-      data: services,
-      total: services.length,
-      filters: filters
+      data: filteredData,
+      total: filteredData.length,
+      totalInDatabase: count,
+      message: `Found ${filteredData.length} services`
     });
 
   } catch (error) {
@@ -46,30 +69,61 @@ router.get('/', optionalAuth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch services',
-      error: error.message
+      error: error.message,
+      debug: 'Check if SUPABASE_URL and SUPABASE_ANON_KEY are set correctly'
     });
   }
 });
 
-// GET /api/services/:id - Get single service by ID (public)
+// GET /api/services/:id - Get single service by ID
 router.get('/:id', optionalAuth, async (req, res) => {
   try {
-    console.log(`🛠️ Fetching service with ID: ${req.params.id}`);
+    console.log(`🔍 Fetching service with ID: ${req.params.id}`);
     
-    const service = await ServiceService.getServiceById(req.params.id);
-    
-    if (!service) {
-      return res.status(404).json({
-        success: false,
-        message: 'Service not found'
-      });
+    const { data, error } = await supabase
+      .from('services')
+      .select(`
+        *,
+        users!services_user_id_fkey (
+          first_name,
+          last_name,
+          phone,
+          email,
+          location,
+          account_type
+        )
+      `)
+      .eq('id', req.params.id)
+      .eq('is_active', true)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return res.status(404).json({
+          success: false,
+          message: 'Service not found'
+        });
+      }
+      throw new Error(`Database error: ${error.message}`);
     }
 
-    console.log(`✅ Found service: ${service.title}`);
+    console.log(`✅ Found service: ${data.title}`);
     
+    // Increment view count (optional)
+    try {
+      await supabase
+        .from('services')
+        .update({ 
+          views_count: (data.views_count || 0) + 1 
+        })
+        .eq('id', req.params.id);
+    } catch (viewError) {
+      console.log('📊 Note: Could not increment view count:', viewError.message);
+    }
+
     res.json({
       success: true,
-      data: service
+      data: data
     });
 
   } catch (error) {
@@ -86,8 +140,7 @@ router.get('/:id', optionalAuth, async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
   try {
     console.log(`🆕 Creating service for user: ${req.user.id}`);
-    console.log('📝 Service data:', req.body);
-
+    
     // Validate required fields
     const requiredFields = ['title', 'service_type', 'description', 'price', 'location'];
     const missingFields = requiredFields.filter(field => !req.body[field]);
@@ -99,49 +152,41 @@ router.post('/', authenticateToken, async (req, res) => {
       });
     }
 
-    // Validate numeric fields
-    if (isNaN(req.body.price)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Price must be a valid number'
-      });
-    }
-
     // Prepare service data
     const serviceData = {
-      title: req.body.title.trim(),
+      user_id: req.user.id,
+      title: req.body.title,
+      description: req.body.description,
       service_type: req.body.service_type,
-      description: req.body.description.trim(),
       price: parseFloat(req.body.price),
       price_type: req.body.price_type || 'fixed',
-      location: req.body.location.trim(),
-      duration: req.body.duration?.trim() || null,
-      emergency_service: req.body.emergency_service || false,
-      online_booking: req.body.online_booking || false,
+      location: req.body.location,
+      duration: req.body.duration,
+      features: req.body.features ? JSON.stringify(req.body.features) : '[]',
       home_service: req.body.home_service || false,
       pickup_dropoff: req.body.pickup_dropoff || false,
-      warranty_period: req.body.warranty_period?.trim() || null,
-      equipment_type: req.body.equipment_type?.trim() || null,
-      service_areas: req.body.service_areas || [],
-      features: req.body.features || [],
-      requirements: req.body.requirements || [],
-      images: req.body.images || [],
-      availability: req.body.availability || {},
-      payment_options: req.body.payment_options || [],
-      languages: req.body.languages || [],
-      certifications: req.body.certifications || [],
-      is_featured: false // Only admins can set featured
+      emergency_service: req.body.emergency_service || false,
+      online_booking: req.body.online_booking || false,
+      is_active: true,
+      created_at: new Date().toISOString()
     };
 
-    // Create service in database
-    const service = await ServiceService.createService(serviceData, req.user.id);
-    
-    console.log(`✅ Created service: ${service.title} (ID: ${service.id})`);
+    const { data, error } = await supabase
+      .from('services')
+      .insert([serviceData])
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to create service: ${error.message}`);
+    }
+
+    console.log(`✅ Created service: ${data.title}`);
 
     res.status(201).json({
       success: true,
       message: 'Service created successfully',
-      data: service
+      data: data
     });
 
   } catch (error) {
@@ -154,127 +199,30 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
-// PUT /api/services/:id - Update service (requires authentication + ownership)
-router.put('/:id', authenticateToken, async (req, res) => {
+// Test endpoint to check database connection
+router.get('/test/connection', async (req, res) => {
   try {
-    console.log(`✏️ Updating service ${req.params.id} for user: ${req.user.id}`);
-
-    // Prepare update data (only allow certain fields to be updated)
-    const allowedFields = [
-      'title', 'description', 'price', 'price_type', 'location', 'duration',
-      'emergency_service', 'online_booking', 'home_service', 'pickup_dropoff',
-      'warranty_period', 'service_areas', 'features', 'requirements', 'images',
-      'availability', 'payment_options', 'languages', 'certifications'
-    ];
-    
-    const updateData = {};
-    allowedFields.forEach(field => {
-      if (req.body[field] !== undefined) {
-        updateData[field] = req.body[field];
-      }
-    });
-
-    // Validate price if provided
-    if (updateData.price && isNaN(updateData.price)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Price must be a valid number'
-      });
-    }
-
-    if (Object.keys(updateData).length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'No valid fields provided for update'
-      });
-    }
-
-    // Add updated timestamp
-    updateData.updated_at = new Date().toISOString();
-
-    // Update service in database
-    const { supabase } = require('../config/database');
-    
-    const { data, error } = await supabase
+    const { data, error, count } = await supabase
       .from('services')
-      .update(updateData)
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id)
-      .select()
-      .single();
+      .select('title, service_type, price, location', { count: 'exact' })
+      .limit(3);
 
     if (error) {
-      throw new Error(`Failed to update service: ${error.message}`);
+      throw error;
     }
-
-    if (!data) {
-      return res.status(404).json({
-        success: false,
-        message: 'Service not found or you do not have permission to update it'
-      });
-    }
-    
-    console.log(`✅ Updated service: ${data.title}`);
 
     res.json({
       success: true,
-      message: 'Service updated successfully',
-      data: data
+      message: 'Database connection working!',
+      totalServices: count,
+      sampleServices: data,
+      timestamp: new Date().toISOString()
     });
 
   } catch (error) {
-    console.error('❌ Error updating service:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update service',
-      error: error.message
-    });
-  }
-});
-
-// DELETE /api/services/:id - Delete service (requires authentication + ownership)
-router.delete('/:id', authenticateToken, async (req, res) => {
-  try {
-    console.log(`🗑️ Deleting service ${req.params.id} for user: ${req.user.id}`);
-
-    // Soft delete service (set is_active = false)
-    const { supabase } = require('../config/database');
-    
-    const { data, error } = await supabase
-      .from('services')
-      .update({ 
-        is_active: false,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id)
-      .select()
-      .single();
-
-    if (error) {
-      throw new Error(`Failed to delete service: ${error.message}`);
-    }
-
-    if (!data) {
-      return res.status(404).json({
-        success: false,
-        message: 'Service not found or you do not have permission to delete it'
-      });
-    }
-    
-    console.log(`✅ Deleted service: ${data.title}`);
-
-    res.json({
-      success: true,
-      message: 'Service deleted successfully',
-      data: data
-    });
-
-  } catch (error) {
-    console.error('❌ Error deleting service:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to delete service',
+      message: 'Database connection failed',
       error: error.message
     });
   }
